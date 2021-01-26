@@ -4,7 +4,7 @@ x-google-marketplace:
 
   # MUST match the version of the Application custom resource object.
   # This is the same as the top level applicationApiVersion field in v1.
-  applicationApiVersion: v1
+  applicationApiVersion: v1beta1
 
   # The release version is required in the schema and MUST match the
   # release tag on the the deployer.
@@ -25,12 +25,34 @@ x-google-marketplace:
     recommended: true
 
   # Image declaration is required here. Refer to the Images section below.
-  images: {}
+  images:
+    cert-manager:
+      properties:
+        cert-manager.image.repository:
+          type: REPO_WITH_REGISTRY
+        cert-manager.image.tag:
+          type: TAG
+        cert-manager.webhook.image.repository:
+          type: REPO_WITH_REGISTRY
+        cert-manager.webhook.image.tag:
+          type: TAG
+        cert-manager.cainjector.image.repository:
+          type: REPO_WITH_REGISTRY
+        cert-manager.cainjector.image.tag:
+          type: TAG
 
   # Other fields, like clusterConstraints, can be included here.
 
 # The Properties and Required sections of v2 are structured the same as those of v1.
 properties:
+  name:
+    type: string
+    x-google-marketplace:
+      type: NAME
+  namespace:
+    type: string
+    x-google-marketplace:
+      type: NAMESPACE
   cert-manager.serviceAccount.name:
     type: string
     x-google-marketplace:
@@ -58,3 +80,17 @@ properties:
           - type: ClusterRole
             rulesType: PREDEFINED
             rulesFromRoleName: edit
+required:
+  - name
+  - namespace
+
+deployerServiceAccount:
+  description: >
+    Creates app resources, including the MyAppCustomResource CRD.
+  roles:
+    - type: ClusterRole
+      rulesType: CUSTOM
+      rules:
+        - apiGroups: ["apiextensions.k8s.io"]
+          resources: ["customresourcedefinitions"]
+          verbs: ["*"]

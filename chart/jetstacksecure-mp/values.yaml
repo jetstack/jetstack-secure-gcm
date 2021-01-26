@@ -5,6 +5,7 @@
 # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/building-deployer-helm.md
 
 cert-manager:
+  installCRDs: true
   global:
     rbac:
       create: false # see note (1)
