@@ -1,0 +1,163 @@
+timeout: 1800s # 30m
+substitutions:
+  _CLUSTER_NAME: cluster-1
+  _CLUSTER_LOCATION: europe-west2-b
+  _SOLUTION_NAME: cert-manager
+  _CERT_MANAGER_VERSION: 1.1.0
+steps:
+- id: pull-controller
+  name: gcr.io/cloud-builders/docker
+  args:
+    - pull
+    - quay.io/jetstack/cert-manager-controller:v${_CERT_MANAGER_VERSION}
+  waitFor: ["-"]
+
+- id: pull-cainjector
+  name: gcr.io/cloud-builders/docker
+  args:
+    - pull
+    - quay.io/jetstack/cert-manager-cainjector:v${_CERT_MANAGER_VERSION}
+  waitFor: ["-"]
+
+- id: pull-webhook
+  name: gcr.io/cloud-builders/docker
+  args:
+    - pull
+    - quay.io/jetstack/cert-manager-webhook:v${_CERT_MANAGER_VERSION}
+  waitFor: ["-"]
+
+- id: tag-controller
+  name: gcr.io/cloud-builders/docker
+  args:
+    - tag
+    - quay.io/jetstack/cert-manager-controller:v${_CERT_MANAGER_VERSION}
+    - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_CERT_MANAGER_VERSION}
+  waitFor:
+    - pull-controller
+
+- id: tag-cainjector
+  name: gcr.io/cloud-builders/docker
+  args:
+    - tag
+    - quay.io/jetstack/cert-manager-cainjector:v${_CERT_MANAGER_VERSION}
+    - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_CERT_MANAGER_VERSION}
+  waitFor:
+    - pull-cainjector
+
+- id: tag-webhook
+  name: gcr.io/cloud-builders/docker
+  args:
+    - tag
+    - quay.io/jetstack/cert-manager-webhook:v${_CERT_MANAGER_VERSION}
+    - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_CERT_MANAGER_VERSION}
+  waitFor:
+    - pull-webhook
+
+- id: build-deployer
+  name: gcr.io/cloud-builders/docker
+  args:
+    - build
+    - --tag
+    - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
+    - "."
+  waitFor: ["-"]
+
+- id: push-controller
+  name: gcr.io/cloud-builders/docker
+  args:
+    - push
+    - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_CERT_MANAGER_VERSION}
+  waitFor:
+    - tag-controller
+
+- id: push-cainjector
+  name: gcr.io/cloud-builders/docker
+  args:
+    - push
+    - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_CERT_MANAGER_VERSION}
+  waitFor:
+    - tag-cainjector
+
+- id: push-webhook
+  name: gcr.io/cloud-builders/docker
+  args:
+    - push
+    - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_CERT_MANAGER_VERSION}
+  waitFor:
+    - tag-webhook
+
+- id: push-deployer
+  name: gcr.io/cloud-builders/docker
+  args:
+    - push
+    - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
+  waitFor:
+    - build-deployer
+
+- id: gcloud-credentials
+  name: gcr.io/cloud-builders/gcloud
+  waitFor:
+  - '-'
+  entrypoint: bash
+  args:
+  - -exc
+  - |
+    gcloud container clusters get-credentials '${_CLUSTER_NAME}' --zone '${_CLUSTER_LOCATION}' --project '$PROJECT_ID'
+    mkdir -p /workspace/.kube/
+    cp -r $$HOME/.kube/ /workspace/
+    mkdir -p /workspace/.config/gcloud/
+    cp -r $$HOME/.config/gcloud/ /workspace/.config/
+
+- id: install-cloud-marketplace-tools
+  name: gcr.io/cloud-builders/docker
+  args:
+    - run
+    - --volume
+    - /workspace:/workspace
+    - gcr.io/cloud-marketplace-tools/k8s/dev
+    - sh
+    - -c
+    - |
+      cat /scripts/dev > "/workspace/cmpt"
+      chmod +x /workspace/cmpt
+  waitFor: ["-"]
+
+- id: check-cloud-marketplace-tools
+  name: gcr.io/cloud-marketplace-tools/k8s/dev
+  env:
+  - 'KUBE_CONFIG=/workspace/.kube'
+  - 'GCLOUD_CONFIG=/workspace/.config/gcloud'
+  # Use local Docker network named cloudbuild as described here:
+  # https://cloud.google.com/cloud-build/docs/overview#build_configuration_and_build_steps
+  - 'EXTRA_DOCKER_PARAMS=--net cloudbuild'
+  args:
+    - ./cmpt
+    - doctor
+  waitFor:
+    - gcloud-credentials
+    - install-cloud-marketplace-tools
+
+- id: verify
+  name: gcr.io/cloud-marketplace-tools/k8s/dev
+  env:
+  - 'KUBE_CONFIG=/workspace/.kube'
+  - 'GCLOUD_CONFIG=/workspace/.config/gcloud'
+  # Use local Docker network named cloudbuild as described here:
+  # https://cloud.google.com/cloud-build/docs/overview#build_configuration_and_build_steps
+  - 'EXTRA_DOCKER_PARAMS=--net cloudbuild'
+  args:
+    - ./cmpt
+    - verify
+    - --deployer=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
+  waitFor:
+    - check-cloud-marketplace-tools
+    - push-deployer
+    - push-controller
+    - push-cainjector
+    - push-webhook
+
+images:
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_CERT_MANAGER_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_CERT_MANAGER_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_CERT_MANAGER_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}

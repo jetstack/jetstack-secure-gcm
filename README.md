@@ -41,3 +41,14 @@ docker build --tag $REGISTRY/$APP_NAME/deployer .
 docker push $REGISTRY/$APP_NAME/deployer
 mpdev install --deployer=$REGISTRY/$APP_NAME/deployer --parameters='{"name": "test", "namespace": "test"}'
 ```
+
+## Google Cloud Build
+
+You can deploy the Google Market Place images and the deployer to `gcr.io/<PROJECT>/cert-manager` using `gcloud builds` as follows:
+
+```
+gcloud builds submit  --timeout 1800s --config cloudbuild.yaml \
+  --substitutions _CLUSTER_NAME=$GKE_CLUSTER_NAME,_CLUSTER_LOCATION=$GKE_CLUSTER_LOCATION 
+```
+
+This will also verify the application using the [Google Cloud Marketplace verification tool](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c5899a928a2ac8d5022463c82823284a9e63b177/scripts/verify).
