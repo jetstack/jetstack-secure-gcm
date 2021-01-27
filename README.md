@@ -7,7 +7,7 @@ is maintained by @team-cert-manager.
 
 # Overview
 
-Cert Manager provides native Kubernetes automation for creating and managing
+cert-manager provides native Kubernetes automation for creating and managing
 Transport Layer Security (TLS) certificates.
 
 It includes support for making self-signed certificates, using your own
@@ -18,7 +18,7 @@ It checks that certificates are valid and up-to-date, and attempts to renew
 certificates before they expire.
 
 For more information, visit the
-[Cert Manager official website](https://cert-manager.io/docs/).
+[cert-manager official website](https://cert-manager.io/docs/).
 
 ## About Google Click to Deploy
 
@@ -28,14 +28,14 @@ Popular open stacks on Kubernetes, packaged by Google.
 
 ![Architecture diagram](resources/cert-manager-k8s-app-architecture.png)
 
-This app offers Cert Manager custom resource definitions (CRDs), WebHooks,
-and deployments of Cert Manager on a Kubernetes cluster.
+This app offers cert-manager custom resource definitions (CRDs), WebHooks,
+and deployments of cert-manager on a Kubernetes cluster.
 
 # Installation
 
 ## Quick install with Google Cloud Marketplace
 
-Get up and running with a few clicks! To install this Cert Manager app to a
+Get up and running with a few clicks! To install this cert-manager app to a
 Google Kubernetes Engine cluster via Google Cloud Marketplace, follow the
 [on-screen instructions](https://console.cloud.google.com/marketplace/details/google/cert-manager).
 
@@ -166,7 +166,7 @@ export IMAGE_METRICS_EXPORTER="marketplace.gcr.io/google/cert-manager/prometheus
 ```
 
 By default, each deployment has 1 replica, but you can choose to set the
-number of replicas for Cert Manager controller, webhook and cainjector.
+number of replicas for cert-manager controller, webhook and cainjector.
 
 ```shell
 export CONTROLLER_REPLICAS=3
@@ -293,7 +293,7 @@ You can also choose to deploy the Issuer and the certificate to another
 namespace.
 
 For additional configuration options, refer to the
-[Cert Manager documentation](https://cert-manager.io/docs/usage/).
+[cert-manager documentation](https://cert-manager.io/docs/usage/).
 
 # Scaling up or down
 
@@ -326,16 +326,16 @@ kubectl scale deployment "${APP_INSTANCE_NAME}-cert-manager-webhook" \
 
 # Back up and restore
 
-## Back up Cert Manager configuration data to your local environment
+## Back up cert-manager configuration data to your local environment
 
-To back up Cert Manager resources, use the following command:
+To back up cert-manager resources, use the following command:
 
 ```shell
 kubectl get --all-namespaces --output=yaml \
 issuer,clusterissuer,certificates,certificaterequests > backup_file.yaml
 ```
 
-## Restore Cert Manager configuration data from your local environment
+## Restore cert-manager configuration data from your local environment
 
 ```shell
 kubectl apply -f backup_file.yaml
@@ -343,11 +343,11 @@ kubectl apply -f backup_file.yaml
 
 # Upgrading the app
 
-To update your deployment of Cert Manager, refer to the
+To update your deployment of cert-manager, refer to the
 [official documentation](https://cert-manager.io/docs/installation/upgrading/)
 for actions specific to your current version.
 
-To avoid complications, create a backup before you update Cert Manager.
+To avoid complications, create a backup before you update cert-manager.
 
 # Uninstall the app
 
@@ -356,7 +356,7 @@ To avoid complications, create a backup before you update Cert Manager.
 1. In the Cloud Console, open
    [Kubernetes Applications](https://console.cloud.google.com/kubernetes/application).
 
-1. From the list of apps, click **Cert Manager**.
+1. From the list of apps, click **cert-manager**.
 
 1. On the Application Details page, click **Delete**.
 
