@@ -20,17 +20,24 @@ helm dependency build chart/jetstacksecure-mp
 
 ```sh
 export REGISTRY=gcr.io/$(gcloud config get-value project | tr ':' '/')
-export APP_NAME=jetstack-secure-platform
+export APP_NAME=jetstack-secure
 
-kubectl create namespace test-ns
+docker pull quay.io/jetstack/cert-manager-controller:v1.1.0
+docker pull quay.io/jetstack/cert-manager-cainjector:v1.1.0
+docker pull quay.io/jetstack/cert-manager-webhook:v1.1.0
+docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-controller:v1.1.0
+docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-cainjector:v1.1.0
+docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-webhook:v1.1.0
+docker push $REGISTRY/$APP_NAME/cert-manager-controller:v1.1.0
+docker push $REGISTRY/$APP_NAME/cert-manager-cainjector:v1.1.0
+docker push $REGISTRY/$APP_NAME/cert-manager-webhook:v1.1.0
 
-docker build --tag $REGISTRY/$APP_NAME/deployer .
-docker push $REGISTRY/$APP_NAME/deployer
 
 # Install mpdev:
 docker run gcr.io/cloud-marketplace-tools/k8s/dev cat /scripts/dev > /tmp/mpdev && install /tmp/mpdev ~/bin
 
-mpdev install \
-  --deployer=$REGISTRY/$APP_NAME/deployer \
-  --parameters='{"name": "test-deployment", "namespace": "test-ns"}'
+kubectl create namespace test
+docker build --tag $REGISTRY/$APP_NAME/deployer .
+docker push $REGISTRY/$APP_NAME/deployer
+mpdev install --deployer=$REGISTRY/$APP_NAME/deployer --parameters='{"name": "test", "namespace": "test"}'
 ```
