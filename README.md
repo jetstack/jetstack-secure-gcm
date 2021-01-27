@@ -52,3 +52,6 @@ gcloud builds submit  --timeout 1800s --config cloudbuild.yaml \
 ```
 
 This will also verify the application using the [Google Cloud Marketplace verification tool](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c5899a928a2ac8d5022463c82823284a9e63b177/scripts/verify).
+
+NB: Configure the `?????@cloudbuild.gserviceaccount.com` with the roles: `Cloud Build Service Agent` and `Kubernetes Engine Admin` so that it has permission to deploy RBAC configuration to the target cluster. 
+See: [IAM and Admin > Permissions for project](https://console.cloud.google.com/iam-admin/iam) on Google Cloud Consol.
