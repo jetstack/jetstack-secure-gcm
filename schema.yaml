@@ -43,6 +43,23 @@ x-google-marketplace:
       cert-manager.cainjector.image.tag:
         type: TAG
 
+  # Allow the deployer to create CRDs and webhook configurations
+  # See https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md#deployerserviceaccount
+  # TODO: Consider whether these permissions can be tightened.
+  deployerServiceAccount:
+    description: >
+      Creates app resources, including the MyAppCustomResource CRD.
+    roles:
+    - type: ClusterRole
+      rulesType: CUSTOM
+      rules:
+      - apiGroups: ['apiextensions.k8s.io']
+        resources: ['customresourcedefinitions']
+        verbs: ['*']
+      - apiGroups: ["admissionregistration.k8s.io"]
+        resources: ["*"]
+        verbs: ["*"]
+
   # Other fields, like clusterConstraints, can be included here.
 
 # The Properties and Required sections of v2 are structured the same as those of v1.
