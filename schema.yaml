@@ -60,132 +60,172 @@ properties:
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
-        description: >
-          Monitors cert-manager custom-resources such as Certificate and
-          Order, as well as
+        description: Service account used by cert-manager Controller Deployment
         roles:
-          - type: Role
-            rulesType: CUSTOM
-            rules:
-              - apiGroups: [""]
-                resources: ["configmaps"]
-                resourceNames: ["cert-manager-controller"]
-                verbs: ["get", "update", "patch"]
-              - apiGroups: [""]
-                resources: ["configmaps"]
-                verbs: ["create"]
-          - type: ClusterRole
-            rulesType: CUSTOM
-            rules:
-              - apiGroups: ["cert-manager.io"]
-                resources: ["issuers", "issuers/status"]
-                verbs: ["update"]
-              - apiGroups: ["cert-manager.io"]
-                resources: ["issuers"]
-                verbs: ["get", "list", "watch"]
-              - apiGroups: [""]
-                resources: ["secrets"]
-                verbs: ["get", "list", "watch", "create", "update", "delete"]
-              - apiGroups: [""]
-                resources: ["events"]
-                verbs: ["create", "patch"]
+        - type: ClusterRole
+          rulesType: CUSTOM
+          rules:
+            # Issuer controller role
+            - apiGroups: ["cert-manager.io"]
+              resources: ["issuers", "issuers/status"]
+              verbs: ["update"]
+            - apiGroups: ["cert-manager.io"]
+              resources: ["issuers"]
+              verbs: ["get", "list", "watch", "create", "delete"]
+            - apiGroups: [""]
+              resources: ["secrets"]
+              verbs: ["get", "list", "watch", "create", "update", "delete"]
+            - apiGroups: [""]
+              resources: ["events"]
+              verbs: ["create", "patch"]
+            # ClusterIssuer controller role
+            - apiGroups: ["cert-manager.io"]
+              resources: ["clusterissuers", "clusterissuers/status"]
+              verbs: ["update"]
+            - apiGroups: ["cert-manager.io"]
+              resources: ["clusterissuers"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: [""]
+              resources: ["secrets"]
+              verbs: ["get", "list", "watch", "create", "update", "delete"]
+            - apiGroups: [""]
+              resources: ["events"]
+              verbs: ["create", "patch"]
+            # Certificates controller role
+            - apiGroups: ["cert-manager.io"]
+              resources: ["certificates", "certificates/status", "certificaterequests", "certificaterequests/status"]
+              verbs: ["update"]
+            - apiGroups: ["cert-manager.io"]
+              resources: ["certificates", "certificaterequests", "clusterissuers", "issuers"]
+              verbs: ["get", "list", "watch", "create", "delete"]
+            - apiGroups: ["cert-manager.io"]
+              resources: ["certificates/finalizers", "certificaterequests/finalizers"]
+              verbs: ["update"]
+            - apiGroups: ["acme.cert-manager.io"]
+              resources: ["orders"]
+              verbs: ["create", "delete", "get", "list", "watch"]
+            - apiGroups: [""]
+              resources: ["secrets"]
+              verbs: ["get", "list", "watch", "create", "update", "delete"]
+            - apiGroups: [""]
+              resources: ["events"]
+              verbs: ["create", "patch"]
+            # Orders controller role
+            - apiGroups: ["acme.cert-manager.io"]
+              resources: ["orders", "orders/status"]
+              verbs: ["update"]
+            - apiGroups: ["acme.cert-manager.io"]
+              resources: ["orders", "challenges"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: ["cert-manager.io"]
+              resources: ["clusterissuers", "issuers"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: ["acme.cert-manager.io"]
+              resources: ["challenges"]
+              verbs: ["create", "delete"]
+            - apiGroups: ["acme.cert-manager.io"]
+              resources: ["orders/finalizers"]
+              verbs: ["update"]
+            - apiGroups: [""]
+              resources: ["secrets"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: [""]
+              resources: ["events"]
+              verbs: ["create", "patch"]
+            # Challenges controller role
+            - apiGroups: ["acme.cert-manager.io"]
+              resources: ["challenges", "challenges/status"]
+              verbs: ["update"]
+            - apiGroups: ["acme.cert-manager.io"]
+              resources: ["challenges"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: ["cert-manager.io"]
+              resources: ["issuers", "clusterissuers"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: [""]
+              resources: ["secrets"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: [""]
+              resources: ["events"]
+              verbs: ["create", "patch"]
+            - apiGroups: [""]
+              resources: ["pods", "services"]
+              verbs: ["get", "list", "watch", "create", "delete"]
+            - apiGroups: ["extensions"]
+              resources: ["ingresses"]
+              verbs: ["get", "list", "watch", "create", "delete", "update"]
+            - apiGroups: ["acme.cert-manager.io"]
+              resources: ["challenges/finalizers"]
+              verbs: ["update"]
+            - apiGroups: [""]
+              resources: ["secrets"]
+              verbs: ["get", "list", "watch"]
+            # ingress-shim controller role
+            - apiGroups: ["cert-manager.io"]
+              resources: ["certificates", "certificaterequests"]
+              verbs: ["create", "update", "delete"]
+            - apiGroups: ["cert-manager.io"]
+              resources: ["certificates", "certificaterequests", "issuers", "clusterissuers"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: ["extensions"]
+              resources: ["ingresses"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: ["extensions"]
+              resources: ["ingresses/finalizers"]
+              verbs: ["update"]
+            - apiGroups: [""]
+              resources: ["events"]
+              verbs: ["create", "patch"]
+            - apiGroups: [""]
+              resources: ["configmaps"]
+              verbs: ["get", "create", "update", "patch"]
   cert-manager.webhook.serviceAccount.name:
     type: string
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
-        description: >
-          Creates and manages the self-signed CA that is served by the
-          webhook and that the apiserver checks in order to authenticate
-          the webhook.
+        description: Service account used by cert-manager Webhook Deployment
         roles:
-          - type: Role
-            rulesType: CUSTOM
-            rules:
-              - apiGroups: [""]
-                resources: ["secrets"]
-                resourceNames:
-                  # TODO: is there a way to parametrize this? In the helm
-                  # chart we use {{ template "webhook.fullname" . }}-ca,
-                  # but we don't seem to be able to do the same thing
-                  - "cert-manager-webhook-ca"
-                verbs: ["get", "list", "watch", "update"]
-
-              # This single CREATE permission is for creating the
-              # webhook-ca secret. The reason it is not with the above rule
-              # is that it is not possible to grant CREATE permission on a
-              # single resourceName.
-              - apiGroups: [""]
-                resources: ["secrets"]
-                verbs: ["create"]
+        - type: Role
+          rulesType: CUSTOM
+          rules:
+            - apiGroups: [""]
+              resources:
+              - secrets
+              verbs:
+              - get, list, update, patch, create
   cert-manager.cainjector.serviceAccount.name:
     type: string
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
-        description: >
-          The cainjector component watches and populates the caBundle field
-          of ValidatingWebhookConfiguration, MutatingWebhookConfiguration,
-          and CustomResourceDefinition objects. These objects are used to
-          configure how the Kubernetes API server connects to webhooks.
-          This caBundle data is loaded by the Kubernetes API server and
-          used to verify the serving certificates of webhook API servers.
+        description: Service account used by cert-manager CA Injector Deployment
         roles:
-          - type: Role
-            rulesType: CUSTOM
-            rules:
-              - apiGroups: [""]
-                resources: ["configmaps"]
-                resourceNames:
-                  - cert-manager-cainjector-leader-election,
-                  - cert-manager-cainjector-leader-election-core,
-                verbs: ["get", "update", "patch"]
-              - apiGroups: [""]
-                resources: ["configmaps"]
-                verbs: ["create"]
-          - type: ClusterRole
-            rulesType: CUSTOM
-            rules:
-              - apiGroups: ["cert-manager.io"]
-                resources: ["certificates"]
-                verbs: ["get", "list", "watch"]
-              - apiGroups: [""]
-                resources: ["secrets"]
-                verbs: ["get", "list", "watch"]
-              - apiGroups: [""]
-                resources: ["events"]
-                verbs: ["get", "create", "update", "patch"]
-              - apiGroups: ["admissionregistration.k8s.io"]
-                resources:
-                  - "validatingwebhookconfigurations"
-                  - "mutatingwebhookconfigurations"
-                verbs: ["get", "list", "watch", "update"]
-              - apiGroups: ["apiregistration.k8s.io"]
-                resources: ["apiservices"]
-                verbs: ["get", "list", "watch", "update"]
-              - apiGroups: ["apiextensions.k8s.io"]
-                resources: ["customresourcedefinitions"]
-                verbs: ["get", "list", "watch", "update"]
-              - apiGroups: ["auditregistration.k8s.io"]
-                resources: ["auditsinks"]
-                verbs: ["get", "list", "watch", "update"]
+        - type: ClusterRole
+          rulesType: CUSTOM
+          rules:
+            - apiGroups: ["cert-manager.io"]
+              resources: ["certificates"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: [""]
+              resources: ["secrets"]
+              verbs: ["get", "list", "watch"]
+            - apiGroups: [""]
+              resources: ["events"]
+              verbs: ["get", "create", "update", "patch"]
+            - apiGroups: ["admissionregistration.k8s.io"]
+              resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
+              verbs: ["get", "list", "watch", "update"]
+            - apiGroups: ["apiregistration.k8s.io"]
+              resources: ["apiservices"]
+              verbs: ["get", "list", "watch", "update"]
+            - apiGroups: ["apiextensions.k8s.io"]
+              resources: ["customresourcedefinitions"]
+              verbs: ["get", "list", "watch", "update"]
+            - apiGroups: [""]
+              resources: ["configmaps"]
+              verbs: ["get", "create", "update", "patch"]
 
 required:
-  - name
-  - namespace
-
-deployerServiceAccount:
-  description: >
-    Creates the cert-manager CRDs and webhook configurations.
-  roles:
-    - type: ClusterRole
-      rulesType: CUSTOM
-      rules:
-        - apiGroups: ["apiextensions.k8s.io"]
-          resources: ["customresourcedefinitions"]
-          verbs: ["*"]
-        - apiGroups: ["admissionregistration.k8s.io"]
-          resources:
-            - "validatingwebhookconfigurations"
-            - "mutatingwebhookconfigurations"
-          verbs: ["*"]
+- name
+- namespace
