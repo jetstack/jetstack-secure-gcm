@@ -16,4 +16,4 @@ cert-manager:
       create: false # see note (1)
   cainjector:
     serviceAccount:
-      create: true # see note (1)
+      create: false # see note (1)
