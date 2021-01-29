@@ -1,0 +1,4 @@
+# Since our schema.yaml is quite big, we want to use a good linter:
+#  npm i -g prettier
+#  prettier --write schema.yaml
+printWidth: 9999
