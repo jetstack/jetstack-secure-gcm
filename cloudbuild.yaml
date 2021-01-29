@@ -171,6 +171,7 @@ steps:
     env:
       - "KUBE_CONFIG=/workspace/.kube"
       - "GCLOUD_CONFIG=/workspace/.config/gcloud"
+      - "EXTRA_DOCKER_PARAMS=--net cloudbuild"
     args:
       - ./cmpt
       - publish
