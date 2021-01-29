@@ -1,0 +1,19 @@
+# Note (1): why are serviceAccounts and RBAC disabled? While helm
+# recommends that charts should create RBAC resources by default,
+# Marketplace requires that charts must not create k8s service accounts or
+# RBAC resources. See:
+# https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/building-deployer-helm.md
+
+cert-manager:
+  installCRDs: true
+  global:
+    rbac:
+      create: false # see note (1)
+  serviceAccount:
+    create: false # see note (1)
+  webhook:
+    serviceAccount:
+      create: false # see note (1)
+  cainjector:
+    serviceAccount:
+      create: false # see note (1)
