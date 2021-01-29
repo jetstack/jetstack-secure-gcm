@@ -196,6 +196,7 @@ properties:
               - apiGroups: [""]
                 resources: ["configmaps"]
                 verbs: ["get", "create", "update", "patch"]
+
   cert-manager.webhook.serviceAccount.name:
     type: string
     x-google-marketplace:
@@ -207,10 +208,9 @@ properties:
             rulesType: CUSTOM
             rules:
               - apiGroups: [""]
-                resources:
-                  - secrets
-                verbs:
-                  - get, list, update, patch, create
+                resources: [secrets]
+                verbs: [get, list, update, patch, create]
+
   cert-manager.cainjector.serviceAccount.name:
     type: string
     x-google-marketplace:
@@ -243,6 +243,57 @@ properties:
                 resources: ["configmaps"]
                 verbs: ["get", "create", "update", "patch"]
 
+  google-cas-issuer.serviceAccount.name:
+    type: string
+    x-google-marketplace:
+      type: SERVICE_ACCOUNT
+      serviceAccount:
+        description: Service account used by google-cas-issuer
+        roles:
+          - type: Role
+            rulesType: CUSTOM
+            rules:
+              # Leader election roles.
+              - apiGroups: [""]
+                resources: [configmaps]
+                verbs: [get, list, watch, create, update, patch, delete]
+              - apiGroups: [""]
+                resources: [configmaps/status]
+                verbs: [get, update, patch]
+              - apiGroups: [""]
+                resources: [events]
+                verbs: [create]
+              - apiGroups: [coordination.k8s.io]
+                resources: [leases]
+                verbs: [create, get, list, update]
+          - type: ClusterRole
+            rulesType: CUSTOM
+            rules:
+              - apiGroups: [""]
+                resources: [events]
+                verbs: [create, patch]
+              - apiGroups: [""]
+                resources: [secrets]
+                verbs: [get, list, watch]
+              - apiGroups: [cas-issuer.jetstack.io]
+                resources: [googlecasclusterissuers]
+                verbs: [create, delete, get, list, patch, update, watch]
+              - apiGroups: [cas-issuer.jetstack.io]
+                resources: [googlecasclusterissuers/status]
+                verbs: [get, patch, update]
+              - apiGroups: [cas-issuer.jetstack.io]
+                resources: [googlecasissuers]
+                verbs: [create, delete, get, list, patch, update, watch]
+              - apiGroups: [cas-issuer.jetstack.io]
+                resources: [googlecasissuers/status]
+                verbs: [get, patch, update]
+              - apiGroups: [cert-manager.io]
+                resources: [certificaterequests]
+                verbs: [get, list, update, watch]
+              - apiGroups: [cert-manager.io]
+                resources: [certificaterequests/status]
+                verbs: [get, patch, update]
+
 required:
-- name
-- namespace
+  - name
+  - namespace

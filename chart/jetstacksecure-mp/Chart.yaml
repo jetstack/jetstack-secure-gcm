@@ -2,3 +2,9 @@ apiVersion: v2
 engine: gotpl
 name: jetstacksecure-mp
 version: 1.1.0
+dependencies:
+  - name: cert-manager
+    version: 1.1.0
+    repository: https://charts.jetstack.io
+  - name: google-cas-issuer
+    repository: ./charts/google-cas-issuer

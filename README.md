@@ -74,3 +74,11 @@ Requirements before running `gcloud builds`:
    ```sh
    gsutil mb gs://$(gcloud config get-value project | tr ':' '/')
    ```
+
+## Test google-cas-issuer helm chart manually
+
+```sh
+kubectl create ns system
+kubectl -n system apply -k https://github.com/jetstack/google-cas-issuer/config/rbac
+helm upgrade --install --namespace system cas ./chart/jetstacksecure-mp/charts/google-cas-issuer --set image.tag=latest --set serviceAccount.name=default
+```
