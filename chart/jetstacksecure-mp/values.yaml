@@ -20,4 +20,4 @@ cert-manager:
 
 google-cas-issuer:
   serviceAccount:
-    create: false
+    create: false # see note (1)
