@@ -19,5 +19,6 @@ cert-manager:
       create: false # see note (1)
 
 google-cas-issuer:
+  installCRDs: true
   serviceAccount:
     create: false # see note (1)

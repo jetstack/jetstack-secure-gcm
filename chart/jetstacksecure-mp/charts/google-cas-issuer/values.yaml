@@ -1,3 +1,5 @@
+installCRDs: false
+
 # The namespace for secrets in which cluster-scoped resources are found. (default "cert-manager")
 secretsNamespace: cert-manager
 serviceAccount:
