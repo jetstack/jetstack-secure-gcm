@@ -1,6 +1,5 @@
 
 # jsp-gcm
-=======
 
 # deployer
 
@@ -15,8 +14,11 @@ helm repo add jetstack https://charts.jetstack.io
 helm dependency build chart/jetstacksecure-mp
 ```
 
-=======
 ## Test
+
+Note: although cert-manager's tags are of the form "v1.1.0", we chose to
+use tags of the form "1.1.0" for the Google Marketplace for the sake of
+consistency.
 
 ```sh
 export REGISTRY=gcr.io/$(gcloud config get-value project | tr ':' '/')
@@ -25,13 +27,15 @@ export APP_NAME=jetstack-secure
 docker pull quay.io/jetstack/cert-manager-controller:v1.1.0
 docker pull quay.io/jetstack/cert-manager-cainjector:v1.1.0
 docker pull quay.io/jetstack/cert-manager-webhook:v1.1.0
-docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-controller:v1.1.0
-docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-cainjector:v1.1.0
-docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-webhook:v1.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-controller:v1.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-cainjector:v1.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-webhook:v1.1.0
-
+docker pull quay.io/jetstack/cert-manager-google-cas-issuer:0.1.0
+docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-controller:1.1.0
+docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-cainjector:1.1.0
+docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-webhook:1.1.0
+docker tag quay.io/jetstack/cert-manager-google-cas-issuer:latest $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:0.1.0
+docker push $REGISTRY/$APP_NAME/cert-manager-controller:1.1.0
+docker push $REGISTRY/$APP_NAME/cert-manager-cainjector:1.1.0
+docker push $REGISTRY/$APP_NAME/cert-manager-webhook:1.1.0
+docker push $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:0.1.0
 
 # Install mpdev:
 docker run gcr.io/cloud-marketplace-tools/k8s/dev cat /scripts/dev > /tmp/mpdev && install /tmp/mpdev ~/bin

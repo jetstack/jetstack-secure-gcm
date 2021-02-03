@@ -5,6 +5,8 @@ version: 1.1.0
 dependencies:
   - name: cert-manager
     version: 1.1.0
+    appVersion: v1.1.0
     repository: https://charts.jetstack.io
   - name: google-cas-issuer
+    appVersion: 0.1.0
     repository: ./charts/google-cas-issuer
