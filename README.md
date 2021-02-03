@@ -66,6 +66,81 @@ kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/marketpla
 mpdev install --deployer=$REGISTRY/$APP_NAME/deployer --parameters='{"name": "test", "namespace": "test"}'
 ```
 
+Now, we need to have access to a CAS root. To create a "root" certificate
+authority as well as an intermediate certificate authority ("subordinate")
+in your current Google project, run:
+
+```sh
+gcloud beta privateca roots create my-ca --subject="CN=root,O=my-ca"
+gcloud beta privateca subordinates create my-sub-ca  --issuer=my-ca --location us-east1 --subject="CN=intermediate,O=my-ca,OU=my-sub-ca"
+```
+
+> It is recommended to create subordinate CAs for signing leaf
+> certificates. See the [official
+> documentation](https://cloud.google.com/certificate-authority-service/docs/creating-certificate-authorities).
+
+At this point, the Kubernetes service account created by `mpdev` still does
+not have sufficient privileges in order to access the Google CAS API. We
+have to "bind" the Kubernetes service account with a new GCP service
+account that will have access to the CAS API.
+
+```sh
+gcloud iam service-accounts create sa-google-cas-issuer
+gcloud beta privateca subordinates add-iam-policy-binding my-sub-ca \
+  --role=roles/privateca.certificateRequester \
+  --member=serviceAccount:sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
+gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
+  --role roles/iam.workloadIdentityUser \
+  --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[test/test-google-cas-issuer-serviceaccount-name]"
+kubectl annotate serviceaccount -n test test-google-cas-issuer-serviceaccount-name \
+  iam.gke.io/gcp-service-account=sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
+```
+
+You can now create an issuer and a certificate:
+
+```sh
+cat <<EOF | tee /dev/stderr | kubectl apply -f -
+apiVersion: cas-issuer.jetstack.io/v1alpha1
+kind: GoogleCASIssuer
+metadata:
+  name: googlecasissuer
+spec:
+  project: $(gcloud config get-value project | tr ':' '/')
+  location: $(gcloud config get-value privateca/location | tr ':' '/')
+  certificateAuthorityID: my-sub-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: demo-certificate
+spec:
+  secretName: demo-cert-tls
+  commonName: cert-manager.io.demo
+  dnsNames:
+    - cert-manager.io
+    - jetstack.io
+  duration: 24h
+  renewBefore: 8h
+  issuerRef:
+    group: cas-issuer.jetstack.io
+    kind: GoogleCASIssuer
+    name: googlecasissuer
+EOF
+```
+
+You can check that the certificate has been issued with:
+
+```sh
+% kubectl describe cert demo-certificate
+Events:
+  Type    Reason     Age   From          Message
+  ----    ------     ----  ----          -------
+  Normal  Issuing    20s   cert-manager  Issuing certificate as Secret was previously issued by GoogleCASIssuer.cas-issuer.jetstack.io/googlecasissuer-sample
+  Normal  Reused     20s   cert-manager  Reusing private key stored in existing Secret resource "demo-cert-tls"
+  Normal  Requested  20s   cert-manager  Created new CertificateRequest resource "demo-certificate-v2rwr"
+  Normal  Issuing    20s   cert-manager  The certificate has been successfully issued
+```
+
 ## Releasing using Google Cloud Build
 
 We use `gcloud builds` in order to automate the release process. Cloud
