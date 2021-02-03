@@ -53,15 +53,6 @@ steps:
     waitFor:
       - pull-webhook
 
-  - id: build-deployer
-    name: gcr.io/cloud-builders/docker
-    args:
-      - build
-      - --tag
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
-      - "."
-    waitFor: ["-"]
-
   - id: push-controller
     name: gcr.io/cloud-builders/docker
     args:
@@ -85,6 +76,15 @@ steps:
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_CERT_MANAGER_VERSION}
     waitFor:
       - tag-webhook
+
+  - id: build-deployer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
+      - "."
+    waitFor: ["-"]
 
   - id: push-deployer
     name: gcr.io/cloud-builders/docker
@@ -127,8 +127,8 @@ steps:
       - sh
       - -c
       - |
-        cat /scripts/dev > "/workspace/cmpt"
-        chmod +x /workspace/cmpt
+        cat /scripts/dev > "/workspace/mpdev"
+        chmod +x /workspace/mpdev
     waitFor: ["-"]
 
   - id: check-cloud-marketplace-tools
