@@ -1,20 +1,13 @@
 
 # jsp-gcm
 
-# deployer
+**Content:**
 
-## Update upstream cert-manager chart version
+- [Installing and testing manually the deployer](#installing-and-testing-manually-the-deployer)
+- [Testing and releasing the deployer using Google Cloud Build](#testing-and-releasing-the-deployer-using-google-cloud-build)
+- [Updating the upstream cert-manager chart version](#updating-the-upstream-cert-manager-chart-version)
 
-From
-[building-deployer-helm.md](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/building-deployer-helm.md),
-bump the version of the cert-manager chart in requirements.yaml. Then:
-
-```sh
-helm repo add jetstack https://charts.jetstack.io
-helm dependency build chart/jetstacksecure-mp
-```
-
-## Installing manually
+## Installing and testing manually the deployer
 
 In order to have the google-cas-issuer working, we need to enable [workload
 identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity).
@@ -141,7 +134,7 @@ Events:
   Normal  Issuing    20s   cert-manager  The certificate has been successfully issued
 ```
 
-## Releasing using Google Cloud Build
+## Testing and releasing the deployer using Google Cloud Build
 
 We use `gcloud builds` in order to automate the release process. Cloud
 Build re-publishes the cert-manager images to your project and builds,
@@ -185,3 +178,14 @@ gcloud builds submit --timeout 1800s --config cloudbuild.yaml \
 This will also verify the application using the [Google Cloud Marketplace verification tool](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c5899a928a2ac8d5022463c82823284a9e63b177/scripts/verify).
 
 [workload-identity]: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
+
+## Updating the upstream cert-manager chart version
+
+From
+[building-deployer-helm.md](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/building-deployer-helm.md),
+bump the version of the cert-manager chart in requirements.yaml. Then:
+
+```sh
+helm repo add jetstack https://charts.jetstack.io
+helm dependency build chart/jetstacksecure-mp
+```
