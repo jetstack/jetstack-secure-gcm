@@ -154,9 +154,11 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - build
+      - -f
+      - data/Dockerfile
       - --tag
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
-      - "."
+      - "./data"
     waitFor: ["-"]
 
   - id: push-deployer
@@ -166,6 +168,25 @@ steps:
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
       - build-deployer
+
+  - id: build-smoke-test
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - "./data-test/Dockerfile"
+      - --tag
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_CERT_MANAGER_VERSION}
+      - "./data-test"
+    waitFor: ["-"]
+
+  - id: push-smoke-test
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_CERT_MANAGER_VERSION}
+    waitFor:
+      - build-smoke-test
 
   - id: gcloud-credentials
     name: gcr.io/cloud-builders/gcloud
@@ -265,3 +286,4 @@ images:
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-preflight:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION}

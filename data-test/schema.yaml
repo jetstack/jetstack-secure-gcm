@@ -1,0 +1,10 @@
+# The "mpdev verify" tool allows you to run smoke tests. The documentation
+# about how to use those smoke tests is available at:
+# https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c5899a92/docs/mpdev-references.md#smoke-test-an-application
+
+properties:
+  smokeTestImage:
+    type: string
+    default: $REGISTRY/smoke-test:$TAG
+    x-google-property:
+      type: IMAGE

@@ -1,0 +1,13 @@
+{{- if .Values.defaultPrivateCAIssuer.enable }}
+apiVersion: cas-issuer.jetstack.io/v1alpha1
+kind: GoogleCASIssuer
+metadata:
+  name: default
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    app.kubernetes.io/name: "{{ .Release.Name }}"
+spec:
+  project: "{{ .Values.defaultPrivateCAIssuer.project-id }}"
+  location: "{{ .Values.defaultPrivateCAIssuer.location }}"
+  certificateAuthorityID: my-sub-ca
+{{- end }}
