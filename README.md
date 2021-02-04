@@ -48,15 +48,15 @@ docker build --tag $REGISTRY/$APP_NAME/deployer .
 docker push $REGISTRY/$APP_NAME/deployer
 ```
 
-Finally, use `mpdev` to install jetstack-secure to the `test` namespace:
+Finally, use `mpdev` to install jetstack-secure to the `test-ns` namespace:
 
 ```sh
 # If you don't have it already, install mpdev:
 docker run gcr.io/cloud-marketplace-tools/k8s/dev cat /scripts/dev > /tmp/mpdev && install /tmp/mpdev ~/bin
 
-kubectl create ns test
+kubectl create ns test-ns
 kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/marketplace-k8s-app-tools/master/crd/app-crd.yaml
-mpdev install --deployer=$REGISTRY/$APP_NAME/deployer --parameters='{"name": "test", "namespace": "test"}'
+mpdev install --deployer=$REGISTRY/$APP_NAME/deployer --parameters='{"name": "test-ns", "namespace": "test"}'
 ```
 
 Now, we need to have access to a CAS root. To create a "root" certificate
@@ -84,8 +84,8 @@ gcloud beta privateca subordinates add-iam-policy-binding my-sub-ca \
   --member=serviceAccount:sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
 gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
   --role roles/iam.workloadIdentityUser \
-  --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[test/test-google-cas-issuer-serviceaccount-name]"
-kubectl annotate serviceaccount -n test test-google-cas-issuer-serviceaccount-name \
+  --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
+kubectl annotate serviceaccount -n test-ns test-google-cas-issuer-serviceaccount-name \
   iam.gke.io/gcp-service-account=sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
 ```
 
