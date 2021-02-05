@@ -2,8 +2,9 @@ timeout: 1800s # 30m
 substitutions:
   _CLUSTER_NAME: cluster-1
   _CLUSTER_LOCATION: europe-west2-b
-  _SOLUTION_NAME: cert-manager
   _APP_VERSION: 1.0.0
+  _TEST_CAS_CA: my-sub-ca
+  _SOLUTION_NAME: jetstack-secure
   _CERT_MANAGER_VERSION: 1.1.0
   _CAS_ISSUER_VERSION: 0.1.0
   _PREFLIGHT_VERSION: 0.1.27
@@ -125,8 +126,16 @@ steps:
     args:
       - push
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
+
+  - id: set-data-test-schema-default-values
+    name: gcr.io/cloud-marketplace-tools/k8s/dev
+    entrypoint: bash
+    args:
+      - -exc
+      - |
+        cat data-test/schema.yaml | env -i TEST_CAS_CA=$_TEST_CAS_CA CAS_PROJECT_ID=$PROJECT_ID CAS_LOCATION=$_CLUSTER_LOCATION envsubst | tee /dev/stderr > tmp && mv tmp data-test/schema.yaml
     waitFor:
-      - tag-webhook
+      - "-"
 
   - id: pull-ubbagent
     name: gcr.io/cloud-builders/docker
@@ -154,12 +163,10 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - build
-      - -f
-      - data/Dockerfile
       - --tag
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
-      - "./data"
-    waitFor: ["-"]
+      - "."
+    waitFor: ["set-data-test-schema-default-values"]
 
   - id: push-deployer
     name: gcr.io/cloud-builders/docker
@@ -174,10 +181,10 @@ steps:
     args:
       - build
       - -f
-      - "./data-test/Dockerfile"
+      - "test.Dockerfile"
       - --tag
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_CERT_MANAGER_VERSION}
-      - "./data-test"
+      - "."
     waitFor: ["-"]
 
   - id: push-smoke-test

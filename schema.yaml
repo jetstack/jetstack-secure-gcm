@@ -92,6 +92,39 @@ properties:
     type: string
     x-google-marketplace:
       type: NAMESPACE
+  defaultPrivateCAIssuer.projectId:
+    type: string
+  defaultPrivateCAIssuer.location:
+    type: string
+  defaultPrivateCAIssuer.certificateAuthorityId:
+    type: string
+  defaultPrivateCAIssuer.googleServiceAccountName:
+    type: string
+    title: Existing GCP Service Account that
+    description: The password to be used for login.
+
+  # The deployer image has to be passed to a job in order to add an
+  # annotation on the google-cas-issuer Kubernetes service account.
+  deployer.image:
+    type: string
+    x-google-marketplace:
+      type: DEPLOYER_IMAGE
+  deployer.serviceAccountName:
+    type: string
+    x-google-marketplace:
+      type: SERVICE_ACCOUNT
+      serviceAccount:
+        description: >
+          Annotates the google-cas-issuer Kubernetes serviceaccount so that the
+          cas-issuer can talk to the Google CAS API.
+        roles:
+          - type: Role
+            rulesType: CUSTOM
+            rules:
+              - apiGroups: [""]
+                resources: ["serviceaccounts"]
+                verbs: ["get", "list", "patch", "update"]
+
   cert-manager.serviceAccount.name:
     type: string
     x-google-marketplace:
@@ -369,3 +402,6 @@ properties:
 required:
   - name
   - namespace
+  - defaultPrivateCAIssuer.location
+  - defaultPrivateCAIssuer.projectId
+  - defaultPrivateCAIssuer.certificateAuthorityId

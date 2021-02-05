@@ -1,3 +1,5 @@
+# This smoke test manifest is used in the smoke-test image to run the test
+# suite. See /smoke-test/Dockerfile.
 actions:
   - name: kubectl smoke test
     bashTest:

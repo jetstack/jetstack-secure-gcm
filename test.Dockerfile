@@ -1,6 +1,10 @@
-# This image is the "smoke-test" image. It is meant to be made available to
-# "mpdev verify" and performs simple high-level tests such as "can we issue
-# a certificate using the Google CAS issuer?"
+# This image runs the smoke tests. It is meant to be made available to the
+# command:
+#
+#     mpdev verify
+#
+# This smoke test performs simple high-level check such as "can we issue a
+# certificate using the Google CAS issuer?"
 
 FROM gcr.io/cloud-marketplace-tools/testrunner:0.1.2
 
@@ -14,7 +18,7 @@ RUN mkdir -p /opt/kubectl/1.19 \
     && chmod 755 /opt/kubectl/1.19/kubectl \
     && ln -s /opt/kubectl/1.19/kubectl /usr/bin/kubectl
 
-COPY smoke-test-suite.yaml /smoke-test-suite.yaml
+COPY test-suite.yaml /test-suite.yaml
 
 WORKDIR /
-ENTRYPOINT ["testrunner", "-logtostderr", "--test_spec=/smoke-test-suite.yaml"]
+ENTRYPOINT ["testrunner", "-logtostderr", "--test_spec=/test-suite.yaml"]

@@ -25,8 +25,9 @@ google-cas-issuer:
 
 defaultPrivateCAIssuer:
   enable: true
-  project-id: placeholder-privateca-project-id
-  location: placeholder-privateca-location
+  # projectId: placeholder-privateca-project-id
+  # location: placeholder-privateca-location
+  # certificateAuthorityId: my-sub-ca
 
 preflight:
   serviceAccount:
@@ -36,6 +37,11 @@ preflight:
 
 ubbagent:
   # reportingSecretName: "some-secret-name"
-  image: {}
+  image:
+    {}
     # tag: 1.1.0
     # repository: gcr.io/jetstack-public/ubbagent
+
+deployer:
+  # image: gcr.io/jetstack-public/jetstack-secure/deployer
+  # serviceAccountName: gcp-sa-google-cas-issuer

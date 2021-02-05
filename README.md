@@ -166,7 +166,33 @@ Requirements before running `gcloud builds`:
      --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
    ```
 
-2. Go to [IAM and Admin > Permissions for
+2. A Google CAS root and subordinate CA as well as a Google service account
+   that will be "attached" to the Kubernetes service account that will be
+   created by the deployer:
+
+   ```sh
+   gcloud beta privateca roots create my-ca --subject="CN=root,O=my-ca"
+   gcloud beta privateca subordinates create my-sub-ca  --issuer=my-ca --location us-east1 --subject="CN=intermediate,O=my-ca,OU=my-sub-ca"
+   gcloud iam service-accounts create sa-google-cas-issuer
+   gcloud beta privateca subordinates add-iam-policy-binding my-sub-ca \
+     --role=roles/privateca.certificateRequester \
+     --member=serviceAccount:sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
+   gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
+     --role roles/iam.workloadIdentityUser \
+     --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
+   ```
+
+   > Note: the last step which is adding the annotation to the
+   > google-cas-issuer Kubernetes service account is done in
+   > `cloudbuild.yml`. The annotation will look like:
+   >
+   >  ```yaml
+   >  metadata:
+   >    annotations:
+   >      iam.gke.io/gcp-service-account=sa-google-cas-issuer@PROJECT_ID.iam.gserviceaccount.com
+   >  ```
+
+3. Go to [IAM and Admin > Permissions for
    project](https://console.cloud.google.com/iam-admin/iam) and configure
    the `0123456789@cloudbuild.gserviceaccount.com` service account with the
    following roles so that it has permission to deploy RBAC configuration
@@ -175,7 +201,7 @@ Requirements before running `gcloud builds`:
    - `Kubernetes Engine Admin`
    - `Storage Object Admin`
 
-3. Create a bucket that has the same name as your project. To create it,
+4. Create a bucket that has the same name as your project. To create it,
    run:
 
    ```sh

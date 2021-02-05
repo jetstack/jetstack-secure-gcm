@@ -1,5 +1,10 @@
-# The "mpdev verify" tool allows you to run smoke tests. The documentation
-# about how to use those smoke tests is available at:
+# This "smoke test" schema.yaml is an overlay on top of the main
+# /schema.yaml. It is shipped with the deployer image (in /data-test) and
+# is used by the command
+#
+#     mpdev verify
+#
+# To know more about the smoke tests:
 # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c5899a92/docs/mpdev-references.md#smoke-test-an-application
 
 properties:
@@ -8,3 +13,12 @@ properties:
     default: $REGISTRY/smoke-test:$TAG
     x-google-property:
       type: IMAGE
+  defaultPrivateCAIssuer.projectId:
+    type: string
+    default: $CAS_PROJECT_ID
+  defaultPrivateCAIssuer.location:
+    type: string
+    default: $CAS_LOCATION
+  defaultPrivateCAIssuer.certificateAuthorityId:
+    type: string
+    default: $TEST_CAS_CA
