@@ -7,7 +7,9 @@ metadata:
   annotations:
     marketplace.cloud.google.com/verification: test
 spec:
-  serviceAccountName: "{{ .Values.cert-manager.serviceAccount.name }}"
+  # Helm does not cope well with keys that contain a dash.
+  # https://github.com/helm/helm/issues/2192#issuecomment-293739257
+  serviceAccountName: "{{ index .Values "cert-manager" "serviceAccount" "name" }}"
   containers:
     - name: smoke-test
       image: "{{ .Values.smokeTestImage }}"

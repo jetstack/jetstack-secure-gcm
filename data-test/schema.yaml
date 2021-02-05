@@ -10,7 +10,8 @@
 properties:
   smokeTestImage:
     type: string
-    default: $REGISTRY/smoke-test:$TAG
+    # These variables are envsubt'ed in cloudbuild.yml
+    default: $IMAGE
     x-google-property:
       type: IMAGE
   defaultPrivateCAIssuer.projectId:
