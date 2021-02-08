@@ -3,11 +3,11 @@
 
 **Content:**
 
-- [Installing and testing manually the deployer](#installing-and-testing-manually-the-deployer)
+- [Installing and manually testing the deployer](#installing-and-manually-testing-the-deployer)
 - [Testing and releasing the deployer using Google Cloud Build](#testing-and-releasing-the-deployer-using-google-cloud-build)
 - [Updating the upstream cert-manager chart version](#updating-the-upstream-cert-manager-chart-version)
 
-## Installing and testing manually the deployer
+## Installing and manually testing the deployer
 
 In order to have the google-cas-issuer working, we need to enable [workload
 identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity).
@@ -142,8 +142,10 @@ tests and pushs the deployer image.
 
 Requirements before running `gcloud builds`:
 
-1. a GCP account with [workload-identity][] enabled. To create a project
-   with workload identity enabled, you can run:
+1. a GCP account with
+   [workload-identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
+   enabled. To create a project with workload identity enabled, you can
+   run:
 
    ```sh
    export GKE_CLUSTER_NAME=foo
@@ -176,8 +178,6 @@ gcloud builds submit --timeout 1800s --config cloudbuild.yaml \
 ```
 
 This will also verify the application using the [Google Cloud Marketplace verification tool](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c5899a928a2ac8d5022463c82823284a9e63b177/scripts/verify).
-
-[workload-identity]: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
 
 ## Updating the upstream cert-manager chart version
 
