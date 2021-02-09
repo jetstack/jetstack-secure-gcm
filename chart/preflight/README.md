@@ -1,6 +1,10 @@
 # Preflight Agent
 
-You can install the Preflight agent using Helm, as follows:
+This chart is designed to be installed as a dependency of the `jetstacksecure-mp` chart.
+
+It may eventually be moved to the [public Preflight Agent Repository](https://github.com/jetstack/preflight).
+
+For testing purposes, you can install the Preflight agent using Helm, as follows:
 
 ```
 helm install \
