@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "preflight.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app.kubernetes.io/name: agent
