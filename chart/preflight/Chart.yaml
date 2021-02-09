@@ -1,0 +1,18 @@
+apiVersion: "v2"
+name: "preflight"
+version: "0.1.0"
+kubeVersion: ">= 1.16.0"
+description: "Install the Preflight Agent"
+type: "application"
+keywords:
+  - "preflight"
+  - "jetstack"
+home: "https://platform.jetstack.io/"
+sources:
+  - "https://github.com/jetstack/preflight"
+maintainers:
+  - name: "Jetstack Ltd"
+    email: "hello@jetstack.io"
+    url: "https://www.jetstack.io/"
+icon: "https://platform.jetstack.io/logo_icon.png"
+appVersion: "0.1.27"

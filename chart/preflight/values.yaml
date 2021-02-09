@@ -1,0 +1,22 @@
+replicaCount: 1
+
+image:
+  repository: quay.io/jetstack/preflight
+
+serviceAccount:
+  create: false
+  name: agent
+  annotations: {}
+
+rbac:
+  create: false
+
+podAnnotations: {}
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 200Mi
+  requests:
+    cpu: 200m
+    memory: 200Mi
