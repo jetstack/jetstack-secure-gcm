@@ -1,4 +1,8 @@
 image:
   repository: quay.io/jetstack/preflight
 
+
+rbac:
+  create: false
+
 podAnnotations: {}
