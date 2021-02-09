@@ -1,6 +1,8 @@
 image:
   repository: quay.io/jetstack/preflight
 
+serviceAccount:
+  create: false
 
 rbac:
   create: false
