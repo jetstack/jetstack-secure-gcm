@@ -46,9 +46,4 @@ spec:
           mountPath: "/etc/jetstack-secure/agent/credentials"
           readOnly: true
         resources:
-          requests:
-            memory: "200Mi"
-            cpu: "200m"
-          limits:
-            memory: "200Mi"
-            cpu: "200m"
+          {{- toYaml .Values.resources | nindent 10 }}
