@@ -3,6 +3,8 @@ image:
 
 serviceAccount:
   create: false
+  name: agent
+  annotations: {}
 
 rbac:
   create: false

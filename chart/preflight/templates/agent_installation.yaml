@@ -19,7 +19,7 @@ spec:
       labels:
         {{- include "preflight.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: agent
+      serviceAccountName: {{ include "preflight.serviceAccountName" . }}
       volumes:
       - name: config
         configMap:
