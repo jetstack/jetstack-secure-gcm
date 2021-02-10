@@ -56,6 +56,12 @@ x-google-marketplace:
           type: REPO_WITH_REGISTRY
         preflight.image.tag:
           type: TAG
+    ubbagent:
+      properties:
+        ubbagent.image.repository:
+          type: REPO_WITH_REGISTRY
+        ubbagent.image.tag:
+          type: TAG
 
   # Allow the deployer to create CRDs and webhook configurations
   # See https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md#deployerserviceaccount
@@ -353,6 +359,12 @@ properties:
                 - validatingwebhookconfigurations
                 - mutatingwebhookconfigurations
                 verbs: ["get", "list"]
+
+  # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/64181be/docs/billing-integration.md
+  ubbagent.reportingSecretName:
+    type: string
+    x-google-marketplace:
+      type: REPORTING_SECRET
 
 required:
   - name
