@@ -3,8 +3,34 @@ substitutions:
   _CLUSTER_NAME: cluster-1
   _CLUSTER_LOCATION: europe-west2-b
   _SOLUTION_NAME: cert-manager
+  _APP_VERSION: 1.0.0
   _CERT_MANAGER_VERSION: 1.1.0
+  _CAS_ISSUER_VERSION: 0.1.0
 steps:
+  - id: pull-cas-issuer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - pull
+      - quay.io/jetstack/cert-manager-google-cas-issuer:${_CAS_ISSUER_VERSION}
+    waitFor: ["-"]
+
+  - id: tag-cas-issuer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - quay.io/jetstack/cert-manager-google-cas-issuer:${_CAS_ISSUER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_APP_VERSION}
+    waitFor:
+      - pull-cas-issuer
+
+  - id: push-cas-issuer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_APP_VERSION}
+    waitFor:
+      - tag-cas-issuer
+
   - id: pull-controller
     name: gcr.io/cloud-builders/docker
     args:
@@ -31,7 +57,7 @@ steps:
     args:
       - tag
       - quay.io/jetstack/cert-manager-controller:v${_CERT_MANAGER_VERSION}
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_APP_VERSION}
     waitFor:
       - pull-controller
 
@@ -40,7 +66,7 @@ steps:
     args:
       - tag
       - quay.io/jetstack/cert-manager-cainjector:v${_CERT_MANAGER_VERSION}
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_APP_VERSION}
     waitFor:
       - pull-cainjector
 
@@ -49,24 +75,15 @@ steps:
     args:
       - tag
       - quay.io/jetstack/cert-manager-webhook:v${_CERT_MANAGER_VERSION}
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
     waitFor:
       - pull-webhook
-
-  - id: build-deployer
-    name: gcr.io/cloud-builders/docker
-    args:
-      - build
-      - --tag
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
-      - "."
-    waitFor: ["-"]
 
   - id: push-controller
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_APP_VERSION}
     waitFor:
       - tag-controller
 
@@ -74,7 +91,7 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_APP_VERSION}
     waitFor:
       - tag-cainjector
 
@@ -82,15 +99,24 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
     waitFor:
       - tag-webhook
+
+  - id: build-deployer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+      - "."
+    waitFor: ["-"]
 
   - id: push-deployer
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
       - build-deployer
 
@@ -127,8 +153,8 @@ steps:
       - sh
       - -c
       - |
-        cat /scripts/dev > "/workspace/cmpt"
-        chmod +x /workspace/cmpt
+        cat /scripts/dev > "/workspace/mpdev"
+        chmod +x /workspace/mpdev
     waitFor: ["-"]
 
   - id: check-cloud-marketplace-tools
@@ -140,7 +166,7 @@ steps:
       # https://cloud.google.com/cloud-build/docs/overview#build_configuration_and_build_steps
       - "EXTRA_DOCKER_PARAMS=--net cloudbuild"
     args:
-      - ./cmpt
+      - ./mpdev
       - doctor
     waitFor:
       - gcloud-credentials
@@ -156,15 +182,16 @@ steps:
       # https://cloud.google.com/cloud-build/docs/overview#build_configuration_and_build_steps
       - "EXTRA_DOCKER_PARAMS=--net cloudbuild"
     args:
-      - ./cmpt
+      - ./mpdev
       - verify
-      - --deployer=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
+      - --deployer=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
       - check-cloud-marketplace-tools
       - push-deployer
       - push-controller
       - push-cainjector
       - push-webhook
+      - push-cas-issuer
 
   - id: publish
     name: gcr.io/cloud-marketplace-tools/k8s/dev
@@ -173,15 +200,16 @@ steps:
       - "GCLOUD_CONFIG=/workspace/.config/gcloud"
       - "EXTRA_DOCKER_PARAMS=--net cloudbuild"
     args:
-      - ./cmpt
+      - ./mpdev
       - publish
       - --gcs_repo=gs://$PROJECT_ID
-      - --deployer_image=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
+      - --deployer_image=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
       - verify
 
 images:
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_CERT_MANAGER_VERSION}
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_CERT_MANAGER_VERSION}
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_CERT_MANAGER_VERSION}
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}

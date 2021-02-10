@@ -8,11 +8,11 @@ metadata:
   labels:
     app.kubernetes.io/name: "{{ .Release.Name }}"
   annotations:
-    marketplace.cloud.google.com/deploy-info: '{"partner_id": "partner", "product_id": "jetstack-secure-platform", "partner_name": "Jetstack"}'
+    marketplace.cloud.google.com/deploy-info: '{"partner_id": "partner", "product_id": "jetstack-secure", "partner_name": "Jetstack"}'
 spec:
   descriptor:
     type: Jetstack Secure Platform
-    version: "1.1.0"
+    version: "1.0.0"
   selector:
     matchLabels:
       app.kubernetes.io/name: "{{ .Release.Name }}"
