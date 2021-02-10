@@ -143,10 +143,10 @@ tests and pushs the deployer image.
 
 Requirements before running `gcloud builds`:
 
-1. a GCP account with
+1. You need a GKE cluster with
    [workload-identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
-   enabled. To create a project with workload identity enabled, you can
-   run:
+   enabled. You can either update your existing cluster or create a new
+   cluster with workload identity enabled with this command:
 
    ```sh
    export GKE_CLUSTER_NAME=foo
