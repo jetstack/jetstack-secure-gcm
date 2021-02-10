@@ -140,7 +140,7 @@ steps:
       # https://cloud.google.com/cloud-build/docs/overview#build_configuration_and_build_steps
       - "EXTRA_DOCKER_PARAMS=--net cloudbuild"
     args:
-      - ./cmpt
+      - ./mpdev
       - doctor
     waitFor:
       - gcloud-credentials
@@ -156,7 +156,7 @@ steps:
       # https://cloud.google.com/cloud-build/docs/overview#build_configuration_and_build_steps
       - "EXTRA_DOCKER_PARAMS=--net cloudbuild"
     args:
-      - ./cmpt
+      - ./mpdev
       - verify
       - --deployer=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
     waitFor:
@@ -173,7 +173,7 @@ steps:
       - "GCLOUD_CONFIG=/workspace/.config/gcloud"
       - "EXTRA_DOCKER_PARAMS=--net cloudbuild"
     args:
-      - ./cmpt
+      - ./mpdev
       - publish
       - --gcs_repo=gs://$PROJECT_ID
       - --deployer_image=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
