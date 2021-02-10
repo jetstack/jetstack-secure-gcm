@@ -4,7 +4,32 @@ substitutions:
   _CLUSTER_LOCATION: europe-west2-b
   _SOLUTION_NAME: cert-manager
   _CERT_MANAGER_VERSION: 1.1.0
+  _CAS_ISSUER_VERSION: 0.1.0
 steps:
+  - id: pull-cas-issuer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - pull
+      - quay.io/jetstack/cert-manager-google-cas-issuer:${_CAS_ISSUER_VERSION}
+    waitFor: ["-"]
+
+  - id: tag-cas-issuer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - quay.io/jetstack/cert-manager-google-cas-issuer:${_CAS_ISSUER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_CAS_ISSUER_VERSION}
+    waitFor:
+      - pull-cas-issuer
+
+  - id: push-cas-issuer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_CAS_ISSUER_VERSION}
+    waitFor:
+      - tag-cas-issuer
+
   - id: pull-controller
     name: gcr.io/cloud-builders/docker
     args:
@@ -165,6 +190,7 @@ steps:
       - push-controller
       - push-cainjector
       - push-webhook
+      - push-cas-issuer
 
   - id: publish
     name: gcr.io/cloud-marketplace-tools/k8s/dev
@@ -184,4 +210,5 @@ images:
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_CERT_MANAGER_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_CERT_MANAGER_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_CERT_MANAGER_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_CAS_ISSUER_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_CERT_MANAGER_VERSION}
