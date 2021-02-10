@@ -33,20 +33,23 @@ x-google-marketplace:
         cert-manager.image.tag:
           type: TAG
     cert-manager-webhook:
-      cert-manager.webhook.image.repository:
-        type: REPO_WITH_REGISTRY
-      cert-manager.webhook.image.tag:
-        type: TAG
+      properties:
+        cert-manager.webhook.image.repository:
+          type: REPO_WITH_REGISTRY
+        cert-manager.webhook.image.tag:
+          type: TAG
     cert-manager-cainjector:
-      cert-manager.cainjector.image.repository:
-        type: REPO_WITH_REGISTRY
-      cert-manager.cainjector.image.tag:
-        type: TAG
+      properties:
+        cert-manager.cainjector.image.repository:
+          type: REPO_WITH_REGISTRY
+        cert-manager.cainjector.image.tag:
+          type: TAG
     cert-manager-google-cas-issuer:
-      google-cas-issuer.image.repository:
-        type: REPO_WITH_REGISTRY
-      google-cas-issuer.image.tag:
-        type: TAG
+      properties:
+        google-cas-issuer.image.repository:
+          type: REPO_WITH_REGISTRY
+        google-cas-issuer.image.tag:
+          type: TAG
 
   # Allow the deployer to create CRDs and webhook configurations
   # See https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md#deployerserviceaccount
