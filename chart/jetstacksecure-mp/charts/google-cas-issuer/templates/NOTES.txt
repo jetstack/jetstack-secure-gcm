@@ -23,8 +23,8 @@ To finish the installation, please follow these steps:
      --member=serviceAccount:sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
    gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
      --role roles/iam.workloadIdentityUser \
-     --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[{{ .Release.Namespace }}/{{ .Values serviceAccount.name }}]"
-   kubectl annotate serviceaccount -n {{ .Release.Namespace }} {{ .Values serviceAccount.name }} \
+     --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[{{ .Release.Namespace }}/{{ .Values.serviceAccount.name }}]"
+   kubectl annotate serviceaccount -n {{ .Release.Namespace }} {{ .Values.serviceAccount.name }} \
      iam.gke.io/gcp-service-account=sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
 
 4. Finally, you can create your GoogleCASIssuer and a Certificate:
