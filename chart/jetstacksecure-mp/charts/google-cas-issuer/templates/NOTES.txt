@@ -1,0 +1,61 @@
+The Google CAS issuer for cert-manager is now installed.
+
+To finish the installation, please follow these steps:
+
+
+1. Make sure your cluster has the "workload identity" feature turned on. If\
+   you are not sure, you can try enabling it with:
+
+   gcloud container clusters update CLUSTER_NAME --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
+
+2. Make sure to have a Google CAS root or subordinate CA created. For example,
+   you can create one with:
+
+   gcloud config set privateca/location us-east1
+   gcloud beta privateca roots create my-ca --subject="CN=my-ca,O=my-org"
+
+3. Create a GCP service account and bind it to the Kubernetes service account
+   that was deployed in this Helm release:
+
+   gcloud iam service-accounts create sa-google-cas-issuer
+   gcloud beta privateca subordinates add-iam-policy-binding my-ca \
+     --role=roles/privateca.certificateRequester \
+     --member=serviceAccount:sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
+   gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
+     --role roles/iam.workloadIdentityUser \
+     --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[{{ .Release.Namespace }}/{{ .Values serviceAccount.name }}]"
+   kubectl annotate serviceaccount -n {{ .Release.Namespace }} {{ .Values serviceAccount.name }} \
+     iam.gke.io/gcp-service-account=sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
+
+4. Finally, you can create your GoogleCASIssuer and a Certificate:
+
+   cat <<EOF | tee /dev/stderr | kubectl apply -f -
+   apiVersion: cas-issuer.jetstack.io/v1alpha1
+   kind: GoogleCASIssuer
+   metadata:
+     name: googlecasissuer
+   spec:
+     project: $(gcloud config get-value project | tr ':' '/')
+     location: $(gcloud config get-value privateca/location | tr ':' '/')
+     certificateAuthorityID: my-ca
+   ---
+   apiVersion: cert-manager.io/v1
+   kind: Certificate
+   metadata:
+     name: demo-certificate
+   spec:
+     secretName: demo-cert-tls
+     commonName: cert-manager.io.demo
+     dnsNames:
+       - cert-manager.io
+     duration: 24h
+     renewBefore: 8h
+     issuerRef:
+       group: cas-issuer.jetstack.io
+       kind: GoogleCASIssuer
+       name: googlecasissuer
+   EOF
+
+5. Finally, check that the Certificate has been issued properly:
+
+   kubectl describe demo-certificate

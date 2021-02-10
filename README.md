@@ -64,6 +64,7 @@ authority as well as an intermediate certificate authority ("subordinate")
 in your current Google project, run:
 
 ```sh
+gcloud config set privateca/location us-east1
 gcloud beta privateca roots create my-ca --subject="CN=root,O=my-ca"
 gcloud beta privateca subordinates create my-sub-ca  --issuer=my-ca --location us-east1 --subject="CN=intermediate,O=my-ca,OU=my-sub-ca"
 ```
