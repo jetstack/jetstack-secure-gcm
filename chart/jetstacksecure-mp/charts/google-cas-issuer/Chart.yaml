@@ -1,5 +1,17 @@
-apiVersion: v2
-engine: gotpl
-name: google-cas-issuer
-version: 0.1.0
-appVersion: 0.1.0
+apiVersion: "v2"
+name: "google-cas-issuer"
+version: "1.0.0"
+kubeVersion: ">= 1.16.0"
+description: "Install the cert-manager Google CAS issuer"
+type: "application"
+keywords:
+  - "google-cas"
+  - "google-private-ca"
+home: "https://github.com/jetstack/google-cas-issuer"
+sources:
+  - "https://github.com/jetstack/google-cas-issuer"
+maintainers:
+  - name: "Jetstack Ltd"
+    email: "hello@jetstack.io"
+    url: "https://www.jetstack.io/"
+appVersion: "0.1.0"
