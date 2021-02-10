@@ -10,3 +10,6 @@ dependencies:
   - name: google-cas-issuer
     appVersion: 0.1.0
     repository: ./charts/google-cas-issuer
+  - name: preflight
+    appVersion: 0.1.27
+    repository: ../preflight

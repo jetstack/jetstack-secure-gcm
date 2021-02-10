@@ -22,3 +22,9 @@ google-cas-issuer:
   installCRDs: true
   serviceAccount:
     create: false # see note (1)
+
+preflight:
+  serviceAccount:
+    create: false # see note (1)
+  rbac:
+    create: false # see note (1)

@@ -27,19 +27,22 @@ docker pull quay.io/jetstack/cert-manager-controller:v1.1.0
 docker pull quay.io/jetstack/cert-manager-cainjector:v1.1.0
 docker pull quay.io/jetstack/cert-manager-webhook:v1.1.0
 docker pull quay.io/jetstack/cert-manager-google-cas-issuer:0.1.0
-docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-controller:1.1.0
-docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-cainjector:1.1.0
-docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-webhook:1.1.0
-docker tag quay.io/jetstack/cert-manager-google-cas-issuer:latest $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:0.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-controller:1.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-cainjector:1.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-webhook:1.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:0.1.0
+docker pull quay.io/jetstack/preflight:0.1.27
+docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-controller:1.0.0
+docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-cainjector:1.0.0
+docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-webhook:1.0.0
+docker tag quay.io/jetstack/cert-manager-google-cas-issuer:latest $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:1.0.0
+docker tag quay.io/jetstack/preflight:latest $REGISTRY/$APP_NAME/cert-manager-preflight:1.0.0
+docker push $REGISTRY/$APP_NAME/cert-manager-controller:1.0.0
+docker push $REGISTRY/$APP_NAME/cert-manager-cainjector:1.0.0
+docker push $REGISTRY/$APP_NAME/cert-manager-webhook:1.0.0
+docker push $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:1.0.0
+docker push $REGISTRY/$APP_NAME/cert-manager-preflight:1.0.0
 ```
 
-> Note: although cert-manager's tags are of the form "v1.1.0", we chose to
-> use tags of the form "1.1.0" for the Google Marketplace for the sake of
-> consistency.
+> Note: although cert-manager's tags are of the form "v1.1.0", we 
+> use the same JSP version tag for all the Google Marketplace images, 
+> for consistency with other marketplace packages.
 
 Then, build and push the deployer image:
 
