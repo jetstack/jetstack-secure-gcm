@@ -18,6 +18,14 @@ gcloud container clusters create foo --region us-east1 --num-nodes=1 --preemptib
   --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
 ```
 
+This application re-tags the various images (cert-manager, cas-issuer, ubbagent, preflight-agent) using
+a unified tag that we call "application version". Although it does not appear to be a requirement for
+releasing to the Google Marketplace, we were not able to set "default" tags for each image and thus
+resolved to just having a unified tag; this means that we will have to keep this difference in tags when
+supporting [jetstack-secure-for-cert-manager][].
+
+[jetstack-secure-for-cert-manager]: https://console.cloud.google.com/partner/editor/jetstack-public/jetstack-secure-for-cert-manager?project=jetstack-public
+
 Re-publish the images to the project:
 
 ```sh
