@@ -14,6 +14,9 @@ properties:
     default: $IMAGE
     x-google-property:
       type: IMAGE
+  smokeTestJsonKey:
+    type: string
+    default: $TEST_JSON_KEY
   defaultPrivateCAIssuer.projectId:
     type: string
     default: $CAS_PROJECT_ID

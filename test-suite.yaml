@@ -7,6 +7,20 @@ actions:
       expect:
         exitCode:
           equals: 0
+  - name: gcloud smoke test
+    bashTest:
+      script: gcloud version
+      expect:
+        exitCode:
+          equals: 0
+  - name: gcloud smoke test
+    bashTest:
+      script: |
+         export GOOGLE_APPLICATION_CREDENTIALS=/etc/credentials.json
+         gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
+           --role roles/iam.workloadIdentityUser \
+           --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
+
   - name: Create test issuer and self signed cert
     bashTest:
       script: |
