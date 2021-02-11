@@ -103,6 +103,31 @@ steps:
     waitFor:
       - tag-webhook
 
+
+  - id: clone-ubbagent
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -exc
+      - git clone https://github.com/GoogleCloudPlatform/ubbagent --branch 0.0.1
+    waitFor: ["-"]
+
+  - id: build-ubbagent
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --tag
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
+      - "./ubbagent"
+    waitFor: ["clone-ubbagent"]
+
+  - id: push-ubbagent
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
+    waitFor: ["build-ubbagent"]
+
   - id: build-deployer
     name: gcr.io/cloud-builders/docker
     args:
@@ -192,6 +217,7 @@ steps:
       - push-cainjector
       - push-webhook
       - push-cas-issuer
+      - push-ubbagent
 
   - id: publish
     name: gcr.io/cloud-marketplace-tools/k8s/dev
@@ -213,3 +239,4 @@ images:
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
