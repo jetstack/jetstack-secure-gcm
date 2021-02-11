@@ -117,7 +117,7 @@ steps:
     args:
       - build
       - --tag
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
       - "./ubbagent"
     waitFor: ["clone-ubbagent"]
 
@@ -125,7 +125,7 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
     waitFor: ["build-ubbagent"]
 
   - id: build-deployer
