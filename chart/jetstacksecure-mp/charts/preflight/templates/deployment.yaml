@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent
+  name: {{ include "preflight.fullname" . }}
   labels:
     {{- include "preflight.labels" . | nindent 4 }}
 spec:
@@ -28,7 +28,7 @@ spec:
         secret:
           secretName: agent-credentials
       containers:
-      - name: agent
+      - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:v{{ .Chart.AppVersion }}"
         args:
         - "agent"

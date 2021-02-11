@@ -6,7 +6,32 @@ substitutions:
   _APP_VERSION: 1.0.0
   _CERT_MANAGER_VERSION: 1.1.0
   _CAS_ISSUER_VERSION: 0.1.0
+  _PREFLIGHT_VERSION: 0.1.27
 steps:
+  - id: pull-preflight
+    name: gcr.io/cloud-builders/docker
+    args:
+      - pull
+      - quay.io/jetstack/preflight:v${_PREFLIGHT_VERSION}
+    waitFor: ["-"]
+
+  - id: tag-preflight
+    name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - quay.io/jetstack/preflight:v${_PREFLIGHT_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-preflight:${_APP_VERSION}
+    waitFor:
+      - pull-preflight
+
+  - id: push-preflight
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-preflight:${_APP_VERSION}
+    waitFor:
+      - tag-preflight
+
   - id: pull-cas-issuer
     name: gcr.io/cloud-builders/docker
     args:
@@ -217,6 +242,7 @@ steps:
       - push-cainjector
       - push-webhook
       - push-cas-issuer
+      - push-preflight
       - push-ubbagent
 
   - id: publish
@@ -238,5 +264,6 @@ images:
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-preflight:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}

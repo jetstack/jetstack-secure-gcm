@@ -18,6 +18,14 @@ gcloud container clusters create foo --region us-east1 --num-nodes=1 --preemptib
   --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
 ```
 
+This application re-tags the various images (cert-manager, cas-issuer, ubbagent, preflight-agent) using
+a unified tag that we call "application version". Although it does not appear to be a requirement for
+releasing to the Google Marketplace, we were not able to set "default" tags for each image and thus
+resolved to just having a unified tag; this means that we will have to keep this difference in tags when
+supporting [jetstack-secure-for-cert-manager][].
+
+[jetstack-secure-for-cert-manager]: https://console.cloud.google.com/partner/editor/jetstack-public/jetstack-secure-for-cert-manager?project=jetstack-public
+
 Re-publish the images to the project:
 
 ```sh
@@ -27,19 +35,22 @@ docker pull quay.io/jetstack/cert-manager-controller:v1.1.0
 docker pull quay.io/jetstack/cert-manager-cainjector:v1.1.0
 docker pull quay.io/jetstack/cert-manager-webhook:v1.1.0
 docker pull quay.io/jetstack/cert-manager-google-cas-issuer:0.1.0
-docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-controller:1.1.0
-docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-cainjector:1.1.0
-docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-webhook:1.1.0
-docker tag quay.io/jetstack/cert-manager-google-cas-issuer:latest $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:0.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-controller:1.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-cainjector:1.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-webhook:1.1.0
-docker push $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:0.1.0
+docker pull quay.io/jetstack/preflight:0.1.27
+docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-controller:1.0.0
+docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-cainjector:1.0.0
+docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-webhook:1.0.0
+docker tag quay.io/jetstack/cert-manager-google-cas-issuer:latest $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:1.0.0
+docker tag quay.io/jetstack/preflight:latest $REGISTRY/$APP_NAME/cert-manager-preflight:1.0.0
+docker push $REGISTRY/$APP_NAME/cert-manager-controller:1.0.0
+docker push $REGISTRY/$APP_NAME/cert-manager-cainjector:1.0.0
+docker push $REGISTRY/$APP_NAME/cert-manager-webhook:1.0.0
+docker push $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:1.0.0
+docker push $REGISTRY/$APP_NAME/cert-manager-preflight:1.0.0
 ```
 
-> Note: although cert-manager's tags are of the form "v1.1.0", we chose to
-> use tags of the form "1.1.0" for the Google Marketplace for the sake of
-> consistency.
+> Note: although cert-manager's tags are of the form "v1.1.0", we 
+> use the same JSP version tag for all the Google Marketplace images, 
+> for consistency with other marketplace packages.
 
 Then, build and push the deployer image:
 

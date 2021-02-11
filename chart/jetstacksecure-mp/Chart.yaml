@@ -1,3 +1,8 @@
+# The appVersion below are overridden by the `publishedVersion` that is set in
+# `schema.yaml`. Changing the below version will not change the actual versions
+# being pulled when the application is deployed from the Google Marketplace.
+# Instead, you should update the image tags that are being re-tagged in
+# `cloudbuild.yml`.
 apiVersion: v2
 engine: gotpl
 name: jetstacksecure-mp
@@ -10,3 +15,7 @@ dependencies:
   - name: google-cas-issuer
     appVersion: 0.1.0
     repository: ./charts/google-cas-issuer
+  - name: preflight
+    version: 0.1.0
+    appVersion: 0.1.27
+    repository: ./charts/preflight
