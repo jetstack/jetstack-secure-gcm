@@ -217,6 +217,7 @@ steps:
       - push-cainjector
       - push-webhook
       - push-cas-issuer
+      - push-ubbagent
 
   - id: publish
     name: gcr.io/cloud-marketplace-tools/k8s/dev
