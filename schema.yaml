@@ -338,26 +338,26 @@ properties:
             rules:
               - apiGroups: ["cert-manager.io"]
                 resources:
-                - certificates
-                - certificaterequests
-                - issuers
-                - clusterissuers
+                  - certificates
+                  - certificaterequests
+                  - issuers
+                  - clusterissuers
                 verbs: ["get", "list"]
           - type: ClusterRole
             rulesType: CUSTOM
             rules:
               - apiGroups: ["cas-issuer.jetstack.io"]
                 resources:
-                - googlecasissuers
-                - googlecasclusterissuers
+                  - googlecasissuers
+                  - googlecasclusterissuers
                 verbs: ["get", "list"]
           - type: ClusterRole
             rulesType: CUSTOM
             rules:
               - apiGroups: ["admissionregistration.k8s.io"]
                 resources:
-                - validatingwebhookconfigurations
-                - mutatingwebhookconfigurations
+                  - validatingwebhookconfigurations
+                  - mutatingwebhookconfigurations
                 verbs: ["get", "list"]
 
   # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/64181be/docs/billing-integration.md
