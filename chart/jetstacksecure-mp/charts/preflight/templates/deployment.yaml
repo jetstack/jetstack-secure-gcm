@@ -29,7 +29,7 @@ spec:
           secretName: agent-credentials
       containers:
       - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:v{{ .Chart.AppVersion }}"
+        image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
         args:
         - "agent"
         - "-c"
