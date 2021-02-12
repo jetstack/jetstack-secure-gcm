@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: ubbagent
-          image: imageUbbagent
+          image: "{{ .Values.ubbagent.image.repository }}:{{ .Values.ubbagent.image.tag }}"
           env:
             - name: AGENT_CONFIG_FILE
               value: "/etc/ubbagent/config.yaml"
