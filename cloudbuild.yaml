@@ -3,8 +3,7 @@ substitutions:
   _CLUSTER_NAME: cluster-1
   _CLUSTER_LOCATION: europe-west2-b
   _APP_VERSION: 1.0.0
-  _TEST_CAS_CA: my-sub-ca
-  _SOLUTION_NAME: jetstack-secure
+  _SOLUTION_NAME: jetstack-secure-for-cert-manager
   _CERT_MANAGER_VERSION: 1.1.0
   _CAS_ISSUER_VERSION: 0.1.0
   _PREFLIGHT_VERSION: 0.1.27
