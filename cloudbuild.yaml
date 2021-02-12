@@ -128,7 +128,6 @@ steps:
     waitFor:
       - tag-webhook
 
-
   - id: clone-ubbagent
     name: gcr.io/cloud-builders/gcloud
     entrypoint: bash
@@ -234,6 +233,7 @@ steps:
     args:
       - ./mpdev
       - verify
+      - --wait_timeout=99999999
       - --deployer=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
       - check-cloud-marketplace-tools
