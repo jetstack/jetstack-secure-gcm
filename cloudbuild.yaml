@@ -249,6 +249,27 @@ steps:
       - install-cloud-marketplace-tools
       - install-app-crds
 
+  - id: kubectl-logs-deployer
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -exc
+      - |
+        while : ; do kubectl get ns -oname | grep apptest- && break; sleep 10; done
+        ns=$(kubectl get ns -oname  | grep apptest- | cut -d/ -f2)
+        while : ; do kubectl -n "$ns" get pods -oname | grep "apptest-.*-deployer" && break; sleep 10; done
+        pod=$(kubectl -n "$ns" get pods -oname | grep "apptest-.*-deployer" | cut -d/ -f2)
+        kubectl logs -n "$ns" $pod -f --tail=-1
+    waitFor:
+      - check-cloud-marketplace-tools
+      - push-deployer
+      - push-controller
+      - push-cainjector
+      - push-webhook
+      - push-cas-issuer
+      - push-preflight
+      - push-ubbagent
+
   - id: verify
     name: gcr.io/cloud-marketplace-tools/k8s/dev
     env:

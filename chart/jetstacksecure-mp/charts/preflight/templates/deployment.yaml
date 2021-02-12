@@ -1,4 +1,4 @@
-{{ if "disabled-for-now-due-to-missing-configmap" }}
+{{ if not "disabled-for-now-due-to-missing-configmap" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
