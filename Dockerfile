@@ -1,6 +1,6 @@
 # This Dockerfile allows us to create a "deployer" image. The deployer
 # image, using this "ombuild" base image, will contain our Marketplace
-# application's Helm chart and will in charge of doing the "helm install"
+# application's Helm chart and will be in charge of doing the "helm install"
 # (which is the only thing the deployer image ever does).
 #
 # See:
