@@ -41,6 +41,12 @@ x-google-marketplace:
           type: REPO_WITH_REGISTRY
         cert-manager.webhook.image.tag:
           type: TAG
+    cert-manager-acmesolver:
+      properties:
+        cert-manager.acmesolver.image.repository:
+          type: REPO_WITH_REGISTRY
+        cert-manager.webhook.image.tag:
+          type: TAG
     cert-manager-cainjector:
       properties:
         cert-manager.cainjector.image.repository:
@@ -53,7 +59,7 @@ x-google-marketplace:
           type: REPO_WITH_REGISTRY
         google-cas-issuer.image.tag:
           type: TAG
-    cert-manager-preflight:
+    preflight:
       properties:
         preflight.image.repository:
           type: REPO_WITH_REGISTRY
