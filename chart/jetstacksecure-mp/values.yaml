@@ -41,7 +41,3 @@ ubbagent:
     {}
     # tag: 1.1.0
     # repository: gcr.io/jetstack-public/ubbagent
-
-deployer:
-  # image: gcr.io/jetstack-public/jetstack-secure/deployer
-  # serviceAccountName: gcp-sa-google-cas-issuer

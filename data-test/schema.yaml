@@ -10,19 +10,7 @@
 properties:
   smokeTestImage:
     type: string
-    # These variables are envsubt'ed in cloudbuild.yml
+    # These variables are envsubt'd in cloudbuild.yml
     default: $IMAGE
     x-google-property:
       type: IMAGE
-  smokeTestJsonKey:
-    type: string
-    default: $TEST_JSON_KEY
-  defaultPrivateCAIssuer.projectId:
-    type: string
-    default: $CAS_PROJECT_ID
-  defaultPrivateCAIssuer.location:
-    type: string
-    default: $CAS_LOCATION
-  defaultPrivateCAIssuer.certificateAuthorityId:
-    type: string
-    default: $TEST_CAS_CA

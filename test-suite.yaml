@@ -13,14 +13,6 @@ actions:
       expect:
         exitCode:
           equals: 0
-  - name: gcloud smoke test
-    bashTest:
-      script: |
-         export GOOGLE_APPLICATION_CREDENTIALS=/etc/credentials.json
-         gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
-           --role roles/iam.workloadIdentityUser \
-           --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
-
   - name: Create test issuer and self signed cert
     bashTest:
       script: |
@@ -90,35 +82,3 @@ actions:
       expect:
         exitCode:
           equals: 0
-  - name: Create a certificate using the googlecasissuer bundled with the Jetstack Secure Marketplace application
-    bashTest:
-      script: |
-        kubectl apply --namespace ${NAMESPACE} -f - <<EOF
-        apiVersion: cert-manager.io/v1
-        kind: Certificate
-        metadata:
-          name: demo-certificate
-        spec:
-          secretName: google-cas-cert-tls
-          commonName: cert-manager.io.demo
-          dnsNames:
-            - cert-manager.io
-          duration: 24h
-          renewBefore: 8h
-          issuerRef:
-            group: cas-issuer.jetstack.io
-            kind: GoogleCASIssuer
-            name: default
-        EOF
-      expect:
-        exitCode:
-          equals: 0
-  - name: Try to get the cert secret
-    bashTest:
-      script: |
-        kubectl get secret google-cas-cert-tls
-      expect:
-        exitCode:
-          equals: 0
----
-

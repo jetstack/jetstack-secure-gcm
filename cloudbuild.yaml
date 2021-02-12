@@ -127,7 +127,6 @@ steps:
       - push
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
 
-
   - id: build-smoke-test
     name: gcr.io/cloud-builders/docker
     args:
@@ -135,7 +134,7 @@ steps:
       - -f
       - "test.Dockerfile"
       - --tag
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION}
       - "."
     waitFor: ["-"]
 
@@ -143,7 +142,7 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_CERT_MANAGER_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION}
     waitFor:
       - build-smoke-test
 
@@ -154,10 +153,7 @@ steps:
       - -exc
       - |
         cat data-test/schema.yaml | env -i \
-          CAS_CA=$_CAS_CA \
-          CAS_PROJECT_ID=$PROJECT_ID \
-          CAS_LOCATION=$_CLUSTER_LOCATION \
-          IMAGE=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_CERT_MANAGER_VERSION} \
+          IMAGE=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION} \
         envsubst | tee /dev/stderr > tmp && mv tmp data-test/schema.yaml
     waitFor:
       - "-"
