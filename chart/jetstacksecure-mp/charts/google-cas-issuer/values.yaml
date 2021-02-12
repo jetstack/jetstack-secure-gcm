@@ -18,12 +18,6 @@ imagePullSecrets: {}
 securityContext: {}
 podSecurityContext: {}
 
-resources:
-  {}
-  # requests:
-  #   cpu: 10m
-  #   memory: 32Mi
-
 nodeSelector: {}
 affinity: {}
 tolerations: {}
@@ -31,3 +25,11 @@ tolerations: {}
 prometheus:
   # Enables the creation of the ClusterIP service.
   enabled: true
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 200Mi
+  requests:
+    cpu: 200m
+    memory: 200Mi
