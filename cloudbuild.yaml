@@ -128,30 +128,27 @@ steps:
     waitFor:
       - tag-webhook
 
-
-  - id: clone-ubbagent
-    name: gcr.io/cloud-builders/gcloud
-    entrypoint: bash
-    args:
-      - -exc
-      - git clone https://github.com/GoogleCloudPlatform/ubbagent --branch 0.0.1
-    waitFor: ["-"]
-
-  - id: build-ubbagent
+  - id: pull-ubbagent
     name: gcr.io/cloud-builders/docker
     args:
-      - build
-      - --tag
+      - pull
+      - gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
+    waitFor: ["-"]
+
+  - id: tag-ubbagent
+    name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
-      - "./ubbagent"
-    waitFor: ["clone-ubbagent"]
+    waitFor: ["pull-ubbagent"]
 
   - id: push-ubbagent
     name: gcr.io/cloud-builders/docker
     args:
       - push
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
-    waitFor: ["build-ubbagent"]
+    waitFor: ["tag-ubbagent"]
 
   - id: build-deployer
     name: gcr.io/cloud-builders/docker
@@ -234,6 +231,7 @@ steps:
     args:
       - ./mpdev
       - verify
+      - --wait_timeout=99999999
       - --deployer=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
       - check-cloud-marketplace-tools

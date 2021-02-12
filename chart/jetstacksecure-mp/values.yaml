@@ -28,3 +28,9 @@ preflight:
     create: false # see note (1)
   rbac:
     create: false # see note (1)
+
+ubbagent:
+  # reportingSecretName: "some-secret-name"
+  image: {}
+    # tag: 1.1.0
+    # repository: gcr.io/jetstack-public/ubbagent
