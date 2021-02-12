@@ -83,7 +83,7 @@ steps:
     args:
       - tag
       - quay.io/jetstack/cert-manager-controller:v${_CERT_MANAGER_VERSION}
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_APP_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}:${_APP_VERSION}
     waitFor:
       - pull-controller
 
@@ -109,7 +109,7 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_APP_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}:${_APP_VERSION}
     waitFor:
       - tag-controller
 
@@ -288,7 +288,7 @@ steps:
       - verify
 
 images:
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-controller:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_APP_VERSION}
