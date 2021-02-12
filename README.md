@@ -1,11 +1,55 @@
 
 # jsp-gcm
 
+This is the repository that holds the configuration for our Google
+Marketplace solution, [jetstack-secure-for-cert-manager][].
+
 **Content:**
 
+- [Technical considerations](#technical-considerations)
 - [Installing and manually testing the deployer](#installing-and-manually-testing-the-deployer)
 - [Testing and releasing the deployer using Google Cloud Build](#testing-and-releasing-the-deployer-using-google-cloud-build)
 - [Updating the upstream cert-manager chart version](#updating-the-upstream-cert-manager-chart-version)
+
+## Technical considerations
+
+**Retagging cert-manager images:**
+
+In order to abide by the [schema.md][], which states:
+
+> When users deploy your app from Google Cloud Marketplace, the final image
+> names may be different, but they will follow **the same release tag** and
+> name prefix rule.
+
+This means we do re-tag all our images (cert-manager, cas-issuer, ubbagent,
+preflight-agent) using a unified tag that is distinct from the cert-manager
+regular version. We call this version the "application version". In the
+following example, the application version is `1.0.0` although the
+cert-manager-controller is `1.1.0`:
+
+```sh
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.0.0
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver:1.0.0
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector:1.0.0
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:1.0.0
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:1.0.0
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.0.0
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight:1.0.0
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.0.0
+```
+
+**cert-manager-controller is the "primary image":**
+
+The "primary" image is pushed to the "root" of the registry, for example:
+
+```sh
+# The primary image "cert-manager-controller":
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.0.0
+
+# All other images:
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.0.0
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:1.0.0
+```
 
 ## Installing and manually testing the deployer
 
@@ -18,45 +62,42 @@ gcloud container clusters create foo --region us-east1 --num-nodes=1 --preemptib
   --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
 ```
 
-This application re-tags the various images (cert-manager, cas-issuer, ubbagent, preflight-agent) using
-a unified tag that we call "application version". Although it does not appear to be a requirement for
-releasing to the Google Marketplace, we were not able to set "default" tags for each image and thus
-resolved to just having a unified tag; this means that we will have to keep this difference in tags when
-supporting [jetstack-secure-for-cert-manager][].
-
-[jetstack-secure-for-cert-manager]: https://console.cloud.google.com/partner/editor/jetstack-public/jetstack-secure-for-cert-manager?project=jetstack-public
-
-Re-publish the images to the project:
+Now, re-publish the images to the project:
 
 ```sh
 export REGISTRY=gcr.io/$(gcloud config get-value project | tr ':' '/')
-export APP_NAME=jetstack-secure
+export SOLUTION=jetstack-secure-for-cert-manager
+
 docker pull quay.io/jetstack/cert-manager-controller:v1.1.0
+docker pull quay.io/jetstack/cert-manager-acmesolver:v1.1.0
 docker pull quay.io/jetstack/cert-manager-cainjector:v1.1.0
 docker pull quay.io/jetstack/cert-manager-webhook:v1.1.0
 docker pull quay.io/jetstack/cert-manager-google-cas-issuer:0.1.0
 docker pull quay.io/jetstack/preflight:0.1.27
-docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-controller:1.0.0
-docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-cainjector:1.0.0
-docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$APP_NAME/cert-manager-webhook:1.0.0
-docker tag quay.io/jetstack/cert-manager-google-cas-issuer:latest $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:1.0.0
-docker tag quay.io/jetstack/preflight:latest $REGISTRY/$APP_NAME/cert-manager-preflight:1.0.0
-docker push $REGISTRY/$APP_NAME/cert-manager-controller:1.0.0
-docker push $REGISTRY/$APP_NAME/cert-manager-cainjector:1.0.0
-docker push $REGISTRY/$APP_NAME/cert-manager-webhook:1.0.0
-docker push $REGISTRY/$APP_NAME/cert-manager-google-cas-issuer:1.0.0
-docker push $REGISTRY/$APP_NAME/cert-manager-preflight:1.0.0
-```
+docker pull gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
 
-> Note: although cert-manager's tags are of the form "v1.1.0", we 
-> use the same JSP version tag for all the Google Marketplace images, 
-> for consistency with other marketplace packages.
+docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$SOLUTION:1.0.0
+docker tag quay.io/jetstack/cert-manager-acmesolver:v1.1.0 $REGISTRY/$SOLUTION/cert-manager-acmesolver:1.0.0
+docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$SOLUTION/cert-manager-cainjector:1.0.0
+docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$SOLUTION/cert-manager-webhook:1.0.0
+docker tag quay.io/jetstack/cert-manager-google-cas-issuer:latest $REGISTRY/$SOLUTION/cert-manager-google-cas-issuer:1.0.0
+docker tag quay.io/jetstack/preflight:latest $REGISTRY/$SOLUTION/preflight:1.0.0
+docker pull gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $REGISTRY/$SOLUTION/ubbagent:1.0.0
+
+docker push $REGISTRY/$SOLUTION:1.0.0
+docker push $REGISTRY/$SOLUTION/cert-manager-acmesolver:1.0.0
+docker push $REGISTRY/$SOLUTION/cert-manager-cainjector:1.0.0
+docker push $REGISTRY/$SOLUTION/cert-manager-webhook:1.0.0
+docker push $REGISTRY/$SOLUTION/cert-manager-google-cas-issuer:1.0.0
+docker push $REGISTRY/$SOLUTION/preflight:1.0.0
+docker push $REGISTRY/$SOLUTION/ubbagent:1.0.0
+```
 
 Then, build and push the deployer image:
 
 ```sh
-docker build --tag $REGISTRY/$APP_NAME/deployer .
-docker push $REGISTRY/$APP_NAME/deployer
+docker build --tag $REGISTRY/$SOLUTION/deployer:1.0.0 .
+docker push $REGISTRY/$SOLUTION/deployer:1.0.0
 ```
 
 Finally, use `mpdev` to install jetstack-secure to the `test-ns` namespace:
@@ -67,7 +108,7 @@ docker run gcr.io/cloud-marketplace-tools/k8s/dev cat /scripts/dev > /tmp/mpdev 
 
 kubectl create ns test-ns
 kubectl apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/marketplace-k8s-app-tools/master/crd/app-crd.yaml
-mpdev install --deployer=$REGISTRY/$APP_NAME/deployer --parameters='{"name": "test-ns", "namespace": "test"}'
+mpdev install --deployer=$REGISTRY/$SOLUTION/deployer --parameters='{"name": "test-ns", "namespace": "test"}'
 ```
 
 Now, we need to have access to a CAS root. To create a "root" certificate
@@ -227,3 +268,6 @@ bump the version of the cert-manager chart in requirements.yaml. Then:
 helm repo add jetstack https://charts.jetstack.io
 helm dependency build chart/jetstacksecure-mp
 ```
+
+[schema.md]: https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/d9d3a6f/docs/schema.md
+[jetstack-secure-for-cert-manager]: https://console.cloud.google.com/partner/editor/jetstack-public/jetstack-secure-for-cert-manager?project=jetstack-public
