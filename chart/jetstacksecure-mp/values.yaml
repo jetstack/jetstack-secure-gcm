@@ -23,12 +23,6 @@ google-cas-issuer:
   serviceAccount:
     create: false # see note (1)
 
-defaultPrivateCAIssuer:
-  enable: true
-  # projectId: placeholder-privateca-project-id
-  # location: placeholder-privateca-location
-  # certificateAuthorityId: my-sub-ca
-
 preflight:
   serviceAccount:
     create: false # see note (1)
