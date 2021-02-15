@@ -255,10 +255,12 @@ steps:
     args:
       - -exc
       - |
-        while : ; do kubectl get ns -oname | grep apptest- && break; sleep 10; done
+        while : ; do kubectl get ns -oname 2>/dev/null | grep apptest- && break; sleep 10; done
         ns=$(kubectl get ns -oname  | grep apptest- | cut -d/ -f2)
-        while : ; do kubectl -n "$ns" get pods -oname | grep "apptest-.*-deployer" && break; sleep 10; done
+        while : ; do kubectl -n "$ns" get pods -oname 2>/dev/null | grep "apptest-.*-deployer" && break; sleep 10; done
         pod=$(kubectl -n "$ns" get pods -oname | grep "apptest-.*-deployer" | cut -d/ -f2)
+
+        kubectl wait -n "$ns" --for=condition=ready pod $pod
         kubectl logs -n "$ns" $pod -f --tail=-1
     waitFor:
       - check-cloud-marketplace-tools
