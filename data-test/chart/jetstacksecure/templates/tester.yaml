@@ -5,11 +5,11 @@ metadata:
   labels:
     app.kubernetes.io/name: "{{ .Release.Name }}"
   annotations:
+    # This annotation allows `mpdev verify` to figure out that this pod is
+    # the smoke test.
     marketplace.cloud.google.com/verification: test
 spec:
-  # Helm does not cope well with keys that contain a dash.
-  # https://github.com/helm/helm/issues/2192#issuecomment-293739257
-  serviceAccountName: "{{ index .Values "cert-manager" "serviceAccount" "name" }}"
+  serviceAccountName: default
   containers:
     - name: smoke-test
       image: "{{ .Values.smokeTestImage }}"

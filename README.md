@@ -9,6 +9,7 @@ Marketplace solution, [jetstack-secure-for-cert-manager][].
 - [Technical considerations](#technical-considerations)
 - [Installing and manually testing the deployer](#installing-and-manually-testing-the-deployer)
 - [Testing and releasing the deployer using Google Cloud Build](#testing-and-releasing-the-deployer-using-google-cloud-build)
+  - [Debugging deployer and smoke-tests when run in Cloud Build](#debugging-deployer-and-smoke-tests-when-run-in-cloud-build)
 - [Updating the upstream cert-manager chart version](#updating-the-upstream-cert-manager-chart-version)
 
 ## Technical considerations
@@ -256,7 +257,73 @@ gcloud builds submit --timeout 1800s --config cloudbuild.yaml \
   --substitutions _CLUSTER_NAME=$GKE_CLUSTER_NAME,_CLUSTER_LOCATION=$GKE_CLUSTER_LOCATION
 ```
 
-This will also verify the application using the [Google Cloud Marketplace verification tool](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c5899a928a2ac8d5022463c82823284a9e63b177/scripts/verify).
+This will run [`mpdev verify`]([Google Cloud Marketplace verification
+tool](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c5899a928a2ac8d5022463c82823284a9e63b177/scripts/verify)),
+which runs [smoke tests](/smoke-test.yaml).
+
+Note that debugging `mpdev verify` is quite tricky. In order to inspect the
+state of the namespace created by `mpdev verify`, we can artificially pause
+`mpdev verify` when it tries to [delete the application](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/4ecf535/scripts/verify#L301-L304):
+
+### Debugging deployer and smoke-tests when run in Cloud Build
+
+There is no official spec for the `smoke-test.yaml` file, although there is
+the example [suite.yaml](https://github.com/GoogleCloudPlatform/marketplace-testrunner/blob/4245fa9/specs/testdata/suite.yaml):
+
+```yaml
+actions:
+- name: {{ .Env.TEST_NAME }}
+  httpTest:
+    url: http://{{ .Var.MainVmIp }}:9012
+    expect:
+      statusCode:
+        equals: 200
+      statusText:
+        contains: OK
+      bodyText:
+        html:
+          title:
+            contains: Hello World!
+- name: Update success variable
+  gcp:
+    setRuntimeConfigVar:
+      runtimeConfigSelfLink: https://runtimeconfig.googleapis.com/v1beta1/projects/my-project/configs/my-config
+      variablePath: status/success
+      base64Value: c3VjY2Vzcwo=
+- name: Can echo to stdout and stderr
+  bashTest:
+    script: |-
+      echo "Text1"
+      >2& echo "Text2"
+    expect:
+      exitCode:
+        equals: 0
+        notEquals: 1
+      stdout:
+        contains: "Text1"
+        notContains: "Foo"
+        matches: "T.xt1"
+      stderr:
+        contains: "Text2"
+        notContains: "Foo"
+        matches: "T.xt2"
+```
+
+Unfortunately, the `stdout` or `stderr` output won't be shown whenever a
+step fails. Reason: the
+[logic in bash.go](https://github.com/GoogleCloudPlatform/marketplace-testrunner/blob/4245fa9/tests/bash.go#L88-L96)
+first checks the status code and returns if mismatch, then checks the
+stdout and returns if mismatch, and finally checks stderr.
+
+**Workaround:**: add to `smoke-test.yaml` a step that hangs, e.g.:
+
+```yaml
+  - name: hang for debugging purposes
+    bashTest:
+      script: sleep 1200
+```
+
+then you can `exec` into the snoke-test pod and debug around.
 
 ## Updating the upstream cert-manager chart version
 

@@ -126,12 +126,34 @@ steps:
       - push
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
 
+  - id: pull-ubbagent
+    name: gcr.io/cloud-builders/docker
+    args:
+      - pull
+      - gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
+    waitFor: ["-"]
+
+  - id: tag-ubbagent
+    name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
+    waitFor: ["pull-ubbagent"]
+
+  - id: push-ubbagent
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
+    waitFor: ["tag-ubbagent"]
+
   - id: build-smoke-test
     name: gcr.io/cloud-builders/docker
     args:
       - build
       - -f
-      - "test.Dockerfile"
+      - "smoke-test.Dockerfile"
       - --tag
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION}
       - "."
@@ -156,28 +178,6 @@ steps:
         envsubst | tee /dev/stderr > tmp && mv tmp data-test/schema.yaml
     waitFor:
       - "-"
-
-  - id: pull-ubbagent
-    name: gcr.io/cloud-builders/docker
-    args:
-      - pull
-      - gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
-    waitFor: ["-"]
-
-  - id: tag-ubbagent
-    name: gcr.io/cloud-builders/docker
-    args:
-      - tag
-      - gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
-    waitFor: ["pull-ubbagent"]
-
-  - id: push-ubbagent
-    name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
-    waitFor: ["tag-ubbagent"]
 
   - id: build-deployer
     name: gcr.io/cloud-builders/docker
@@ -249,15 +249,22 @@ steps:
       - install-cloud-marketplace-tools
       - install-app-crds
 
-  - id: kubectl-logs-deployer
+  - id: logs-deployer
     name: gcr.io/cloud-builders/gcloud
     entrypoint: bash
     args:
       - -exc
       - |
-        while : ; do kubectl get ns -oname 2>/dev/null | grep apptest- && break; sleep 10; done
+        while : ; do
+          kubectl get ns -oname 2>/dev/null | grep apptest- && break
+          sleep 10
+        done
         ns=$(kubectl get ns -oname  | grep apptest- | cut -d/ -f2)
-        while : ; do kubectl -n "$ns" get pods -oname 2>/dev/null | grep "apptest-.*-deployer" && break; sleep 10; done
+
+        while : ; do
+          kubectl -n "$ns" get pods -oname 2>/dev/null | grep "apptest-.*-deployer" && break
+          sleep 10
+        done
         pod=$(kubectl -n "$ns" get pods -oname | grep "apptest-.*-deployer" | cut -d/ -f2)
 
         kubectl wait -n "$ns" --for=condition=ready pod $pod
@@ -271,6 +278,37 @@ steps:
       - push-cas-issuer
       - push-preflight
       - push-ubbagent
+
+  - id: logs-smoke-test
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -exc
+      - |
+        while : ; do
+          kubectl get ns -oname 2>/dev/null | grep apptest- && break
+          sleep 10
+        done
+        ns=$(kubectl get ns -oname  | grep apptest- | cut -d/ -f2)
+
+        while : ; do
+          kubectl -n "$ns" get pods -oname | grep "apptest-.*-smoke-test-pod" && break
+          sleep 10
+          done
+        pod=$(kubectl -n "$ns" get pods -oname | grep "apptest-.*-smoke-test-pod" | cut -d/ -f2)
+
+        kubectl wait -n "$ns" --for=condition=ready pod $pod
+        kubectl logs -n "$ns" $pod -f --tail=-1
+    waitFor:
+      - check-cloud-marketplace-tools
+      - push-deployer
+      - push-controller
+      - push-cainjector
+      - push-webhook
+      - push-cas-issuer
+      - push-preflight
+      - push-ubbagent
+      - push-smoke-test
 
   - id: verify
     name: gcr.io/cloud-marketplace-tools/k8s/dev
@@ -294,6 +332,7 @@ steps:
       - push-cas-issuer
       - push-preflight
       - push-ubbagent
+      - push-smoke-test
 
   - id: publish
     name: gcr.io/cloud-marketplace-tools/k8s/dev

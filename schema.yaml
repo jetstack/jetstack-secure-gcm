@@ -72,12 +72,12 @@ x-google-marketplace:
         ubbagent.image.tag:
           type: TAG
 
-  # Allow the deployer to create CRDs and webhook configurations
-  # See https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md#deployerserviceaccount
-  # TODO: Consider whether these permissions can be tightened.
+  # Allow the deployer to create CRDs and webhook configurations See
+  # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md#deployerserviceaccount
   deployerServiceAccount:
+    # Note: the created serviceaccount is "{{.Release.Name}}-deployer-sa".
     description: >
-      Creates app resources, including the MyAppCustomResource CRD.
+      Creates app resources, (among others) the Certificate CRD.
     roles:
       - type: ClusterRole
         rulesType: CUSTOM
@@ -101,28 +101,6 @@ properties:
     type: string
     x-google-marketplace:
       type: NAMESPACE
-  # The deployer image has to be passed to a job in order to add an
-  # annotation on the google-cas-issuer Kubernetes service account.
-  deployer.image:
-    type: string
-    x-google-marketplace:
-      type: DEPLOYER_IMAGE
-  deployer.serviceAccountName:
-    type: string
-    x-google-marketplace:
-      type: SERVICE_ACCOUNT
-      serviceAccount:
-        description: >
-          Annotates the google-cas-issuer Kubernetes serviceaccount so that the
-          cas-issuer can talk to the Google CAS API.
-        roles:
-          - type: Role
-            rulesType: CUSTOM
-            rules:
-              - apiGroups: [""]
-                resources: ["serviceaccounts"]
-                verbs: ["get", "list", "patch", "update"]
-
   cert-manager.serviceAccount.name:
     type: string
     x-google-marketplace:
