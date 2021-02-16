@@ -1,15 +1,16 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ .Release.Name }}-smoke-test-pod"
-  labels:
-    app.kubernetes.io/name: "{{ .Release.Name }}"
+  name: smoke-test-pod
   annotations:
     # This annotation allows `mpdev verify` to figure out that this pod is
     # the smoke test.
     marketplace.cloud.google.com/verification: test
 spec:
-  serviceAccountName: default
+  # The "default" serviceaccount does not have any role attached by
+  # default. So we just use the deployer's one for the purpose of these
+  # smoke tests.
+  serviceAccountName: "{{ .Release.Name }}-deployer-sa"
   containers:
     - name: smoke-test
       image: "{{ .Values.smokeTestImage }}"

@@ -16,7 +16,7 @@ actions:
   - name: Create test issuer and self signed cert
     bashTest:
       script: |
-        kubectl apply --namespace ${NAMESPACE} -f - <<EOF
+        kubectl apply -n ${NAMESPACE} -f - <<EOF
         apiVersion: cert-manager.io/v1alpha2
         kind: Issuer
         metadata:
@@ -60,15 +60,15 @@ actions:
     bashTest:
       script: |
         set -ex
-        kubectl delete --namespace ${NAMESPACE} issuer selfsigned-issuer
-        kubectl delete --namespace ${NAMESPACE} certificate selfsigned-cert
+        kubectl delete -n ${NAMESPACE} issuer selfsigned-issuer
+        kubectl delete -n ${NAMESPACE} certificate selfsigned-cert
       expect:
         exitCode:
           equals: 0
-  - name: Create a GoogleCASIssuer
+  - name: Create a GoogleCASIssuer and a certificate
     bashTest:
       script: |
-        cat <<EOF | tee /dev/stderr | kubectl apply -f -
+        kubectl apply -n ${NAMESPACE} -f - <<EOF
         apiVersion: cas-issuer.jetstack.io/v1alpha1
         kind: GoogleCASIssuer
         metadata:
@@ -105,12 +105,12 @@ actions:
   #
   # Right now, the above GoogleCASIssuer does nothing, and the certificate
   # will never be created.
-  - name: Delete google CAS issuer and self certificate
+  - name: Delete google CAS issuer and certificate
     bashTest:
       script: |
         set -ex
-        kubectl delete --namespace ${NAMESPACE} googlecasissuer googlecas-issuer
-        kubectl delete --namespace ${NAMESPACE} certificate googlecas-cert
+        kubectl delete -n ${NAMESPACE} googlecasissuer googlecas-issuer
+        kubectl delete -n ${NAMESPACE} certificate googlecas-cert
       expect:
         exitCode:
           equals: 0
