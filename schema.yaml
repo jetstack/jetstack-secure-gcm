@@ -6,9 +6,13 @@ x-google-marketplace:
   # This is the same as the top level applicationApiVersion field in v1.
   applicationApiVersion: v1beta1
 
-  # The release version is required in the schema and MUST match the
-  # release tag on the the deployer.
-  publishedVersion: "1.0.0"
+  # We are not "truely" following semver.org since we use a "-" for a final
+  # release ("-" is meant for pre-releases). This is due to a Docker
+  # limitation: https://github.com/distribution/distribution/issues/1201
+  #
+  # Important: it must have the same value as the version in the
+  # Application manifest.
+  publishedVersion: "1.1.0-gcm.1"
   publishedVersionMetadata:
     releaseNote: >-
       Initial release.
@@ -26,7 +30,10 @@ x-google-marketplace:
 
   # Image declaration is required here. Refer to the Images section below.
   images:
-    cert-manager-controller:
+    # The Marketplace requires us to use a "primary image". In our case,
+    # this is cert-manager-controller. See "primary image" in
+    # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/d9d3a6/docs/schema.md
+    "": # This is cert-manager-controller.
       properties:
         cert-manager.image.repository:
           type: REPO_WITH_REGISTRY
@@ -35,6 +42,12 @@ x-google-marketplace:
     cert-manager-webhook:
       properties:
         cert-manager.webhook.image.repository:
+          type: REPO_WITH_REGISTRY
+        cert-manager.webhook.image.tag:
+          type: TAG
+    cert-manager-acmesolver:
+      properties:
+        cert-manager.acmesolver.image.repository:
           type: REPO_WITH_REGISTRY
         cert-manager.webhook.image.tag:
           type: TAG
@@ -50,7 +63,7 @@ x-google-marketplace:
           type: REPO_WITH_REGISTRY
         google-cas-issuer.image.tag:
           type: TAG
-    cert-manager-preflight:
+    preflight:
       properties:
         preflight.image.repository:
           type: REPO_WITH_REGISTRY
@@ -63,12 +76,12 @@ x-google-marketplace:
         ubbagent.image.tag:
           type: TAG
 
-  # Allow the deployer to create CRDs and webhook configurations
-  # See https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md#deployerserviceaccount
-  # TODO: Consider whether these permissions can be tightened.
+  # Allow the deployer to create CRDs and webhook configurations See
+  # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md#deployerserviceaccount
   deployerServiceAccount:
+    # Note: the created serviceaccount is "{{.Release.Name}}-deployer-sa".
     description: >
-      Creates app resources, including the MyAppCustomResource CRD.
+      Creates app resources, (among others) the Certificate CRD.
     roles:
       - type: ClusterRole
         rulesType: CUSTOM

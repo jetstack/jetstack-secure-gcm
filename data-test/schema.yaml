@@ -1,0 +1,16 @@
+# This "smoke test" schema.yaml is an overlay on top of the main
+# /schema.yaml. It is shipped with the deployer image (in /data-test) and
+# is used by the command
+#
+#     mpdev verify
+#
+# To know more about the smoke tests:
+# https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c5899a92/docs/mpdev-references.md#smoke-test-an-application
+
+properties:
+  smokeTestImage:
+    type: string
+    # These variables are envsubt'd in cloudbuild.yml
+    default: $IMAGE
+    x-google-property:
+      type: IMAGE

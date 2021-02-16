@@ -1,3 +1,4 @@
+{{ if not "disabled-for-now-due-to-missing-configmap" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -29,7 +30,7 @@ spec:
           secretName: agent-credentials
       containers:
       - name: {{ .Chart.Name }}
-        image: "{{ .Values.image.repository }}:v{{ .Chart.AppVersion }}"
+        image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
         args:
         - "agent"
         - "-c"
@@ -47,3 +48,4 @@ spec:
           readOnly: true
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
+{{- end }}

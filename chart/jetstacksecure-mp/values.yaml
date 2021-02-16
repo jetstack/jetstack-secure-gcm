@@ -31,6 +31,7 @@ preflight:
 
 ubbagent:
   # reportingSecretName: "some-secret-name"
-  image: {}
+  image:
+    {}
     # tag: 1.1.0
     # repository: gcr.io/jetstack-public/ubbagent
