@@ -1,16 +1,299 @@
+# Jetstack Secure for cert-manager on the Google Cloud Marketplace
 
-# jsp-gcm
+<!--
+Inspiration:
+https://github.com/unleash-hosted/unleash-hosted-gcp-marketplace/blob/master/README.md
+-->
 
-This is the repository that holds the configuration for our Google
-Marketplace solution, [jetstack-secure-for-cert-manager][].
+## Overview of Jetstack Secure for cert-manager
 
-**Content:**
+TODO: description of jetstack secure
 
+**Contents:**
+
+- [Overview of Jetstack Secure for cert-manager](#overview-of-jetstack-secure-for-cert-manager)
+- [Installation](#installation)
+  - [Quick install with Google Cloud Marketplace](#quick-install-with-google-cloud-marketplace)
+  - [Command line instructions](#command-line-instructions)
+    - [Prerequisites](#prerequisites)
+      - [Set up command line tools](#set-up-command-line-tools)
+      - [Create a Google Kubernetes Engine cluster](#create-a-google-kubernetes-engine-cluster)
+      - [Configure kubectl to connect to the cluster](#configure-kubectl-to-connect-to-the-cluster)
+      - [Clone this repo](#clone-this-repo)
+      - [Install the Application resource definition](#install-the-application-resource-definition)
+    - [Install the application](#install-the-application)
+      - [Configure the application with environment variables](#configure-the-application-with-environment-variables)
+    - [Expand the manifest template](#expand-the-manifest-template)
+      - [Apply the manifest to your Kubernetes cluster](#apply-the-manifest-to-your-kubernetes-cluster)
+      - [View the app in the Google Cloud Console](#view-the-app-in-the-google-cloud-console)
+      - [(optional) Set up the Google Certificate Authority Service](#optional-set-up-the-google-certificate-authority-service)
 - [Technical considerations](#technical-considerations)
 - [Installing and manually testing the deployer](#installing-and-manually-testing-the-deployer)
 - [Testing and releasing the deployer using Google Cloud Build](#testing-and-releasing-the-deployer-using-google-cloud-build)
   - [Debugging deployer and smoke-tests when run in Cloud Build](#debugging-deployer-and-smoke-tests-when-run-in-cloud-build)
 - [Updating the upstream cert-manager chart version](#updating-the-upstream-cert-manager-chart-version)
+
+## Installation
+
+### Quick install with Google Cloud Marketplace
+
+Get up and running with a few clicks! Install the Jetstack Secure for
+cert-manager application to a Google Kubernetes Engine cluster using Google
+Cloud Marketplace. Follow the [on-screen
+instructions](https://console.cloud.google.com/marketplace/details/jetstack/jetstack-secure-for-cert-manager).
+
+### Command line instructions
+
+You can use [Google Cloud Shell](https://cloud.google.com/shell/) or a
+local workstation to complete these steps.
+
+[![Open in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/jetstack/jsp-gcm&cloudshell_working_dir=/)
+
+#### Prerequisites
+
+##### Set up command line tools
+
+You'll need the following tools in your environment. If you are using Cloud Shell, these tools are installed in your environment by default.
+
+- [gcloud](https://cloud.google.com/sdk/gcloud/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- [docker](https://docs.docker.com/install/)
+- [openssl](https://www.openssl.org/)
+- [helm](https://helm.sh/docs/using_helm/#installing-helm)
+- [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+
+Configure `gcloud` as a Docker credential helper:
+
+```sh
+gcloud auth configure-docker
+```
+
+##### Create a Google Kubernetes Engine cluster
+
+The [workload
+identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
+must be enabled on your cluster. To create a cluster that has _workload
+identity_ feature enabled, run the following command:
+
+```sh
+export CLUSTER=jetstack-cluster
+export ZONE=europe-west1-c
+
+gcloud container clusters create $CLUSTER --zone $ZONE \
+  --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
+```
+
+> For an existing cluster, you can turn the feature on (will restart the
+> GKE control plane) with the following command:
+>
+> ```sh
+> gcloud container clusters update $CLUSTER --zone $ZONE \
+>   --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
+> ```
+
+##### Configure kubectl to connect to the cluster
+
+```sh
+gcloud container clusters get-credentials "$CLUSTER" --zone "$ZONE"
+```
+
+##### Clone this repo
+
+Clone this repo and the associated tools repo:
+
+```shell
+git clone https://github.com/jetstack/jsp-gcm
+cd jsp-gcm
+```
+
+##### Install the Application resource definition
+
+An Application resource is a collection of individual Kubernetes
+components, such as Services, Deployments, and so on, that you can manage
+as a group.
+
+To set up your cluster to understand Application resources, run the
+following command:
+
+```sh
+kubectl apply -f "https://raw.githubusercontent.com/GoogleCloudPlatform/marketplace-k8s-app-tools/master/crd/app-crd.yaml"
+```
+
+You need to run this command once for each cluster.
+
+The Application resource is defined by the [Kubernetes
+SIG-apps](https://github.com/kubernetes/community/tree/master/sig-apps)
+community. The source code can be found on
+[github.com/kubernetes-sigs/application](https://github.com/kubernetes-sigs/application).
+
+#### Install the application
+
+##### Configure the application with environment variables
+
+Choose an instance name and
+[namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
+for the application. In most cases, you can use the `default` namespace.
+
+```shell
+APP_INSTANCE_NAME=jetstack-secure-1
+NAMESPACE=default
+```
+
+Set up the image tag, for example:
+
+```shell
+TAG="1.1.0-gcm.1"
+```
+
+where `1.1.0` stands for the cert-manager version, and `gcm.1` is the
+Google Marketplace "build" version. The available types of tags are:
+
+```sh
+TAG=1.1.0-gcm.1        # stable tag (recommended)
+TAG=1.1.0              # moving tag, targets cert-manager 1.1.0
+TAG=1.1                # moving tag, targets cert-manager 1.1
+```
+
+The available tags are listed on the [Marketplace Container
+Registry](marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager).
+
+#### Expand the manifest template
+
+Use `helm template` to expand the template. We recommend that you save the
+expanded manifest file for future updates to the application.
+
+```shell
+helm template "$APP_INSTANCE_NAME" chart/jetstacksecure-mp \
+  --namespace "$NAMESPACE" \
+  --set cert-manager.image.repository="$TAG"
+  --set cert-manager.webhook.image.repository="$TAG"
+  --set cert-manager.acmesolver.image.repository="$TAG"
+  --set cert-manager.cainjector.image.repository="$TAG"
+  --set google-cas-issuer.image.repository="$TAG"
+  --set preflight.image.repository="$TAG"
+  --set ubbagent.image.repository="$TAG"
+  --set google-cas-issuer.serviceAccount.create=true
+  --set google-cas-issuer.serviceAccount.name=google-cas-issuer-sa
+  > "${APP_INSTANCE_NAME}_manifest.yaml"
+```
+
+##### Apply the manifest to your Kubernetes cluster
+
+Use `kubectl` to apply the manifest to your Kubernetes cluster:
+
+```shell
+kubectl apply -f "${APP_INSTANCE_NAME}_manifest.yaml" --namespace "${NAMESPACE}"
+```
+
+##### View the app in the Google Cloud Console
+
+To get the GCP Console URL for your app, run the following command:
+
+```shell
+echo "https://console.cloud.google.com/kubernetes/application/${ZONE}/${CLUSTER}/${NAMESPACE}/${APP_INSTANCE_NAME}"
+```
+
+To view the app, open the URL in your browser.
+
+##### (optional) Set up the Google Certificate Authority Service
+
+The Certificate Authority Service is a highly available, scalable Google Cloud
+service that enables you to simplify, automate, and customize the
+deployment, management, and security of private certificate authorities
+(CA).
+
+If you wish to use [Google Certificate Authority
+Service](https://cloud.google.com/certificate-authority-service) to issue
+certificates, you can create a root certificate authority and a subordinate
+certificate authority (i.e., an intermediate CA) on your Google Cloud
+project with the following:
+
+```sh
+gcloud beta privateca roots create my-ca --location $LOCATION --subject="CN=root,O=my-ca"
+gcloud beta privateca subordinates create my-sub-ca  --issuer=my-ca --location $LOCATION --subject="CN=intermediate,O=my-ca,OU=my-sub-ca"
+```
+
+Note that it is
+[recommended](https://cloud.google.com/certificate-authority-service/docs/creating-certificate-authorities)
+to create a subordinate CA for signing leaf certificates as opposed to
+using a root CA directly.
+
+The next step is to create a Google service account that will be used by
+the application in order to reach the Google Certificate Authority Service
+API:
+
+```sh
+gcloud iam service-accounts create $APP_INSTANCE_NAME
+```
+
+Give the Google service account the permission to issue certificates using
+the Google CAS API:
+
+```sh
+gcloud beta privateca subordinates add-iam-policy-binding my-sub-ca \
+  --role=roles/privateca.certificateRequester \
+  --member=serviceAccount:$APP_INSTANCE_NAME@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
+```
+
+Finally, bind this Google service account to the Kubernetes service account
+that was created by the above `kubectl apply` command. To bind them, run
+the following:
+
+```sh
+gcloud iam service-accounts add-iam-policy-binding $APP_INSTANCE_NAME@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
+  --role roles/iam.workloadIdentityUser \
+  --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[$NAMESPACE/google-cas-issuer-sa]"
+```
+
+You can now create a cert-manager Google CAS issuer and have a certificate
+issued with the following:
+
+```sh
+cat <<EOF | tee /dev/stderr | kubectl apply -f -
+apiVersion: cas-issuer.jetstack.io/v1alpha1
+kind: GoogleCASIssuer
+metadata:
+  name: googlecasissuer
+spec:
+  project: $(gcloud config get-value project | tr ':' '/')
+  location: $LOCATION
+  certificateAuthorityID: my-sub-ca
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: demo-certificate
+spec:
+  secretName: demo-cert-tls
+  commonName: example.com
+  dnsNames:
+    - example.com
+  duration: 24h
+  renewBefore: 8h
+  issuerRef:
+    group: cas-issuer.jetstack.io
+    kind: GoogleCASIssuer
+    name: googlecasissuer
+EOF
+```
+
+You can check that the certificate has been issued with:
+
+```sh
+% kubectl describe cert demo-certificate
+Events:
+  Type    Reason     Age   From          Message
+  ----    ------     ----  ----          -------
+  Normal  Issuing    20s   cert-manager  Issuing certificate as Secret was previously issued by GoogleCASIssuer.cas-issuer.jetstack.io/googlecasissuer-sample
+  Normal  Reused     20s   cert-manager  Reusing private key stored in existing Secret resource "demo-cert-tls"
+  Normal  Requested  20s   cert-manager  Created new CertificateRequest resource "demo-certificate-v2rwr"
+  Normal  Issuing    20s   cert-manager  The certificate has been successfully issued
+```
+
+---
+
+This is the repository that holds the configuration for our Google
+Marketplace solution, [jetstack-secure-for-cert-manager][].
 
 ## Technical considerations
 
@@ -83,7 +366,7 @@ docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$SOLUTION/c
 docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$SOLUTION/cert-manager-webhook:1.0.0
 docker tag quay.io/jetstack/cert-manager-google-cas-issuer:latest $REGISTRY/$SOLUTION/cert-manager-google-cas-issuer:1.0.0
 docker tag quay.io/jetstack/preflight:latest $REGISTRY/$SOLUTION/preflight:1.0.0
-docker pull gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $REGISTRY/$SOLUTION/ubbagent:1.0.0
+docker tag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $REGISTRY/$SOLUTION/ubbagent:1.0.0
 
 docker push $REGISTRY/$SOLUTION:1.0.0
 docker push $REGISTRY/$SOLUTION/cert-manager-acmesolver:1.0.0
@@ -143,50 +426,6 @@ kubectl annotate serviceaccount -n test-ns test-google-cas-issuer-serviceaccount
   iam.gke.io/gcp-service-account=sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
 ```
 
-You can now create an issuer and a certificate:
-
-```sh
-cat <<EOF | tee /dev/stderr | kubectl apply -f -
-apiVersion: cas-issuer.jetstack.io/v1alpha1
-kind: GoogleCASIssuer
-metadata:
-  name: googlecasissuer
-spec:
-  project: $(gcloud config get-value project | tr ':' '/')
-  location: $(gcloud config get-value privateca/location | tr ':' '/')
-  certificateAuthorityID: my-sub-ca
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: demo-certificate
-spec:
-  secretName: demo-cert-tls
-  commonName: cert-manager.io.demo
-  dnsNames:
-    - cert-manager.io
-    - jetstack.io
-  duration: 24h
-  renewBefore: 8h
-  issuerRef:
-    group: cas-issuer.jetstack.io
-    kind: GoogleCASIssuer
-    name: googlecasissuer
-EOF
-```
-
-You can check that the certificate has been issued with:
-
-```sh
-% kubectl describe cert demo-certificate
-Events:
-  Type    Reason     Age   From          Message
-  ----    ------     ----  ----          -------
-  Normal  Issuing    20s   cert-manager  Issuing certificate as Secret was previously issued by GoogleCASIssuer.cas-issuer.jetstack.io/googlecasissuer-sample
-  Normal  Reused     20s   cert-manager  Reusing private key stored in existing Secret resource "demo-cert-tls"
-  Normal  Requested  20s   cert-manager  Created new CertificateRequest resource "demo-certificate-v2rwr"
-  Normal  Issuing    20s   cert-manager  The certificate has been successfully issued
-```
 
 ## Testing and releasing the deployer using Google Cloud Build
 
