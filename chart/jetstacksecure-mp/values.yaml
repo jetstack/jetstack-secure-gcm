@@ -11,27 +11,52 @@ cert-manager:
       create: false # see note (1)
   serviceAccount:
     create: false # see note (1)
+  image:
+    repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager
+    tag: 1.1.0-gcm.1
+
+  acmesolver:
+    image:
+      repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver
+      tag: 1.1.0-gcm.1
+
   webhook:
     serviceAccount:
       create: false # see note (1)
+    image:
+      repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook
+      tag: 1.1.0-gcm.1
+
   cainjector:
     serviceAccount:
       create: false # see note (1)
+    image:
+      repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector
+      tag: 1.1.0-gcm.1
 
 google-cas-issuer:
   installCRDs: true
   serviceAccount:
     create: false # see note (1)
+  image:
+    repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer
+    tag: 1.1.0-gcm.1
 
 preflight:
   serviceAccount:
+    # name: foo
     create: false # see note (1)
   rbac:
     create: false # see note (1)
+  image:
+    repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
+    tag: 1.1.0-gcm.1
 
 ubbagent:
-  # reportingSecretName: "some-secret-name"
+  # By default, the reportingSecretName will be set to
+  #  ${helm-release}-license.
+  #
+  # reportingSecretName: chartname-license
   image:
-    {}
-    # tag: 1.1.0
-    # repository: gcr.io/jetstack-public/ubbagent
+    repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent
+    tag: 1.1.0-gcm.1

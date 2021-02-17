@@ -267,7 +267,7 @@ steps:
         done
         pod=$(kubectl -n "$ns" get pods -oname | grep "apptest-.*-deployer" | cut -d/ -f2)
 
-        kubectl wait -n "$ns" --for=condition=ready pod $pod
+        kubectl wait -n "$ns" --for=condition=ready --timeout=5m pod $pod
         kubectl logs -n "$ns" $pod -f --tail=-1
     waitFor:
       - check-cloud-marketplace-tools
@@ -292,13 +292,12 @@ steps:
         ns=$(kubectl get ns -oname  | grep apptest- | cut -d/ -f2)
 
         while : ; do
-          kubectl -n "$ns" get pods -oname | grep "apptest-.*-smoke-test-pod" && break
+          kubectl -n "$ns" get pods -oname | grep "smoke-test-pod" && break
           sleep 10
           done
-        pod=$(kubectl -n "$ns" get pods -oname | grep "apptest-.*-smoke-test-pod" | cut -d/ -f2)
 
-        kubectl wait -n "$ns" --for=condition=ready pod $pod
-        kubectl logs -n "$ns" $pod -f --tail=-1
+        kubectl wait -n "$ns" --for=condition=ready --timeout=5m pod smoke-test-pod
+        kubectl logs -n "$ns" smoke-test-pod -f --tail=-1
     waitFor:
       - check-cloud-marketplace-tools
       - push-deployer

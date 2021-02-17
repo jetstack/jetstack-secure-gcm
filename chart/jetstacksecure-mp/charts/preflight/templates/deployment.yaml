@@ -1,8 +1,8 @@
-{{ if not "disabled-for-now-due-to-missing-configmap" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "preflight.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "preflight.labels" . | nindent 4 }}
 spec:
@@ -48,4 +48,3 @@ spec:
           readOnly: true
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
-{{- end }}

@@ -13,9 +13,13 @@ spec:
   descriptor:
     type: Jetstack Secure Platform
     version: "1.1.0-gcm.1" # Must be the same as in the schema.yaml file.
+    icons:
+      - src: https://platform.jetstack.io/logo_icon.png
+        size: 458x500
+        type: image/png
   selector:
     matchLabels:
-      app.kubernetes.io/name: "{{ .Release.Name }}"
+      app.kubernetes.io/instance: "{{ .Release.Name }}"
   addOwnerRef: true
   componentKinds:
     - group: ""
