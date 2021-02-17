@@ -75,7 +75,7 @@ instructions](https://console.cloud.google.com/marketplace/details/jetstack/jets
 You can use [Google Cloud Shell](https://cloud.google.com/shell/) or a
 local workstation to complete these steps.
 
-[![Open in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/jetstack/jsp-gcm&cloudshell_working_dir=/)
+[![Open in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/jetstack/jetstack-secure-gcm&cloudshell_working_dir=/)
 
 #### Prerequisites
 
@@ -130,8 +130,8 @@ gcloud container clusters get-credentials "$CLUSTER" --zone "$ZONE"
 Clone this repo and the associated tools repo:
 
 ```shell
-git clone https://github.com/jetstack/jsp-gcm
-cd jsp-gcm
+git clone https://github.com/jetstack/jetstack-secure-gcm
+cd jetstack-secure-gcm
 ```
 
 ##### Install the Application resource definition
@@ -198,7 +198,7 @@ to your disk.
 
 <!--
 The following screenshot is stored in this issue:
-https://github.com/jetstack/jsp-gcm/issues/21
+https://github.com/jetstack/jetstack-secure-gcm/issues/21
 -->
 
 <img src="https://user-images.githubusercontent.com/2195781/108194095-7de04100-7116-11eb-8bd5-fa11c4fbbcf5.png" width="500">

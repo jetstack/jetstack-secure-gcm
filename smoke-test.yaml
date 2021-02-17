@@ -100,7 +100,7 @@ actions:
   #
   # Right now, the above GoogleCASIssuer does nothing, and the certificate
   # will never be issued. This TODO is tracked at
-  # https://github.com/jetstack/jsp-gcm/issues/19.
+  # https://github.com/jetstack/jetstack-secure-gcm/issues/19.
   - name: Delete google CAS issuer and certificate
     bashTest:
       script: |
