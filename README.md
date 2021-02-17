@@ -164,7 +164,7 @@ for the application.
 
 ```shell
 APP_INSTANCE_NAME=jetstack-secure-1
-NAMESPACE=cert-manager
+NAMESPACE=jetstack-secure
 ```
 
 Create the namespace:
