@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name | trunc 63 | trimSuffix "-" }}-ubbagent
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     helm.sh/chart: {{ .Chart.Name  }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
