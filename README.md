@@ -160,11 +160,17 @@ community. The source code can be found on
 
 Choose an instance name and
 [namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
-for the application. In most cases, you can use the `default` namespace.
+for the application.
 
 ```shell
 APP_INSTANCE_NAME=jetstack-secure-1
-NAMESPACE=default
+NAMESPACE=cert-manager
+```
+
+Create the namespace:
+
+```sh
+kubectl create namespace $NAMESPACE
 ```
 
 Set up the image tag, for example:
@@ -174,15 +180,8 @@ TAG="1.1.0-gcm.1"
 ```
 
 where `1.1.0` stands for the cert-manager version, and `gcm.1` is the
-Google Marketplace "build" version. Three types of tags are published:
-
-```sh
-TAG="1.1.0-gcm.1"        # stable tag (recommended)
-TAG="1.1.0"              # moving tag, targets cert-manager 1.1.0
-TAG="1.1"                # moving tag, targets cert-manager 1.1
-```
-
-The available tags are listed on the [Marketplace Container
+Google Marketplace "build" version. The available tags are listed on the
+[Marketplace Container
 Registry](marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager).
 
 > Note: all the upstream cert-mananger images are re-built with a
