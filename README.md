@@ -180,18 +180,16 @@ TAG="1.1.0-gcm.1"
 ```
 
 where `1.1.0` stands for the cert-manager version, and `gcm.1` is the
-Google Marketplace "build" version. The available tags are listed on the
-[Marketplace Container
-Registry](marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager).
+Google Marketplace "build" version.
 
-> Note: all the upstream cert-mananger images are re-built with a
+> Note: the upstream cert-mananger images are re-built with a
 > `/LICENSES.txt` file as well as re-tagged with the Marketplace versioning
 > described above, e.g. `1.1.0-gcm.1`. This was done in order to order to
 > abide by the
 > [schema.md](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/d9d3a6f/docs/schema.md)
 > rules, which states that "when users deploy the app from the Google Cloud
 > Marketplace, the final image names may be different, but they will follow
-> **the same release tag** and name prefix rule."
+> the same release tag and name prefix rule."
 
 #### Download and apply the license
 
@@ -268,10 +266,12 @@ To view the app, open the URL in your browser.
 
 ##### (optional) Set up the Google Certificate Authority Service
 
-The Certificate Authority Service is a highly available, scalable Google Cloud
+[Google Certificate Authority Service][] is a highly available, scalable Google Cloud
 service that enables you to simplify, automate, and customize the
 deployment, management, and security of private certificate authorities
 (CA).
+
+[Google Certificate Authority Service]: https://cloud.google.com/certificate-authority-service/
 
 If you wish to use [Google Certificate Authority
 Service](https://cloud.google.com/certificate-authority-service) to issue

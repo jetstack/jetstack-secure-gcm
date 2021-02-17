@@ -18,7 +18,8 @@ cert-manager:
   acmesolver:
     image:
       repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver
-      tag:
+      tag: 1.1.0-gcm.1
+
   webhook:
     serviceAccount:
       create: false # see note (1)
