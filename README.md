@@ -251,7 +251,7 @@ helm template "$APP_INSTANCE_NAME" chart/jetstacksecure-mp \
 Use `kubectl` to apply the manifest to your Kubernetes cluster:
 
 ```shell
-kubectl apply -f "${APP_INSTANCE_NAME}_manifest.yaml" --namespace "${NAMESPACE}"
+kubectl apply -f "${APP_INSTANCE_NAME}_manifest.yaml"
 ```
 
 ##### View the app in the Google Cloud Console
