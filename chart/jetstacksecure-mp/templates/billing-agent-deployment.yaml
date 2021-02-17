@@ -30,12 +30,12 @@ spec:
             - name: AGENT_ENCODED_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.ubbagent.reportingSecretName }}
+                  name: {{ default (print (.Release.Name | trunc 63 | trimSuffix "-") "-license") .Values.ubbagent.reportingSecretName }}
                   key: reporting-key
             - name: AGENT_CONSUMER_ID
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.ubbagent.reportingSecretName }}
+                  name: {{ default (print (.Release.Name | trunc 63 | trimSuffix "-") "-license") .Values.ubbagent.reportingSecretName }}
                   key: consumer-id
           volumeMounts:
             - name: ubbagent-config

@@ -55,6 +55,7 @@ more effective overall management of clusters.
       - [Install the Application resource definition](#install-the-application-resource-definition)
     - [Install the application](#install-the-application)
       - [Configure the application with environment variables](#configure-the-application-with-environment-variables)
+    - [Download and apply the license](#download-and-apply-the-license)
     - [Expand the manifest template](#expand-the-manifest-template)
       - [Apply the manifest to your Kubernetes cluster](#apply-the-manifest-to-your-kubernetes-cluster)
       - [View the app in the Google Cloud Console](#view-the-app-in-the-google-cloud-console)
@@ -181,13 +182,31 @@ where `1.1.0` stands for the cert-manager version, and `gcm.1` is the
 Google Marketplace "build" version. The available types of tags are:
 
 ```sh
-TAG=1.1.0-gcm.1        # stable tag (recommended)
-TAG=1.1.0              # moving tag, targets cert-manager 1.1.0
-TAG=1.1                # moving tag, targets cert-manager 1.1
+TAG="1.1.0-gcm.1"        # stable tag (recommended)
+TAG="1.1.0"              # moving tag, targets cert-manager 1.1.0
+TAG="1.1"                # moving tag, targets cert-manager 1.1
 ```
 
 The available tags are listed on the [Marketplace Container
 Registry](marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager).
+
+#### Download and apply the license
+
+Click the "Generate license key". This will download a `license.yaml` file
+to your disk.
+
+<!--
+The following screenshot is stored in this issue:
+https://github.com/jetstack/jsp-gcm/issues/21
+-->
+
+<img src="https://user-images.githubusercontent.com/2195781/108194095-7de04100-7116-11eb-8bd5-fa11c4fbbcf5.png" width="500">
+
+Then, add the license to your cluster:
+
+```sh
+kubectl apply -n $NAMESPACE -f license.yaml
+```
 
 #### Expand the manifest template
 
@@ -197,15 +216,20 @@ expanded manifest file for future updates to the application.
 ```shell
 helm template "$APP_INSTANCE_NAME" chart/jetstacksecure-mp \
   --namespace "$NAMESPACE" \
-  --set cert-manager.image.repository="$TAG"
-  --set cert-manager.webhook.image.repository="$TAG"
-  --set cert-manager.acmesolver.image.repository="$TAG"
-  --set cert-manager.cainjector.image.repository="$TAG"
-  --set google-cas-issuer.image.repository="$TAG"
-  --set preflight.image.repository="$TAG"
-  --set ubbagent.image.repository="$TAG"
-  --set google-cas-issuer.serviceAccount.create=true
-  --set google-cas-issuer.serviceAccount.name=google-cas-issuer-sa
+  --set cert-manager.global.rbac.create=true \
+  --set cert-manager.serviceAccount.create=true \
+  --set cert-manager.image.tag="$TAG" \
+  --set cert-manager.acmesolver.image.tag="$TAG" \
+  --set cert-manager.webhook.image.tag="$TAG" \
+  --set cert-manager.webhook.serviceAccount.create=true \
+  --set cert-manager.cainjector.image.tag="$TAG" \
+  --set cert-manager.cainjector.serviceAccount.create=true \
+  --set google-cas-issuer.image.tag="$TAG" \
+  --set google-cas-issuer.serviceAccount.create=true \
+  --set google-cas-issuer.serviceAccount.name=google-cas-issuer \
+  --set preflight.image.tag="$TAG" \
+  --set ubbagent.image.tag="$TAG" \
+  --set ubbagent.reportingSecretName=$APP_INSTANCE_NAME-license \
   > "${APP_INSTANCE_NAME}_manifest.yaml"
 ```
 
@@ -274,7 +298,7 @@ the following:
 ```sh
 gcloud iam service-accounts add-iam-policy-binding $APP_INSTANCE_NAME@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
   --role roles/iam.workloadIdentityUser \
-  --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[$NAMESPACE/google-cas-issuer-sa]"
+  --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[$NAMESPACE/google-cas-issuer]"
 ```
 
 You can now create a cert-manager Google CAS issuer and have a certificate

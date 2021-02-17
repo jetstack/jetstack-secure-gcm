@@ -51,7 +51,10 @@ preflight:
     tag: 1.1.0-gcm.1
 
 ubbagent:
-  # reportingSecretName: "some-secret-name"
+  # By default, the reportingSecretName will be set to
+  #  ${helm-release}-license.
+  #
+  # reportingSecretName: chartname-license
   image:
     repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent
     tag: 1.1.0-gcm.1
