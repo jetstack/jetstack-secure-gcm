@@ -44,6 +44,7 @@ google-cas-issuer:
 
 preflight:
   serviceAccount:
+    # name: foo
     create: false # see note (1)
   rbac:
     create: false # see note (1)

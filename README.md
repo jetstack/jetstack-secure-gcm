@@ -59,6 +59,7 @@ more effective overall management of clusters.
     - [Expand the manifest template](#expand-the-manifest-template)
       - [Apply the manifest to your Kubernetes cluster](#apply-the-manifest-to-your-kubernetes-cluster)
       - [View the app in the Google Cloud Console](#view-the-app-in-the-google-cloud-console)
+      - [(optional) Enable the Jetstack Secure web dashboard](#optional-enable-the-jetstack-secure-web-dashboard)
       - [(optional) Set up the Google Certificate Authority Service](#optional-set-up-the-google-certificate-authority-service)
 
 ## Installation
@@ -229,6 +230,7 @@ helm template "$APP_INSTANCE_NAME" chart/jetstacksecure-mp \
   --set google-cas-issuer.serviceAccount.create=true \
   --set google-cas-issuer.serviceAccount.name=google-cas-issuer \
   --set preflight.image.tag="$TAG" \
+  --set preflight.serviceAccount.create=true \
   --set ubbagent.image.tag="$TAG" \
   --set ubbagent.reportingSecretName=$APP_INSTANCE_NAME-license \
   > "${APP_INSTANCE_NAME}_manifest.yaml"
@@ -263,6 +265,21 @@ echo "https://console.cloud.google.com/kubernetes/application/${ZONE}/${CLUSTER}
 ```
 
 To view the app, open the URL in your browser.
+
+##### (optional) Enable the Jetstack Secure web dashboard
+
+This will allow you to vizualize the certificates in your cluster. By
+default, the Jetstack Secure agent is installed without configuration. To
+set it up, please follow these steps:
+
+1. Create an account on the Jetstack Secure Platform at
+   <https://platform.jetstack.io>
+2. Click the "Machine Identity" button in the tool bar on the left
+3. Click "ADD CLUSTER"
+4. Follow the instructions
+5. Click "COPY COMMAND TO CLIPBOARD" to copy the credentials and configuration command to the clipboard
+6. Paste the command into a text editor and change the namespace to match `$NAMESPACE`
+7. Execute the command in your terminal
 
 ##### (optional) Set up the Google Certificate Authority Service
 
