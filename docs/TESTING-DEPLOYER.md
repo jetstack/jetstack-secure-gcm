@@ -1,8 +1,13 @@
 # Creating and testing the deployer image
 
-The deployer image embeds everything that is required for applying the
-correct Kubernetes manifests to deploy the Jetstack Secure for
-cert-manager application. In our case, the image embeds:
+The deployer image is **only** used when the Jetstack Secure for
+cert-manager is deployed in through the UI; it is not used for when
+installing the application through the CLI.
+
+The deployer image embeds
+everything that is required for applying the correct Kubernetes manifests
+to deploy the Jetstack Secure for cert-manager application. In our case,
+the image embeds:
 
 - The `helm` tool,
 - The Helm charts for cert-manager, google-cas-issuer and preflight.
