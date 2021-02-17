@@ -14,6 +14,11 @@ properties:
     default: $IMAGE
     x-google-property:
       type: IMAGE
+
+  # We had to disable preflight so that `mpdev verify` would not fail. It
+  # fails due to the fact that the preflight deployment never becomes
+  # "ready" since the secret "agent-credentials" and the configmap
+  # "agent-config" are absent from the cluster.
   preflight.replicaCount:
     type: integer
     default: 0
