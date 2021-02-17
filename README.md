@@ -277,17 +277,24 @@ If you wish to use [Google Certificate Authority
 Service](https://cloud.google.com/certificate-authority-service) to issue
 certificates, you can create a root certificate authority and a subordinate
 certificate authority (i.e., an intermediate CA) on your Google Cloud
-project with the following:
+project. To create a root and a subordinate CA, please follow the [official
+documentation](https://cloud.google.com/certificate-authority-service/docs/creating-certificate-authorities).
+
+After creating the root and subordinate, set the following variable with
+the subordinate name:
 
 ```sh
-gcloud beta privateca roots create my-ca --location $LOCATION --subject="CN=root,O=my-ca"
-gcloud beta privateca subordinates create my-sub-ca  --issuer=my-ca --location $LOCATION --subject="CN=intermediate,O=my-ca,OU=my-sub-ca"
+SUBORDINATE=example-ca-1
 ```
 
-Note that it is
-[recommended](https://cloud.google.com/certificate-authority-service/docs/creating-certificate-authorities)
-to create a subordinate CA for signing leaf certificates as opposed to
-using a root CA directly.
+> Note that you can list your current subordinate CAs with the following
+> command:
+>
+> ```sh
+> % gcloud beta privateca subordinates list
+> NAME          LOCATION      STATE         NOT_BEFORE         NOT_AFTER
+> example-ca-1  europe-west1  ENABLED       2021-02-02T11:41Z  2024-02-03T05:08Z
+> ```
 
 The next step is to create a Google service account that will be used by
 the application in order to reach the Google Certificate Authority Service
@@ -301,7 +308,7 @@ Give the Google service account the permission to issue certificates using
 the Google CAS API:
 
 ```sh
-gcloud beta privateca subordinates add-iam-policy-binding my-sub-ca \
+gcloud beta privateca subordinates add-iam-policy-binding $SUBORDINATE \
   --role=roles/privateca.certificateRequester \
   --member=serviceAccount:$APP_INSTANCE_NAME@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
 ```
@@ -328,7 +335,7 @@ metadata:
 spec:
   project: $(gcloud config get-value project | tr ':' '/')
   location: $LOCATION
-  certificateAuthorityID: my-sub-ca
+  certificateAuthorityID: $SUBORDINATE
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
