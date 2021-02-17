@@ -14,3 +14,6 @@ properties:
     default: $IMAGE
     x-google-property:
       type: IMAGE
+  preflight.replicaCount:
+    type: integer
+    default: 0

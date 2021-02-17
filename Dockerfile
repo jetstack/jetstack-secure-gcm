@@ -23,6 +23,5 @@ RUN cd /tmp/data-test \
         && tar -czvf /tmp/data-test/chart.tar.gz chart \
         && mv chart.tar.gz /data-test/chart/
 
-
 # If you wonder what magic is this, take a look at:
 # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/4335f9/marketplace/deployer_helm_base/onbuild/Dockerfile#L16-L20
