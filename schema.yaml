@@ -107,6 +107,7 @@ properties:
       type: NAMESPACE
   cert-manager.serviceAccount.name:
     type: string
+    title: Name of the Kubernetes service account for the cert-manager controller
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
@@ -232,6 +233,7 @@ properties:
 
   cert-manager.webhook.serviceAccount.name:
     type: string
+    title: Name of the Kubernetes service account for the cert-manager webhook
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
@@ -246,6 +248,7 @@ properties:
 
   cert-manager.cainjector.serviceAccount.name:
     type: string
+    title: Name of the Kubernetes service account for the cert-manager cainjector
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
@@ -278,6 +281,7 @@ properties:
 
   google-cas-issuer.serviceAccount.name:
     type: string
+    title: Name of the Kubernetes service account for the google-cas-issuer
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
@@ -329,6 +333,7 @@ properties:
 
   preflight.serviceAccount.name:
     type: string
+    title: Name of the Kubernetes service account for the Jetstack Secure agent
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:

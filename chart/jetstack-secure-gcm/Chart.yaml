@@ -5,7 +5,7 @@
 # `cloudbuild.yml`.
 apiVersion: v2
 engine: gotpl
-name: jetstacksecure-mp
+name: jetstack-secure-gcm
 version: 1.0.0
 dependencies:
   - name: cert-manager

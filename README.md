@@ -216,7 +216,7 @@ Use `helm template` to expand the template. We recommend that you save the
 expanded manifest file for future updates to the application.
 
 ```shell
-helm template "$APP_INSTANCE_NAME" chart/jetstacksecure-mp \
+helm template "$APP_INSTANCE_NAME" chart/jetstack-secure-gcm \
   --namespace "$NAMESPACE" \
   --set cert-manager.global.rbac.create=true \
   --set cert-manager.serviceAccount.create=true \
