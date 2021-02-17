@@ -1,17 +1,49 @@
 # Jetstack Secure for cert-manager on the Google Cloud Marketplace
 
-<!--
-Inspiration:
-https://github.com/unleash-hosted/unleash-hosted-gcp-marketplace/blob/master/README.md
--->
+## Overview
 
-## Overview of Jetstack Secure for cert-manager
+Jetstack Secure runs inside the Kubernetes clusters and provides higher
+levels of control and management around machine identity protection. It
+exists to solve real enterprise problems from a lack of control and
+visibility of machine identities and how they map to the organisation's
+cloud infrastructure. As workloads start to scale, the need for machine
+identity management grows.
 
-TODO: description of jetstack secure
+Jetstack Secure is built on top of cert-manager and uses native integration
+with the Kubernetes API to secure workloads between clusters and nodes to
+protect from outside malicious intent, and provide real-time visual status
+on cluster integrity. cert-manager has become the de facto solution for
+issuing and renewing certificates from popular public and private
+certificate issuers. Platform operators can provide fast and easy
+self-service to development teams, whilst maintaining control and
+protection at all times.
+
+Key benefits of Jetstack Secure:
+
+- Builds a detailed view of the security posture using a management UI to
+  monitor and manage the TLS certificates assigned to each cluster
+- Integrates natively with Kubernetes and OpenShift
+- Automates the full X.509 certificate lifecycle
+- Prevents certificate-related outages and security breaches
+- Modern declarative "as code" configuration and automation
+- Ensures workloads comply with corporate security best practice
+- Enforces security through continuous monitoring of machine identities
+
+## How it works
+
+A lightweight agent is installed to clusters to observe the status and
+health of machine identities, including those that have been manually
+created by developers. The web based management interface gives visibility
+of these identities and the context such as pod, namespace and cluster, to
+quickly identify and troubleshoot misconfigurations that risk operational
+and security posture. As the infrastructure scales, Jetstack Secure
+provides a rich set of additional tools and support capabilities to give
+more effective overall management of clusters.
 
 **Contents:**
 
-- [Overview of Jetstack Secure for cert-manager](#overview-of-jetstack-secure-for-cert-manager)
+- [Overview](#overview)
+- [How it works](#how-it-works)
 - [Installation](#installation)
   - [Quick install with Google Cloud Marketplace](#quick-install-with-google-cloud-marketplace)
   - [Command line instructions](#command-line-instructions)
