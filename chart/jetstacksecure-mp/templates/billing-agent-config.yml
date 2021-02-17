@@ -7,6 +7,8 @@ metadata:
     helm.sh/chart: "{{ .Chart.Name  }}"
     app.kubernetes.io/version: "{{ .Chart.AppVersion }}"
     app.kubernetes.io/component: ubbagent
+    app.kubernetes.io/instance: "{{ .Release.Name | trunc 63 | trimSuffix "-" }}"
+
 data:
   config.yaml: |
     # The identity section contains authentication information used

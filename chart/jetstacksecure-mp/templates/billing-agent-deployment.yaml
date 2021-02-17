@@ -7,6 +7,7 @@ metadata:
     helm.sh/chart: {{ .Chart.Name  }}
     app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
     app.kubernetes.io/name: {{ .Release.Name | trunc 63 | trimSuffix "-" }}
+    app.kubernetes.io/instance: {{ .Release.Name | trunc 63 | trimSuffix "-" }}
     app.kubernetes.io/component: ubbagent
 spec:
   replicas: 1
