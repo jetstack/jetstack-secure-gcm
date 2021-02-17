@@ -1,4 +1,9 @@
-# https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md
+# Schema.yaml reference::
+# https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/8bc78db/docs/schema.md
+#
+# Example:
+# https://github.com/GoogleCloudPlatform/marketplace-k8s-app-example/blob/8bc78db/wordpress-updatable/versions/0.1.4/schema.yaml
+
 x-google-marketplace:
   schemaVersion: v2
 
@@ -383,6 +388,11 @@ properties:
     type: string
     x-google-marketplace:
       type: REPORTING_SECRET
+
+  deployerImage:
+    type: string
+    x-google-marketplace:
+      type: DEPLOYER_IMAGE
 
 required:
   - name
