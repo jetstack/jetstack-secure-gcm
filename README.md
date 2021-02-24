@@ -44,7 +44,10 @@ more effective overall management of clusters.
 
 - [Overview](#overview)
 - [How it works](#how-it-works)
-- [Installation](#installation)
+- [Click-to-deploy installation](#click-to-deploy-installation)
+  - [Step 1: Install Jestack Secure for cert-manager](#step-1-install-jestack-secure-for-cert-manager)
+  - [Step 2: log into the Jetstack Secure dashboard](#step-2-log-into-the-jetstack-secure-dashboard)
+- [CLI installation](#cli-installation)
   - [Quick install with Google Cloud Marketplace](#quick-install-with-google-cloud-marketplace)
   - [Command line instructions](#command-line-instructions)
     - [Prerequisites](#prerequisites)
@@ -62,7 +65,85 @@ more effective overall management of clusters.
       - [(optional) Enable the Jetstack Secure web dashboard](#optional-enable-the-jetstack-secure-web-dashboard)
       - [(optional) Set up the Google Certificate Authority Service](#optional-set-up-the-google-certificate-authority-service)
 
-## Installation
+## Click-to-deploy installation
+
+This guide assumes you will follow the "click to deploy instructions"
+through the UI. If you prefer to deploy via the command line you can follow
+the instructions [below](#cli-installation).
+
+### Step 1: Install Jestack Secure for cert-manager
+
+Head over to the [Jetstack Secure for
+cert-manager](https://console.cloud.google.com/marketplace/details/jetstack-public/jetstack-secure-for-cert-manager)
+solution page on the Google Cloud Marketplace. Click "Configure". You need
+to either select an existing cluster or create a new one that you want to
+deploy Jetstack Secure for cert-manager into. Finally, click the "Deploy"
+button:
+
+<img src="https://user-images.githubusercontent.com/2195781/109023553-31b87200-76bd-11eb-8fc4-a9e46ae44582.png" width="500" alt="this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+This will install Jetstack Secure for cert-manager, and will redirect to
+the [GKE Applications](https://console.cloud.google.com/kubernetes/application) page:
+
+<img src="https://user-images.githubusercontent.com/2195781/108228677-61a4ca00-713f-11eb-971a-7306b220db23.png" width="500" alt="this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+### Step 2: log into the Jetstack Secure dashboard
+
+Head to <https://platform.jetstack.io>, click "Get Started" and sign up to
+the Jetstack Secure dashboard.
+
+Then, click on the "Machine Identity" icon (1) and click on "Create cluster" (2):
+
+<img src="https://user-images.githubusercontent.com/2195781/109025110-ba83dd80-76be-11eb-9815-c91408c0096a.png" width="500" alt="Create cluster button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+Choose a name for your cluster; this name will show in the Jetstack Secure
+dashboard:
+
+<img src="https://user-images.githubusercontent.com/2195781/109025768-531a5d80-76bf-11eb-87c6-fa3cb888d9ea.png" width="500" alt="Choose your cluster name. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+You will then see a button "Click to copy command to clopboard". Clicking
+it will copy the Kubernetes manifest for creating the configuration needed
+for the Jetstack Secure agent to report to the Jetstack Secure dashboard.
+
+<img src="https://user-images.githubusercontent.com/2195781/109026248-d76ce080-76bf-11eb-94be-bc1c8f54b2cf.png" width="500" alt="Click the button 'Copy command to clipboard'. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+With the help of a text editor, paste the content of your paste bin in order to edit the content:
+
+1. remove the top line that read `kubectl ...`;
+2. remove the block at the top that creates the namespace;
+3. remove the two lines that mention `namespace: jetstack-secure`;
+4. remove the last line that read `EOF`.
+
+<img src="https://user-images.githubusercontent.com/2195781/109033586-16eafb00-76c7-11eb-9e77-175e73ff0e06.png" width="500" alt="Click the button 'Open a text editor and change a few lines from the configmap and secret. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+Save the file as `agent-config.yaml` and apply it to your cluster:
+
+```sh
+# This is the namespace chosen before clicking on "Deploy".
+NAMESPACE=jetstack-secure
+
+kubectl -n $NAMESPACE apply  -f agent-config.yaml
+kubectl -n $NAMESPACE rollout restart deploy jetstack-secure-preflight
+```
+
+You can then skip the "Install agent" step since the agent is already present when installing Jetstack Secure for cert-manager.
+
+Before clicking on "The agent is ready", check that the agent pod is
+running:
+
+```sh
+kubectl -n $NAMESPACE get pod -l app.kubernetes.io/name=preflight
+```
+
+<img src="https://user-images.githubusercontent.com/2195781/109031982-8829ae80-76c5-11eb-8758-283f63a24fd7.png" width="500" alt="Check that the configuration worked and that the agent pod is running. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+Finally, you can press the button "The agent is ready"; a green check mark should appear:
+
+<img src="https://user-images.githubusercontent.com/2195781/109036926-6b43aa00-76ca-11eb-9649-d3c4e5ac71db.png" width="500" alt="After clicking on 'The agent is ready', you should see a green check mark. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+You can now click on "View clusters" to monitor your certificates.
+
+## CLI installation
 
 ### Quick install with Google Cloud Marketplace
 
@@ -197,12 +278,7 @@ Google Marketplace "build" version.
 Click the "Generate license key". This will download a `license.yaml` file
 to your disk.
 
-<!--
-The following screenshot is stored in this issue:
-https://github.com/jetstack/jetstack-secure-gcm/issues/21
--->
-
-<img src="https://user-images.githubusercontent.com/2195781/108194095-7de04100-7116-11eb-8bd5-fa11c4fbbcf5.png" width="500">
+<img src="https://user-images.githubusercontent.com/2195781/108194095-7de04100-7116-11eb-8bd5-fa11c4fbbcf5.png" width="500" alt="this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 Then, add the license to your cluster:
 
