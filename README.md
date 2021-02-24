@@ -231,6 +231,7 @@ helm template "$APP_INSTANCE_NAME" chart/jetstack-secure-gcm \
   --set google-cas-issuer.serviceAccount.name=google-cas-issuer \
   --set preflight.image.tag="$TAG" \
   --set preflight.serviceAccount.create=true \
+  --set preflight.rbac.create=true \
   --set ubbagent.image.tag="$TAG" \
   --set ubbagent.reportingSecretName=$APP_INSTANCE_NAME-license \
   > "${APP_INSTANCE_NAME}_manifest.yaml"
