@@ -47,6 +47,7 @@ more effective overall management of clusters.
 - [Click-to-deploy installation](#click-to-deploy-installation)
   - [Step 1: Install Jestack Secure for cert-manager](#step-1-install-jestack-secure-for-cert-manager)
   - [Step 2: log into the Jetstack Secure dashboard](#step-2-log-into-the-jetstack-secure-dashboard)
+  - [Step 3 (optional): set up the Google Certificate Authority Service](#step-3-optional-set-up-the-google-certificate-authority-service)
 - [CLI installation](#cli-installation)
   - [Quick install with Google Cloud Marketplace](#quick-install-with-google-cloud-marketplace)
   - [Command line instructions](#command-line-instructions)
@@ -62,8 +63,6 @@ more effective overall management of clusters.
     - [Expand the manifest template](#expand-the-manifest-template)
       - [Apply the manifest to your Kubernetes cluster](#apply-the-manifest-to-your-kubernetes-cluster)
       - [View the app in the Google Cloud Console](#view-the-app-in-the-google-cloud-console)
-      - [(optional) Enable the Jetstack Secure web dashboard](#optional-enable-the-jetstack-secure-web-dashboard)
-      - [(optional) Set up the Google Certificate Authority Service](#optional-set-up-the-google-certificate-authority-service)
 
 ## Click-to-deploy installation
 
@@ -142,6 +141,119 @@ Finally, you can press the button "The agent is ready"; a green check mark shoul
 <img src="https://user-images.githubusercontent.com/2195781/109036926-6b43aa00-76ca-11eb-9649-d3c4e5ac71db.png" width="500" alt="After clicking on 'The agent is ready', you should see a green check mark. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 You can now click on "View clusters" to monitor your certificates.
+
+### Step 3 (optional): set up the Google Certificate Authority Service
+
+[Google Certificate Authority Service][] is a highly available, scalable Google Cloud
+service that enables you to simplify, automate, and customize the
+deployment, management, and security of private certificate authorities
+(CA).
+
+[Google Certificate Authority Service]: https://cloud.google.com/certificate-authority-service/
+
+If you wish to use [Google Certificate Authority
+Service](https://cloud.google.com/certificate-authority-service) to issue
+certificates, you can create a root certificate authority and a subordinate
+certificate authority (i.e., an intermediate CA) on your Google Cloud
+project. To create a root and a subordinate CA, please follow the [official
+documentation](https://cloud.google.com/certificate-authority-service/docs/creating-certificate-authorities).
+
+After creating the root and subordinate, set the following variable with
+the subordinate name:
+
+```sh
+LOCATION=europe-west1
+SUBORDINATE=example-ca-1
+```
+
+> Note that you can list your current subordinate CAs with the following
+> command:
+>
+> ```sh
+> % gcloud beta privateca subordinates list
+> NAME          LOCATION      STATE         NOT_BEFORE         NOT_AFTER
+> example-ca-1  europe-west1  ENABLED       2021-02-02T11:41Z  2024-02-03T05:08Z
+> ```
+
+The next step is to create a Google service account that will be used by
+the application in order to reach the Google Certificate Authority Service
+API:
+
+```sh
+# The app instance name is the name of the application you created. If you
+# forgot which name you gave to your application, take a look at:
+# https://console.cloud.google.com/kubernetes/application.
+APP_INSTANCE_NAME=some-name
+
+# This is the namespace in which the application has been deployed.
+NAMESPACE=some-namespace
+
+gcloud iam service-accounts create $APP_INSTANCE_NAME
+```
+
+Give the Google service account the permission to issue certificates using
+the Google CAS API:
+
+```sh
+gcloud beta privateca subordinates add-iam-policy-binding $SUBORDINATE \
+  --role=roles/privateca.certificateRequester \
+  --member=serviceAccount:$APP_INSTANCE_NAME@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
+```
+
+Finally, bind this Google service account to the Kubernetes service account
+that was created by the above `kubectl apply` command. To bind them, run
+the following:
+
+```sh
+gcloud iam service-accounts add-iam-policy-binding $APP_INSTANCE_NAME@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
+  --role roles/iam.workloadIdentityUser \
+  --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[$NAMESPACE/google-cas-issuer]"
+```
+
+You can now create a cert-manager Google CAS issuer and have a certificate
+issued with the following:
+
+```sh
+cat <<EOF | tee /dev/stderr | kubectl apply -f -
+apiVersion: cas-issuer.jetstack.io/v1alpha1
+kind: GoogleCASIssuer
+metadata:
+  name: googlecasissuer
+spec:
+  project: $(gcloud config get-value project | tr ':' '/')
+  location: $LOCATION
+  certificateAuthorityID: $SUBORDINATE
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: demo-certificate
+spec:
+  secretName: demo-cert-tls
+  commonName: example.com
+  dnsNames:
+    - example.com
+  duration: 24h
+  renewBefore: 8h
+  issuerRef:
+    group: cas-issuer.jetstack.io
+    kind: GoogleCASIssuer
+    name: googlecasissuer
+EOF
+```
+
+You can check that the certificate has been issued with:
+
+```sh
+% kubectl describe cert demo-certificate
+Events:
+  Type    Reason     Age   From          Message
+  ----    ------     ----  ----          -------
+  Normal  Issuing    20s   cert-manager  Issuing certificate as Secret was previously issued by GoogleCASIssuer.cas-issuer.jetstack.io/googlecasissuer-sample
+  Normal  Reused     20s   cert-manager  Reusing private key stored in existing Secret resource "demo-cert-tls"
+  Normal  Requested  20s   cert-manager  Created new CertificateRequest resource "demo-certificate-v2rwr"
+  Normal  Issuing    20s   cert-manager  The certificate has been successfully issued
+```
 
 ## CLI installation
 
@@ -343,121 +455,9 @@ echo "https://console.cloud.google.com/kubernetes/application/${ZONE}/${CLUSTER}
 
 To view the app, open the URL in your browser.
 
-##### (optional) Enable the Jetstack Secure web dashboard
+Optionally, you can also:
 
-This will allow you to vizualize the certificates in your cluster. By
-default, the Jetstack Secure agent is installed without configuration. To
-set it up, please follow these steps:
-
-1. Create an account on the Jetstack Secure Platform at
-   <https://platform.jetstack.io>
-2. Click the "Machine Identity" button in the tool bar on the left
-3. Click "ADD CLUSTER"
-4. Follow the instructions
-5. Click "COPY COMMAND TO CLIPBOARD" to copy the credentials and configuration command to the clipboard
-6. Paste the command into a text editor and change the namespace to match `$NAMESPACE`
-7. Execute the command in your terminal
-
-##### (optional) Set up the Google Certificate Authority Service
-
-[Google Certificate Authority Service][] is a highly available, scalable Google Cloud
-service that enables you to simplify, automate, and customize the
-deployment, management, and security of private certificate authorities
-(CA).
-
-[Google Certificate Authority Service]: https://cloud.google.com/certificate-authority-service/
-
-If you wish to use [Google Certificate Authority
-Service](https://cloud.google.com/certificate-authority-service) to issue
-certificates, you can create a root certificate authority and a subordinate
-certificate authority (i.e., an intermediate CA) on your Google Cloud
-project. To create a root and a subordinate CA, please follow the [official
-documentation](https://cloud.google.com/certificate-authority-service/docs/creating-certificate-authorities).
-
-After creating the root and subordinate, set the following variable with
-the subordinate name:
-
-```sh
-SUBORDINATE=example-ca-1
-```
-
-> Note that you can list your current subordinate CAs with the following
-> command:
->
-> ```sh
-> % gcloud beta privateca subordinates list
-> NAME          LOCATION      STATE         NOT_BEFORE         NOT_AFTER
-> example-ca-1  europe-west1  ENABLED       2021-02-02T11:41Z  2024-02-03T05:08Z
-> ```
-
-The next step is to create a Google service account that will be used by
-the application in order to reach the Google Certificate Authority Service
-API:
-
-```sh
-gcloud iam service-accounts create $APP_INSTANCE_NAME
-```
-
-Give the Google service account the permission to issue certificates using
-the Google CAS API:
-
-```sh
-gcloud beta privateca subordinates add-iam-policy-binding $SUBORDINATE \
-  --role=roles/privateca.certificateRequester \
-  --member=serviceAccount:$APP_INSTANCE_NAME@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
-```
-
-Finally, bind this Google service account to the Kubernetes service account
-that was created by the above `kubectl apply` command. To bind them, run
-the following:
-
-```sh
-gcloud iam service-accounts add-iam-policy-binding $APP_INSTANCE_NAME@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
-  --role roles/iam.workloadIdentityUser \
-  --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[$NAMESPACE/google-cas-issuer]"
-```
-
-You can now create a cert-manager Google CAS issuer and have a certificate
-issued with the following:
-
-```sh
-cat <<EOF | tee /dev/stderr | kubectl apply -f -
-apiVersion: cas-issuer.jetstack.io/v1alpha1
-kind: GoogleCASIssuer
-metadata:
-  name: googlecasissuer
-spec:
-  project: $(gcloud config get-value project | tr ':' '/')
-  location: $LOCATION
-  certificateAuthorityID: $SUBORDINATE
----
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: demo-certificate
-spec:
-  secretName: demo-cert-tls
-  commonName: example.com
-  dnsNames:
-    - example.com
-  duration: 24h
-  renewBefore: 8h
-  issuerRef:
-    group: cas-issuer.jetstack.io
-    kind: GoogleCASIssuer
-    name: googlecasissuer
-EOF
-```
-
-You can check that the certificate has been issued with:
-
-```sh
-% kubectl describe cert demo-certificate
-Events:
-  Type    Reason     Age   From          Message
-  ----    ------     ----  ----          -------
-  Normal  Issuing    20s   cert-manager  Issuing certificate as Secret was previously issued by GoogleCASIssuer.cas-issuer.jetstack.io/googlecasissuer-sample
-  Normal  Reused     20s   cert-manager  Reusing private key stored in existing Secret resource "demo-cert-tls"
-  Normal  Requested  20s   cert-manager  Created new CertificateRequest resource "demo-certificate-v2rwr"
-  Normal  Issuing    20s   cert-manager  The certificate has been successfully issued
-```
+- Enable the Jetstack Secure web dashboard by following the steps
+  [here](#step-2-log-into-the-jetstack-secure-dashboard),
+- Set up the Google Certificate Authority Service by following the steps
+  [here](#step-3-optional-set-up-the-google-certificate-authority-service).
