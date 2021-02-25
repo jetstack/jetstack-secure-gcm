@@ -84,6 +84,11 @@ On the next screen, you will be asked to either select an existing cluster
 or create a new one, as well as choosing the Kubernetes namespace in which
 the application will be created in.
 
+Note that this application is not meant to be running on multiple instances
+on the same cluster. Before installing the application on a cluster, make
+sure that no other instance of `Jetstack Secure for cert-manager` is
+running on that cluster.
+
 We recommend avoiding installing `Jetstack Secure for cert-manager` in the
 `default` namespace. Prefer using a different namespace name such as
 `jetstack-secure`.
