@@ -115,7 +115,7 @@ will be able to create one:
 
 <img src="https://user-images.githubusercontent.com/2195781/109153999-f7f37400-776d-11eb-9042-fb34a2e8accc.png" width="500" alt="The Jetstack Secure login page. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-Then, click on the "Machine Identity" icon _(1)_ and click the "Create
+Then, click on the "Machine Identity" icon _(1)_ and click the "Add
 cluster" button _(2)_:
 
 <img src="https://user-images.githubusercontent.com/2195781/109025110-ba83dd80-76be-11eb-9815-c91408c0096a.png" width="500" alt="Create cluster button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
