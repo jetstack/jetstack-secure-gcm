@@ -82,9 +82,17 @@ solution page on the Google Cloud Marketplace. Click "Configure":
 
 On the next screen, you will be asked to either select an existing cluster
 or create a new one, as well as choosing the Kubernetes namespace in which
-the application will be created in. We recommend avoiding installing
-Jetstack Secure for cert-manager in the `default` namespace. Prefer using a
-different namespace name such as `jetstack-secure`.
+the application will be created in.
+
+We recommend avoiding installing `Jetstack Secure for cert-manager` in the
+`default` namespace. Prefer using a different namespace name such as
+`jetstack-secure`.
+
+Regarding the App instance name, we recommend using an application name
+such as `jetstack-secure`. This app instance name will appear as a prefix
+of all the Kubernetes objects.
+
+The remaining of the settings can be left to their default values.
 
 When you are done, click the "Deploy" button:
 
