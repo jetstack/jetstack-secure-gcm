@@ -66,9 +66,11 @@ more effective overall management of clusters.
 
 ## Click-to-deploy installation
 
-This guide assumes you will follow the "click to deploy instructions"
-through the UI. If you prefer to deploy via the command line you can follow
-the instructions [below](#cli-installation).
+This guide describes how to install `Jetstack Secure for cert-manager` via
+the Google Cloud Marketplace web UI.
+
+Alternatively, you can follow the [CLI installation
+instructions](#cli-installation).
 
 ### Step 1: Install Jestack Secure for cert-manager
 
