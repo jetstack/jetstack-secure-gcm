@@ -129,7 +129,7 @@ After picking a name, click on the check mark:
 
 <img src="https://user-images.githubusercontent.com/2195781/109155511-ec08b180-776f-11eb-82e1-45b0c32720d6.png" width="500" alt="Choose your cluster name and click the check mark button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-Next, click the button "Click to copy command to clipboard":
+Next, click the button "Copy command to clipboard":
 
 <img src="https://user-images.githubusercontent.com/2195781/109026248-d76ce080-76bf-11eb-94be-bc1c8f54b2cf.png" width="500" alt="Click the button 'Copy command to clipboard'. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
