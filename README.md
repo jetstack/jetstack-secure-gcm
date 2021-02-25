@@ -89,7 +89,7 @@ When you are done, click the "Deploy" button:
 <img src="https://user-images.githubusercontent.com/2195781/109023553-31b87200-76bd-11eb-8fc4-a9e46ae44582.png" width="500" alt="this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 This will install Jetstack Secure for cert-manager, and will redirect to
-the [GKE Applications](https://console.cloud.google.com/kubernetes/application) page:
+the [Applications](https://console.cloud.google.com/kubernetes/application) page:
 
 <img src="https://user-images.githubusercontent.com/2195781/108228677-61a4ca00-713f-11eb-971a-7306b220db23.png" width="500" alt="this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
@@ -110,8 +110,9 @@ cluster" button _(2)_:
 
 <img src="https://user-images.githubusercontent.com/2195781/109025110-ba83dd80-76be-11eb-9815-c91408c0096a.png" width="500" alt="Create cluster button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-Choose a name for your cluster. This name does not related to your GKE
-cluster and is used to show a human-readable name in the Jetstack Secure
+Choose a name for your cluster. This name is not related to the Google
+Kubernetes Engine cluster you selected when you deployed the application.
+This name is only used to show your cluster in the Jetstack Secure
 dashboard.
 
 After picking a name, click on the check mark:
@@ -132,22 +133,60 @@ With the help of a text editor, paste the content and edit it:
 After having removed the above lines, save the content as a file on your
 disk. You can call it `agent-config.yaml`.
 
-Next, use `kubectl` to apply the configuration to your cluster:
+For the next step, make sure you have the following information available
+to you:
+- The **namespace** and **cluster name** on which you installed the
+  application. If you are not sure about this, you can open the
+  [Applications](https://console.cloud.google.com/kubernetes/application)
+  page:
+
+  <img src="https://user-images.githubusercontent.com/2195781/109160123-ad75f580-7775-11eb-9da6-2b912ab3de96.png" width="500" alt="Grab the namespace and cluster name on the  applications page in the Google Kubernetes Engine console. this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+- The **location** of the cluster in which you installed the application;
+  if you are not sure about this, you can open the
+  [Applications](https://console.cloud.google.com/kubernetes/application)
+  page and click on the name of the cluster:
+
+  <img src="https://user-images.githubusercontent.com/2195781/109160131-af3fb900-7775-11eb-9a46-c1bcebdf8315.png" width="500" alt="Click on the cluster name on the applications page in the Google Kubernetes Engine console. this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+  <img src="https://user-images.githubusercontent.com/2195781/109160135-afd84f80-7775-11eb-9f74-0847413cab7f.png" width="500" alt="Grab the cluster location on the GKE console page of your GKE cluster. this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+The next steps require to have a terminal open as well as to have the
+[gcloud](https://cloud.google.com/sdk/docs/install) and
+[kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) tools
+installed.
+
+In the terminal window, set the variables from the information we gathrered
+in the previous step:
 
 ```sh
-# This is the namespace chosen before clicking on "Deploy".
+CLUSTER=foobar
+LOCATION=us-east1-b
 NAMESPACE=jetstack-secure
+```
 
+The next step will make sure `kubectl` can connect to your cluster:
+
+```sh
+gcloud auth login
+gcloud container clusters get-credentials --zone=$LOCATION $CLUSTER
+```
+
+You can then apply the Jetstack Secure agent configuration to your cluster:
+
+```sh
 kubectl -n $NAMESPACE apply  -f agent-config.yaml
 kubectl -n $NAMESPACE rollout restart deploy jetstack-secure-preflight
 ```
 
-The next step is to skip over the "Install agent" section:
+You may skip over the "Install agent" section:
 
 <img src="https://user-images.githubusercontent.com/2195781/109156989-cb415b80-7771-11eb-910c-de247ad67ac2.png" width="500" alt="Clicking on 'The agent is ready', you should see a green check mark. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+=
+After skipping the "Install agent" section, follow the instructions in the
+"Check the agent is running" section.
 
-Next, follow the instructions in the "Check the agent is running" section.
-Here is the same command that you can copy-paste for your convenience:
+Here is the command shown in the below screenshot that you can copy-paste
+for your convenience:
 
 ```sh
 kubectl -n $NAMESPACE get pod -l app.kubernetes.io/name=preflight
