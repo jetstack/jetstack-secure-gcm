@@ -108,6 +108,7 @@ properties:
       type: NAME
   namespace:
     type: string
+    default: jetstack-secure
     x-google-marketplace:
       type: NAMESPACE
   cert-manager.serviceAccount.name:

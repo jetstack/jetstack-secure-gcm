@@ -44,41 +44,38 @@ more effective overall management of clusters.
 
 - [Overview](#overview)
 - [How it works](#how-it-works)
+- [Click-to-deploy installation](#click-to-deploy-installation)
 - [CLI installation](#cli-installation)
-  - [Quick install with Google Cloud Marketplace](#quick-install-with-google-cloud-marketplace)
-  - [Command line instructions](#command-line-instructions)
-    - [Prerequisites](#prerequisites)
-      - [Set up command line tools](#set-up-command-line-tools)
-      - [Create a Google Kubernetes Engine cluster](#create-a-google-kubernetes-engine-cluster)
-      - [Configure kubectl to connect to the cluster](#configure-kubectl-to-connect-to-the-cluster)
-      - [Clone this repo](#clone-this-repo)
-      - [Install the Application resource definition](#install-the-application-resource-definition)
-    - [Install the application](#install-the-application)
-      - [Configure the application with environment variables](#configure-the-application-with-environment-variables)
-    - [Download and apply the license](#download-and-apply-the-license)
-    - [Expand the manifest template](#expand-the-manifest-template)
-      - [Apply the manifest to your Kubernetes cluster](#apply-the-manifest-to-your-kubernetes-cluster)
-      - [View the app in the Google Cloud Console](#view-the-app-in-the-google-cloud-console)
+  - [Prerequisites](#prerequisites)
+    - [Set up command line tools](#set-up-command-line-tools)
+    - [Create a Google Kubernetes Engine cluster](#create-a-google-kubernetes-engine-cluster)
+    - [Configure kubectl to connect to the cluster](#configure-kubectl-to-connect-to-the-cluster)
+    - [Clone this repo](#clone-this-repo)
+    - [Install the Application resource definition](#install-the-application-resource-definition)
+  - [Install the application](#install-the-application)
+    - [Configure the application with environment variables](#configure-the-application-with-environment-variables)
+  - [Download and apply the license](#download-and-apply-the-license)
+  - [Expand the manifest template](#expand-the-manifest-template)
+    - [Apply the manifest to your Kubernetes cluster](#apply-the-manifest-to-your-kubernetes-cluster)
+    - [View the app in the Google Cloud Console](#view-the-app-in-the-google-cloud-console)
 
-## CLI installation
-
-### Quick install with Google Cloud Marketplace
+## Click-to-deploy installation
 
 Get up and running with a few clicks! Install the Jetstack Secure for
-cert-manager application to a Google Kubernetes Engine cluster using Google
-Cloud Marketplace. Follow the [on-screen
+cert-manager application to a Google Kubernetes Engine cluster using the
+Google Cloud Marketplace. Follow the [on-screen
 instructions](https://console.cloud.google.com/marketplace/details/jetstack/jetstack-secure-for-cert-manager).
 
-### Command line instructions
+## CLI installation
 
 You can use [Google Cloud Shell](https://cloud.google.com/shell/) or a
 local workstation to complete these steps.
 
 [![Open in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/jetstack/jetstack-secure-gcm&cloudshell_working_dir=/)
 
-#### Prerequisites
+### Prerequisites
 
-##### Set up command line tools
+#### Set up command line tools
 
 You'll need the following tools in your environment. If you are using Cloud Shell, these tools are installed in your environment by default.
 
@@ -95,7 +92,7 @@ Configure `gcloud` as a Docker credential helper:
 gcloud auth configure-docker
 ```
 
-##### Create a Google Kubernetes Engine cluster
+#### Create a Google Kubernetes Engine cluster
 
 The [workload
 identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
@@ -118,13 +115,13 @@ gcloud container clusters create $CLUSTER --zone $ZONE \
 >   --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
 > ```
 
-##### Configure kubectl to connect to the cluster
+#### Configure kubectl to connect to the cluster
 
 ```sh
 gcloud container clusters get-credentials "$CLUSTER" --zone "$ZONE"
 ```
 
-##### Clone this repo
+#### Clone this repo
 
 Clone this repo and the associated tools repo:
 
@@ -133,7 +130,7 @@ git clone https://github.com/jetstack/jetstack-secure-gcm
 cd jetstack-secure-gcm
 ```
 
-##### Install the Application resource definition
+#### Install the Application resource definition
 
 An Application resource is a collection of individual Kubernetes
 components, such as Services, Deployments, and so on, that you can manage
@@ -153,9 +150,9 @@ SIG-apps](https://github.com/kubernetes/community/tree/master/sig-apps)
 community. The source code can be found on
 [github.com/kubernetes-sigs/application](https://github.com/kubernetes-sigs/application).
 
-#### Install the application
+### Install the application
 
-##### Configure the application with environment variables
+#### Configure the application with environment variables
 
 Choose an instance name and
 [namespace](https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/)
@@ -190,7 +187,7 @@ Google Marketplace "build" version.
 > Marketplace, the final image names may be different, but they will follow
 > the same release tag and name prefix rule."
 
-#### Download and apply the license
+### Download and apply the license
 
 Click the "Generate license key". This will download a `license.yaml` file
 to your disk.
@@ -203,7 +200,7 @@ Then, add the license to your cluster:
 kubectl apply -n $NAMESPACE -f license.yaml
 ```
 
-#### Expand the manifest template
+### Expand the manifest template
 
 Use `helm template` to expand the template. We recommend that you save the
 expanded manifest file for future updates to the application.
@@ -242,7 +239,7 @@ helm template "$APP_INSTANCE_NAME" chart/jetstack-secure-gcm \
 > --set ubbagent.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent
 > ```
 
-##### Apply the manifest to your Kubernetes cluster
+#### Apply the manifest to your Kubernetes cluster
 
 Use `kubectl` to apply the manifest to your Kubernetes cluster:
 
@@ -250,7 +247,7 @@ Use `kubectl` to apply the manifest to your Kubernetes cluster:
 kubectl apply -f "${APP_INSTANCE_NAME}_manifest.yaml"
 ```
 
-##### View the app in the Google Cloud Console
+#### View the app in the Google Cloud Console
 
 To get the GCP Console URL for your app, run the following command:
 
