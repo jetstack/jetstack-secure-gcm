@@ -15,4 +15,4 @@ maintainers:
     email: "hello@jetstack.io"
     url: "https://www.jetstack.io/"
 icon: "https://platform.jetstack.io/logo_icon.png"
-appVersion: "0.1.27"
+appVersion: "v0.1.27"

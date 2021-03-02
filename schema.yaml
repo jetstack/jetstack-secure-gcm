@@ -1,4 +1,9 @@
-# https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md
+# Schema.yaml reference::
+# https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/8bc78db/docs/schema.md
+#
+# Example:
+# https://github.com/GoogleCloudPlatform/marketplace-k8s-app-example/blob/8bc78db/wordpress-updatable/versions/0.1.4/schema.yaml
+
 x-google-marketplace:
   schemaVersion: v2
 
@@ -103,10 +108,12 @@ properties:
       type: NAME
   namespace:
     type: string
+    default: jetstack-secure
     x-google-marketplace:
       type: NAMESPACE
   cert-manager.serviceAccount.name:
     type: string
+    title: Name of the Kubernetes service account for the cert-manager controller
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
@@ -232,6 +239,7 @@ properties:
 
   cert-manager.webhook.serviceAccount.name:
     type: string
+    title: Name of the Kubernetes service account for the cert-manager webhook
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
@@ -246,6 +254,7 @@ properties:
 
   cert-manager.cainjector.serviceAccount.name:
     type: string
+    title: Name of the Kubernetes service account for the cert-manager cainjector
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
@@ -278,6 +287,7 @@ properties:
 
   google-cas-issuer.serviceAccount.name:
     type: string
+    title: Name of the Kubernetes service account for the google-cas-issuer
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
@@ -329,6 +339,7 @@ properties:
 
   preflight.serviceAccount.name:
     type: string
+    title: Name of the Kubernetes service account for the Jetstack Secure agent
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
@@ -378,6 +389,11 @@ properties:
     type: string
     x-google-marketplace:
       type: REPORTING_SECRET
+
+  deployerImage:
+    type: string
+    x-google-marketplace:
+      type: DEPLOYER_IMAGE
 
 required:
   - name

@@ -258,7 +258,7 @@ bump the version of the cert-manager chart in requirements.yaml. Then:
 
 ```sh
 helm repo add jetstack https://charts.jetstack.io
-helm dependency build chart/jetstacksecure-mp
+helm dependency build chart/jetstack-secure-gcm
 ```
 
 [schema.md]: https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/d9d3a6f/docs/schema.md

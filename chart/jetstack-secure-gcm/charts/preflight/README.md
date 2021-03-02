@@ -1,6 +1,6 @@
 # Preflight Agent
 
-This chart is designed to be installed as a dependency of the `jetstacksecure-mp` chart.
+This chart is designed to be installed as a dependency of the `jetstack-secure-gcm` chart.
 
 It may eventually be moved to the [public Preflight Agent Repository](https://github.com/jetstack/preflight).
 
