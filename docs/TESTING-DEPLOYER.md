@@ -1,5 +1,13 @@
 # Creating and testing the deployer image
 
+> Note: for passing the Google review, we had to enable the Container
+> Analysis API:
+>
+> ```sh
+> PROJECT=jetstack-public
+> gcloud services --project=$PROJECT enable containeranalysis.googleapis.com
+> ```
+
 The deployer image is **only** used when the Jetstack Secure for
 cert-manager is deployed in through the UI; it is not used for when
 installing the application through the CLI.
@@ -121,7 +129,18 @@ tests and pushs the deployer image.
 
 Requirements before running `gcloud builds`:
 
-1. You need a GKE cluster with
+1. You need a GCP project that has a couple of Google APIs enabled. To
+   enable them, you can run the following:
+
+   ```sh
+   PROJECT=jetstack-public
+   gcloud services --project=$PROJECT enable cloudbuild.googleapis.com
+   gcloud services --project=$PROJECT enable container.googleapis.com
+   gcloud services --project=$PROJECT enable containerregistry.googleapis.com
+   gcloud services --project=$PROJECT enable storage-api.googleapis.com
+   ```
+
+2. You need a GKE cluster with
    [workload-identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
    enabled. You can either update your existing cluster or create a new
    cluster with workload identity enabled with this command:
@@ -133,7 +152,7 @@ Requirements before running `gcloud builds`:
      --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
    ```
 
-2. A Google CAS root and subordinate CA as well as a Google service account
+3. A Google CAS root and subordinate CA as well as a Google service account
    that will be "attached" to the Kubernetes service account that will be
    created by the deployer:
 
@@ -159,7 +178,7 @@ Requirements before running `gcloud builds`:
    >      iam.gke.io/gcp-service-account=sa-google-cas-issuer@PROJECT_ID.iam.gserviceaccount.com
    >  ```
 
-3. Go to [IAM and Admin > Permissions for
+4. Go to [IAM and Admin > Permissions for
    project](https://console.cloud.google.com/iam-admin/iam) and configure
    the `0123456789@cloudbuild.gserviceaccount.com` service account with the
    following roles so that it has permission to deploy RBAC configuration
@@ -168,7 +187,7 @@ Requirements before running `gcloud builds`:
    - `Kubernetes Engine Admin`
    - `Storage Object Admin`
 
-4. Create a bucket that has the same name as your project. To create it,
+5. Create a bucket that has the same name as your project. To create it,
    run:
 
    ```sh
