@@ -7,14 +7,14 @@
 # To know more about the smoke tests:
 # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/c5899a92/docs/mpdev-references.md#smoke-test-an-application
 
-properties:
-  smokeTestImage:
-    type: string
-    # These variables are envsubt'd in cloudbuild.yml
-    default: $IMAGE
-    x-google-property:
-      type: IMAGE
+x-google-marketplace:
+  images:
+    smoke-test:
+      properties:
+        smokeTestImage:
+          type: FULL
 
+properties:
   # We had to disable preflight so that `mpdev verify` would not fail. It
   # fails due to the fact that the preflight deployment never becomes
   # "ready" since the secret "agent-credentials" and the configmap
