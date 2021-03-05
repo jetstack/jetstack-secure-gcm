@@ -20,16 +20,19 @@ the image embeds:
 - The `helm` tool,
 - The Helm charts for cert-manager, google-cas-issuer and preflight.
 
-The deployer image looks like this:
+There are two deployer tags:
 
 ```sh
+# The main moving tag required by the Marketplace UI:
 marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1
+
+# A static tag for debugging purposes:
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
 ```
 
-We provide one single tag for the deployer image. That is due to the fact
-that the Marketplace UI only works with minor versions (e.g., `1.1`). If we
-were to push other tags (e.g., `1.1.0` or `1.1.0-gcm.1`), they would not be
-used anyways:
+The minor tag `1.1` (for example) is the tag that the Marketplace UI needs.
+The other tags (e.g., `1.1.0` or `1.1.0-gcm.1`) cannot be used for the
+Marketplace UI:
 
 > A version should correspond to a minor version (e.g. `1.0`) according to
 > semantic versioning  (not a patch version, such as `1.1.0`). Update the
@@ -41,9 +44,9 @@ In the below screenshot, we see that both the deployer tags `1.1.0` and
 
 <img src="https://user-images.githubusercontent.com/2195781/110091031-491bed00-7d98-11eb-8522-ddc91913d010.png" width="500" alt="Only the minor version 1.1 should be pushed, not 1.1.0 or 1.1.0-gcm.1. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-Important: although we only push the minor tag for the deployer image, we
-still push "full" tags for all the other images. For example, let us
-imagine that `deployer:1.1` was created with this `schema.yaml`:
+Note that we only push full tags (e.g., `1.1.0-gcm.1`) for all the other
+images. For example, let us imagine that `deployer:1.1` was created with
+this `schema.yaml`:
 
 ```yaml
 # schema.yaml
@@ -82,6 +85,7 @@ As a recap about image tags, here is what the tags look like now, taking
 ```sh
 # The deployer image is built and pushed in cloudbuild.yaml:
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
 
 # These images are manually pushed (see below command):
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1.0-gcm.1 # this is cert-manager-controller

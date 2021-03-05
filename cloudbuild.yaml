@@ -2,7 +2,12 @@ timeout: 1800s # 30m
 substitutions:
   _CLUSTER_NAME: cluster-1
   _CLUSTER_LOCATION: europe-west2-b
-  _APP_VERSION: 1.1.0-gcm.1
+  # The deployer version must always be a minor version at any time since
+  # the Marketplace UI will only accept minor tags for the deployer.
+  _DEPLOYER_VERSION: "1.1"
+  # The _APP_VERSION must be equal to the value set on the publishedVersion
+  # field in schema.yaml.
+  _APP_VERSION: "1.1.0-gcm.1"
   _SOLUTION_NAME: jetstack-secure-for-cert-manager
 steps:
   - id: pull-ubbagent
@@ -58,7 +63,8 @@ steps:
     waitFor:
       - "-"
 
-  - id: build-deployer
+  # We push a deployer:1.1.0-gcm.1 for our debugging purposes.
+  - id: build-deployer-using-app-version
     name: gcr.io/cloud-builders/docker
     args:
       - build
@@ -67,13 +73,32 @@ steps:
       - "."
     waitFor: ["set-data-test-schema-default-values"]
 
-  - id: push-deployer
+  - id: push-deployer-using-app-version
     name: gcr.io/cloud-builders/docker
     args:
       - push
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
-      - build-deployer
+      - build-deployer-using-app-version
+
+  # The tag deployer:1.1 (for example) is the actual "important" image
+  # since it is the one that will be used in the Marketplace UI.
+  - id: tag-deployer-using-minor-version
+    name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_DEPLOYER_VERSION}
+    waitFor:
+      - build-deployer-using-app-version
+
+  - id: push-deployer-using-minor-version
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+    waitFor:
+      - tag-deployer-using-minor-version
 
   - id: gcloud-credentials
     name: gcr.io/cloud-builders/gcloud
@@ -210,5 +235,6 @@ steps:
 
 images:
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_DEPLOYER_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION}
