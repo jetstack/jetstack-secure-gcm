@@ -31,21 +31,28 @@ marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1
 
 ## Installing and manually testing the deployer image
 
+First, let us set a couple of variables:
+
+```sh
+CLUSTER=smoke-test
+LOCATION=europe-west2-b
+PROJECT=$(gcloud config get-value project | tr ':' '/')
+REGISTRY=gcr.io/$PROJECT
+SOLUTION=jetstack-secure-for-cert-manager
+```
+
 In order to have the google-cas-issuer working, we need to enable [workload
 identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity).
 Let's create a cluster that has the workload identity enabled:
 
 ```sh
-gcloud container clusters create foo --region us-east1 --num-nodes=1 --preemptible \
-  --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
+gcloud container clusters create $CLUSTER --region $LOCATION --num-nodes=1 --preemptible \
+  --workload-pool=$PROJECT.svc.id.goog
 ```
 
 Now, re-publish the images to the project:
 
 ```sh
-export REGISTRY=gcr.io/$(gcloud config get-value project | tr ':' '/')
-export SOLUTION=jetstack-secure-for-cert-manager
-
 docker pull quay.io/jetstack/cert-manager-controller:v1.1.0
 docker pull quay.io/jetstack/cert-manager-acmesolver:v1.1.0
 docker pull quay.io/jetstack/cert-manager-cainjector:v1.1.0
@@ -112,12 +119,12 @@ account that will have access to the CAS API.
 gcloud iam service-accounts create sa-google-cas-issuer
 gcloud beta privateca subordinates add-iam-policy-binding my-sub-ca \
   --role=roles/privateca.certificateRequester \
-  --member=serviceAccount:sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
-gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
+  --member=serviceAccount:sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com
+gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com \
   --role roles/iam.workloadIdentityUser \
-  --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
+  --member "serviceAccount:$PROJECT.svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
 kubectl annotate serviceaccount -n test-ns test-google-cas-issuer-serviceaccount-name \
-  iam.gke.io/gcp-service-account=sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
+  iam.gke.io/gcp-service-account=sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com
 ```
 
 
@@ -166,7 +173,7 @@ Requirements before running `gcloud builds`:
 
    ```sh
    gcloud beta privateca roots create my-ca --subject="CN=root,O=my-ca"
-   gcloud beta privateca subordinates create my-sub-ca  --issuer=my-ca --location us-east1 --subject="CN=intermediate,O=my-ca,OU=my-sub-ca"
+   gcloud beta privateca subordinates create my-sub-ca  --issuer=my-ca --location $LOCATION --subject="CN=intermediate,O=my-ca,OU=my-sub-ca"
    gcloud iam service-accounts create sa-google-cas-issuer
    gcloud beta privateca subordinates add-iam-policy-binding my-sub-ca \
      --role=roles/privateca.certificateRequester \
