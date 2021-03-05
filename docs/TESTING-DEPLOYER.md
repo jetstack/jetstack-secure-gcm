@@ -129,30 +129,38 @@ tests and pushs the deployer image.
 
 Requirements before running `gcloud builds`:
 
-1. You need a GCP project that has a couple of Google APIs enabled. To
-   enable them, you can run the following:
+1. Set a few variables:
 
    ```sh
    PROJECT=jetstack-public
+   CLUSTER=smoke-test
+   LOCATION=europe-west2-b
+   ```
+
+2. Enable the necessary Google APIs on your project. To enable them, you
+      can run the following:
+
+   ```sh
    gcloud services --project=$PROJECT enable cloudbuild.googleapis.com
    gcloud services --project=$PROJECT enable container.googleapis.com
    gcloud services --project=$PROJECT enable containerregistry.googleapis.com
    gcloud services --project=$PROJECT enable storage-api.googleapis.com
    ```
 
-2. You need a GKE cluster with
+3. You need a GKE cluster with
    [workload-identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
    enabled. You can either update your existing cluster or create a new
    cluster with workload identity enabled with this command:
 
    ```sh
-   export GKE_CLUSTER_NAME=foo
-   export GKE_CLUSTER_LOCATION=us-east1
-   gcloud container clusters create $GKE_CLUSTER_NAME --region $GKE_CLUSTER_LOCATION --num-nodes=1 --preemptible \
-     --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
+   export CLUSTER=smoke-test
+   export LOCATION=europe-west2-b
+   export PROJECT=$(gcloud config get-value project | tr ':' '/')
+   gcloud container clusters create $CLUSTER --region $LOCATION --num-nodes=1 --preemptible \
+     --workload-pool=$PROJECT.svc.id.goog
    ```
 
-3. A Google CAS root and subordinate CA as well as a Google service account
+4. A Google CAS root and subordinate CA as well as a Google service account
    that will be "attached" to the Kubernetes service account that will be
    created by the deployer:
 
@@ -162,10 +170,10 @@ Requirements before running `gcloud builds`:
    gcloud iam service-accounts create sa-google-cas-issuer
    gcloud beta privateca subordinates add-iam-policy-binding my-sub-ca \
      --role=roles/privateca.certificateRequester \
-     --member=serviceAccount:sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
-   gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
+     --member=serviceAccount:sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com
+   gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com \
      --role roles/iam.workloadIdentityUser \
-     --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
+     --member "serviceAccount:$PROJECT.svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
    ```
 
    > Note: the last step which is adding the annotation to the
@@ -178,7 +186,7 @@ Requirements before running `gcloud builds`:
    >      iam.gke.io/gcp-service-account=sa-google-cas-issuer@PROJECT_ID.iam.gserviceaccount.com
    >  ```
 
-4. Go to [IAM and Admin > Permissions for
+5. Go to [IAM and Admin > Permissions for
    project](https://console.cloud.google.com/iam-admin/iam) and configure
    the `0123456789@cloudbuild.gserviceaccount.com` service account with the
    following roles so that it has permission to deploy RBAC configuration
@@ -187,18 +195,18 @@ Requirements before running `gcloud builds`:
    - `Kubernetes Engine Admin`
    - `Storage Object Admin`
 
-5. Create a bucket that has the same name as your project. To create it,
-   run:
+6. Create a bucket **in the same project as your cluster**. The bucket must
+   have the same name as your project. To create it, run the following:
 
    ```sh
-   gsutil mb gs://$(gcloud config get-value project | tr ':' '/')
+   gsutil mb -p $PROJECT gs://$PROJECT
    ```
 
 Then, you can trigger a build:
 
 ```sh
-gcloud builds submit --timeout 1800s --config cloudbuild.yaml \
-  --substitutions _CLUSTER_NAME=$GKE_CLUSTER_NAME,_CLUSTER_LOCATION=$GKE_CLUSTER_LOCATION
+gcloud builds submit --project $PROJECT --timeout 1800s --config cloudbuild.yaml \
+  --substitutions _CLUSTER_NAME=$CLUSTER,_CLUSTER_LOCATION=$LOCATION
 ```
 
 This will run [`mpdev verify`]([Google Cloud Marketplace verification
