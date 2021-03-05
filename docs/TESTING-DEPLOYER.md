@@ -76,6 +76,46 @@ Upgrades for patch or build versions (e.g., moving from `1.1.0-gcm.1` to
 3. The user of the Click-to-deploy solution will have to re-deploy using
    the same `1.1` to get the upgrade.
 
+As a recap about image tags, here is what the tags look like now, taking
+`1.1.0-gcm.1` as an example:
+
+```sh
+# The deployer image is built and pushed in cloudbuild.yaml:
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1
+
+# These images are manually pushed (see below command):
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1.0-gcm.1 # this is cert-manager-controller
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight:1.1.0-gcm.1
+
+# These images are built and pushed by cloudbuild.yaml:
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.1
+```
+
+Here is the command I did to retag all `google-review` images to
+`1.1.0-gcm.1` since we don't have yet automated Google-OSPO-compliant image
+(will be done in
+[#10](https://github.com/jetstack/jetstack-secure-gcm/issues/10)):
+
+```sh
+while read img; do
+    docker pull $img:google-review
+    docker tag $img:{google-review,1.1.0-gcm.1}
+    docker push $img:1.1.0-gcm.1
+done <<EOF
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
+EOF
+```
+
 ## Installing and manually testing the deployer image
 
 First, let us set a couple of variables:
@@ -95,34 +135,6 @@ Let's create a cluster that has the workload identity enabled:
 ```sh
 gcloud container clusters create $CLUSTER --region $LOCATION --num-nodes=1 --preemptible \
   --workload-pool=$PROJECT.svc.id.goog
-```
-
-Now, re-publish the images to the project:
-
-```sh
-docker pull quay.io/jetstack/cert-manager-controller:v1.1.0
-docker pull quay.io/jetstack/cert-manager-acmesolver:v1.1.0
-docker pull quay.io/jetstack/cert-manager-cainjector:v1.1.0
-docker pull quay.io/jetstack/cert-manager-webhook:v1.1.0
-docker pull quay.io/jetstack/cert-manager-google-cas-issuer:0.1.0
-docker pull quay.io/jetstack/preflight:0.1.27
-docker pull gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
-
-docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$SOLUTION:1.1.0-gcm.1
-docker tag quay.io/jetstack/cert-manager-acmesolver:v1.1.0 $REGISTRY/$SOLUTION/cert-manager-acmesolver:1.1.0-gcm.1
-docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$SOLUTION/cert-manager-cainjector:1.1.0-gcm.1
-docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$SOLUTION/cert-manager-webhook:1.1.0-gcm.1
-docker tag quay.io/jetstack/cert-manager-google-cas-issuer:latest $REGISTRY/$SOLUTION/cert-manager-google-cas-issuer:1.1.0-gcm.1
-docker tag quay.io/jetstack/preflight:latest $REGISTRY/$SOLUTION/preflight:1.1.0-gcm.1
-docker tag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $REGISTRY/$SOLUTION/ubbagent:1.1.0-gcm.1
-
-docker push $REGISTRY/$SOLUTION:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/cert-manager-acmesolver:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/cert-manager-cainjector:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/cert-manager-webhook:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/cert-manager-google-cas-issuer:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/preflight:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/ubbagent:1.1.0-gcm.1
 ```
 
 Then, build and push the deployer image:
