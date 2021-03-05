@@ -20,14 +20,61 @@ the image embeds:
 - The `helm` tool,
 - The Helm charts for cert-manager, google-cas-issuer and preflight.
 
-The deployer images look like this:
+The deployer image looks like this:
 
 ```sh
-# We provide these three tags:
-marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1.0-gcm.1
-marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1.0
-marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1
 ```
+
+We provide one single tag for the deployer image. That is due to the fact
+that the Marketplace UI only works with minor versions (e.g., `1.1`). If we
+were to push other tags (e.g., `1.1.0` or `1.1.0-gcm.1`), they would not be
+used anyways:
+
+> A version should correspond to a minor version (e.g. `1.0`) according to
+> semantic versioning  (not a patch version, such as `1.1.0`). Update the
+> same version for patch releases, which should be backward-compatible,
+> instead of creating a new version.
+
+In the below screenshot, we see that both the deployer tags `1.1.0` and
+`1.1.0-gcm.1` are "refused" by the UI:
+
+<img src="https://user-images.githubusercontent.com/2195781/110091031-491bed00-7d98-11eb-8522-ddc91913d010.png" width="500" alt="Only the minor version 1.1 should be pushed, not 1.1.0 or 1.1.0-gcm.1. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+Important: although we only push the minor tag for the deployer image, we
+still push "full" tags for all the other images. For example, let us
+imagine that `deployer:1.1` was created with this `schema.yaml`:
+
+```yaml
+# schema.yaml
+x-google-marketplace:
+  publishedVersion: "1.1.0-gcm.1"
+```
+
+This means that although the deployer image says `1.1`, the tags used in
+the helm release will be using the tag `1.1.0-gcm.1`; the images used in
+the pods will look like this:
+
+```plain
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-preflight:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.1
+```
+
+Upgrades for patch or build versions (e.g., moving from `1.1.0-gcm.1` to
+`1.1.0-gcm.2`, or from `1.1.0-gcm.1` to `1.1.1-gcm.1`) work like this:
+
+1. We update the `publishedVersion` in schema.yaml;
+2. Then, we push a new `deployer:1.1` (i.e, `1.1` is a moving tag);
+3. The user of the Click-to-deploy solution will have to re-deploy using
+   the same `1.1` to get the upgrade.
 
 ## Installing and manually testing the deployer image
 
