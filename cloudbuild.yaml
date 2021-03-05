@@ -2,130 +2,14 @@ timeout: 1800s # 30m
 substitutions:
   _CLUSTER_NAME: cluster-1
   _CLUSTER_LOCATION: europe-west2-b
-  _APP_VERSION: 1.1.0-gcm.1
+  # The deployer version must always be a minor version at any time since
+  # the Marketplace UI will only accept minor tags for the deployer.
+  _DEPLOYER_VERSION: "1.1"
+  # The _APP_VERSION must be equal to the value set on the publishedVersion
+  # field in schema.yaml.
+  _APP_VERSION: "1.1.0-gcm.1"
   _SOLUTION_NAME: jetstack-secure-for-cert-manager
-  _CERT_MANAGER_VERSION: 1.1.0
-  _CAS_ISSUER_VERSION: 0.1.0
-  _PREFLIGHT_VERSION: 0.1.27
 steps:
-  - id: pull-preflight
-    name: gcr.io/cloud-builders/docker
-    args:
-      - pull
-      - quay.io/jetstack/preflight:v${_PREFLIGHT_VERSION}
-    waitFor: ["-"]
-
-  - id: tag-preflight
-    name: gcr.io/cloud-builders/docker
-    args:
-      - tag
-      - quay.io/jetstack/preflight:v${_PREFLIGHT_VERSION}
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-preflight:${_APP_VERSION}
-    waitFor:
-      - pull-preflight
-
-  - id: push-preflight
-    name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-preflight:${_APP_VERSION}
-    waitFor:
-      - tag-preflight
-
-  - id: pull-cas-issuer
-    name: gcr.io/cloud-builders/docker
-    args:
-      - pull
-      - quay.io/jetstack/cert-manager-google-cas-issuer:${_CAS_ISSUER_VERSION}
-    waitFor: ["-"]
-
-  - id: tag-cas-issuer
-    name: gcr.io/cloud-builders/docker
-    args:
-      - tag
-      - quay.io/jetstack/cert-manager-google-cas-issuer:${_CAS_ISSUER_VERSION}
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_APP_VERSION}
-    waitFor:
-      - pull-cas-issuer
-
-  - id: push-cas-issuer
-    name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_APP_VERSION}
-    waitFor:
-      - tag-cas-issuer
-
-  - id: pull-controller
-    name: gcr.io/cloud-builders/docker
-    args:
-      - pull
-      - quay.io/jetstack/cert-manager-controller:v${_CERT_MANAGER_VERSION}
-    waitFor: ["-"]
-
-  - id: pull-cainjector
-    name: gcr.io/cloud-builders/docker
-    args:
-      - pull
-      - quay.io/jetstack/cert-manager-cainjector:v${_CERT_MANAGER_VERSION}
-    waitFor: ["-"]
-
-  - id: pull-webhook
-    name: gcr.io/cloud-builders/docker
-    args:
-      - pull
-      - quay.io/jetstack/cert-manager-webhook:v${_CERT_MANAGER_VERSION}
-    waitFor: ["-"]
-
-  - id: tag-controller
-    name: gcr.io/cloud-builders/docker
-    args:
-      - tag
-      - quay.io/jetstack/cert-manager-controller:v${_CERT_MANAGER_VERSION}
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}:${_APP_VERSION}
-    waitFor:
-      - pull-controller
-
-  - id: tag-cainjector
-    name: gcr.io/cloud-builders/docker
-    args:
-      - tag
-      - quay.io/jetstack/cert-manager-cainjector:v${_CERT_MANAGER_VERSION}
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_APP_VERSION}
-    waitFor:
-      - pull-cainjector
-
-  - id: tag-webhook
-    name: gcr.io/cloud-builders/docker
-    args:
-      - tag
-      - quay.io/jetstack/cert-manager-webhook:v${_CERT_MANAGER_VERSION}
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
-    waitFor:
-      - pull-webhook
-
-  - id: push-controller
-    name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}:${_APP_VERSION}
-    waitFor:
-      - tag-controller
-
-  - id: push-cainjector
-    name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_APP_VERSION}
-    waitFor:
-      - tag-cainjector
-
-  - id: push-webhook
-    name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
-
   - id: pull-ubbagent
     name: gcr.io/cloud-builders/docker
     args:
@@ -179,7 +63,8 @@ steps:
     waitFor:
       - "-"
 
-  - id: build-deployer
+  # We push a deployer:1.1.0-gcm.1 for our debugging purposes.
+  - id: build-deployer-using-app-version
     name: gcr.io/cloud-builders/docker
     args:
       - build
@@ -188,13 +73,32 @@ steps:
       - "."
     waitFor: ["set-data-test-schema-default-values"]
 
-  - id: push-deployer
+  - id: push-deployer-using-app-version
     name: gcr.io/cloud-builders/docker
     args:
       - push
       - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
-      - build-deployer
+      - build-deployer-using-app-version
+
+  # The tag deployer:1.1 (for example) is the actual "important" image
+  # since it is the one that will be used in the Marketplace UI.
+  - id: tag-deployer-using-minor-version
+    name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_DEPLOYER_VERSION}
+    waitFor:
+      - build-deployer-using-app-version
+
+  - id: push-deployer-using-minor-version
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+    waitFor:
+      - tag-deployer-using-minor-version
 
   - id: gcloud-credentials
     name: gcr.io/cloud-builders/gcloud
@@ -271,13 +175,7 @@ steps:
         kubectl logs -n "$ns" $pod -f --tail=-1
     waitFor:
       - check-cloud-marketplace-tools
-      - push-deployer
-      - push-controller
-      - push-cainjector
-      - push-webhook
-      - push-cas-issuer
-      - push-preflight
-      - push-ubbagent
+      - push-deployer-using-minor-version
 
   - id: logs-smoke-test
     name: gcr.io/cloud-builders/gcloud
@@ -300,13 +198,6 @@ steps:
         kubectl logs -n "$ns" smoke-test-pod -f --tail=-1
     waitFor:
       - check-cloud-marketplace-tools
-      - push-deployer
-      - push-controller
-      - push-cainjector
-      - push-webhook
-      - push-cas-issuer
-      - push-preflight
-      - push-ubbagent
       - push-smoke-test
 
   - id: verify
@@ -324,12 +215,7 @@ steps:
       - --deployer=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
       - check-cloud-marketplace-tools
-      - push-deployer
-      - push-controller
-      - push-cainjector
-      - push-webhook
-      - push-cas-issuer
-      - push-preflight
+      - push-deployer-using-minor-version
       - push-ubbagent
       - push-smoke-test
 
@@ -348,11 +234,7 @@ steps:
       - verify
 
 images:
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}:${_APP_VERSION}
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-cainjector:${_APP_VERSION}
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-webhook:${_APP_VERSION}
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-google-cas-issuer:${_APP_VERSION}
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/cert-manager-preflight:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_DEPLOYER_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION}

@@ -20,55 +20,125 @@ the image embeds:
 - The `helm` tool,
 - The Helm charts for cert-manager, google-cas-issuer and preflight.
 
-The deployer images look like this:
+There are two deployer tags:
 
 ```sh
-# We provide these three tags:
+# The main moving tag required by the Marketplace UI:
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1
+
+# A static tag for debugging purposes:
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
+```
+
+The minor tag `1.1` (for example) is the tag that the Marketplace UI needs.
+The other tags (e.g., `1.1.0` or `1.1.0-gcm.1`) cannot be used for the
+Marketplace UI:
+
+> A version should correspond to a minor version (e.g. `1.0`) according to
+> semantic versioning  (not a patch version, such as `1.1.0`). Update the
+> same version for patch releases, which should be backward-compatible,
+> instead of creating a new version.
+
+In the below screenshot, we see that both the deployer tags `1.1.0` and
+`1.1.0-gcm.1` are "refused" by the UI:
+
+<img src="https://user-images.githubusercontent.com/2195781/110091031-491bed00-7d98-11eb-8522-ddc91913d010.png" width="500" alt="Only the minor version 1.1 should be pushed, not 1.1.0 or 1.1.0-gcm.1. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+Note that we only push full tags (e.g., `1.1.0-gcm.1`) for all the other
+images. For example, let us imagine that `deployer:1.1` was created with
+this `schema.yaml`:
+
+```yaml
+# schema.yaml
+x-google-marketplace:
+  publishedVersion: "1.1.0-gcm.1"
+```
+
+This means that although the deployer image says `1.1`, the tags used in
+the helm release will be using the tag `1.1.0-gcm.1`; the images used in
+the pods will look like this:
+
+```plain
 marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1.0-gcm.1
-marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1.0
-marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-preflight:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.1
+```
+
+Upgrades for patch or build versions (e.g., moving from `1.1.0-gcm.1` to
+`1.1.0-gcm.2`, or from `1.1.0-gcm.1` to `1.1.1-gcm.1`) work like this:
+
+1. We update the `publishedVersion` in schema.yaml;
+2. Then, we push a new `deployer:1.1` (i.e, `1.1` is a moving tag);
+3. The user of the Click-to-deploy solution will have to re-deploy using
+   the same `1.1` to get the upgrade.
+
+As a recap about image tags, here is what the tags look like now, taking
+`1.1.0-gcm.1` as an example:
+
+```sh
+# The deployer image is built and pushed in cloudbuild.yaml:
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
+
+# These images are manually pushed (see below command):
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1.0-gcm.1 # this is cert-manager-controller
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight:1.1.0-gcm.1
+
+# These images are built and pushed by cloudbuild.yaml:
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.1
+```
+
+Here is the command I did to retag all `google-review` images to
+`1.1.0-gcm.1` since we don't have yet automated Google-OSPO-compliant image
+(will be done in
+[#10](https://github.com/jetstack/jetstack-secure-gcm/issues/10)):
+
+```sh
+while read img; do
+    docker pull $img:google-review
+    docker tag $img:{google-review,1.1.0-gcm.1}
+    docker push $img:1.1.0-gcm.1
+done <<EOF
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
+EOF
 ```
 
 ## Installing and manually testing the deployer image
+
+First, let us set a couple of variables:
+
+```sh
+CLUSTER=smoke-test
+LOCATION=europe-west2-b
+PROJECT=$(gcloud config get-value project | tr ':' '/')
+REGISTRY=gcr.io/$PROJECT
+SOLUTION=jetstack-secure-for-cert-manager
+```
 
 In order to have the google-cas-issuer working, we need to enable [workload
 identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity).
 Let's create a cluster that has the workload identity enabled:
 
 ```sh
-gcloud container clusters create foo --region us-east1 --num-nodes=1 --preemptible \
-  --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
-```
-
-Now, re-publish the images to the project:
-
-```sh
-export REGISTRY=gcr.io/$(gcloud config get-value project | tr ':' '/')
-export SOLUTION=jetstack-secure-for-cert-manager
-
-docker pull quay.io/jetstack/cert-manager-controller:v1.1.0
-docker pull quay.io/jetstack/cert-manager-acmesolver:v1.1.0
-docker pull quay.io/jetstack/cert-manager-cainjector:v1.1.0
-docker pull quay.io/jetstack/cert-manager-webhook:v1.1.0
-docker pull quay.io/jetstack/cert-manager-google-cas-issuer:0.1.0
-docker pull quay.io/jetstack/preflight:0.1.27
-docker pull gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
-
-docker tag quay.io/jetstack/cert-manager-controller:v1.1.0 $REGISTRY/$SOLUTION:1.1.0-gcm.1
-docker tag quay.io/jetstack/cert-manager-acmesolver:v1.1.0 $REGISTRY/$SOLUTION/cert-manager-acmesolver:1.1.0-gcm.1
-docker tag quay.io/jetstack/cert-manager-cainjector:v1.1.0 $REGISTRY/$SOLUTION/cert-manager-cainjector:1.1.0-gcm.1
-docker tag quay.io/jetstack/cert-manager-webhook:v1.1.0 $REGISTRY/$SOLUTION/cert-manager-webhook:1.1.0-gcm.1
-docker tag quay.io/jetstack/cert-manager-google-cas-issuer:latest $REGISTRY/$SOLUTION/cert-manager-google-cas-issuer:1.1.0-gcm.1
-docker tag quay.io/jetstack/preflight:latest $REGISTRY/$SOLUTION/preflight:1.1.0-gcm.1
-docker tag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $REGISTRY/$SOLUTION/ubbagent:1.1.0-gcm.1
-
-docker push $REGISTRY/$SOLUTION:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/cert-manager-acmesolver:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/cert-manager-cainjector:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/cert-manager-webhook:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/cert-manager-google-cas-issuer:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/preflight:1.1.0-gcm.1
-docker push $REGISTRY/$SOLUTION/ubbagent:1.1.0-gcm.1
+gcloud container clusters create $CLUSTER --region $LOCATION --num-nodes=1 --preemptible \
+  --workload-pool=$PROJECT.svc.id.goog
 ```
 
 Then, build and push the deployer image:
@@ -112,12 +182,12 @@ account that will have access to the CAS API.
 gcloud iam service-accounts create sa-google-cas-issuer
 gcloud beta privateca subordinates add-iam-policy-binding my-sub-ca \
   --role=roles/privateca.certificateRequester \
-  --member=serviceAccount:sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
-gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
+  --member=serviceAccount:sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com
+gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com \
   --role roles/iam.workloadIdentityUser \
-  --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
+  --member "serviceAccount:$PROJECT.svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
 kubectl annotate serviceaccount -n test-ns test-google-cas-issuer-serviceaccount-name \
-  iam.gke.io/gcp-service-account=sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
+  iam.gke.io/gcp-service-account=sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com
 ```
 
 
@@ -129,43 +199,51 @@ tests and pushs the deployer image.
 
 Requirements before running `gcloud builds`:
 
-1. You need a GCP project that has a couple of Google APIs enabled. To
-   enable them, you can run the following:
+1. Set a few variables:
 
    ```sh
    PROJECT=jetstack-public
+   CLUSTER=smoke-test
+   LOCATION=europe-west2-b
+   ```
+
+2. Enable the necessary Google APIs on your project. To enable them, you
+      can run the following:
+
+   ```sh
    gcloud services --project=$PROJECT enable cloudbuild.googleapis.com
    gcloud services --project=$PROJECT enable container.googleapis.com
    gcloud services --project=$PROJECT enable containerregistry.googleapis.com
    gcloud services --project=$PROJECT enable storage-api.googleapis.com
    ```
 
-2. You need a GKE cluster with
+3. You need a GKE cluster with
    [workload-identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity)
    enabled. You can either update your existing cluster or create a new
    cluster with workload identity enabled with this command:
 
    ```sh
-   export GKE_CLUSTER_NAME=foo
-   export GKE_CLUSTER_LOCATION=us-east1
-   gcloud container clusters create $GKE_CLUSTER_NAME --region $GKE_CLUSTER_LOCATION --num-nodes=1 --preemptible \
-     --workload-pool=$(gcloud config get-value project | tr ':' '/').svc.id.goog
+   export CLUSTER=smoke-test
+   export LOCATION=europe-west2-b
+   export PROJECT=$(gcloud config get-value project | tr ':' '/')
+   gcloud container clusters create $CLUSTER --region $LOCATION --num-nodes=1 --preemptible \
+     --workload-pool=$PROJECT.svc.id.goog
    ```
 
-3. A Google CAS root and subordinate CA as well as a Google service account
+4. A Google CAS root and subordinate CA as well as a Google service account
    that will be "attached" to the Kubernetes service account that will be
    created by the deployer:
 
    ```sh
    gcloud beta privateca roots create my-ca --subject="CN=root,O=my-ca"
-   gcloud beta privateca subordinates create my-sub-ca  --issuer=my-ca --location us-east1 --subject="CN=intermediate,O=my-ca,OU=my-sub-ca"
+   gcloud beta privateca subordinates create my-sub-ca  --issuer=my-ca --location $LOCATION --subject="CN=intermediate,O=my-ca,OU=my-sub-ca"
    gcloud iam service-accounts create sa-google-cas-issuer
    gcloud beta privateca subordinates add-iam-policy-binding my-sub-ca \
      --role=roles/privateca.certificateRequester \
-     --member=serviceAccount:sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com
-   gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$(gcloud config get-value project | tr ':' '/').iam.gserviceaccount.com \
+     --member=serviceAccount:sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com
+   gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com \
      --role roles/iam.workloadIdentityUser \
-     --member "serviceAccount:$(gcloud config get-value project | tr ':' '/').svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
+     --member "serviceAccount:$PROJECT.svc.id.goog[test-ns/test-google-cas-issuer-serviceaccount-name]"
    ```
 
    > Note: the last step which is adding the annotation to the
@@ -178,7 +256,7 @@ Requirements before running `gcloud builds`:
    >      iam.gke.io/gcp-service-account=sa-google-cas-issuer@PROJECT_ID.iam.gserviceaccount.com
    >  ```
 
-4. Go to [IAM and Admin > Permissions for
+5. Go to [IAM and Admin > Permissions for
    project](https://console.cloud.google.com/iam-admin/iam) and configure
    the `0123456789@cloudbuild.gserviceaccount.com` service account with the
    following roles so that it has permission to deploy RBAC configuration
@@ -187,18 +265,18 @@ Requirements before running `gcloud builds`:
    - `Kubernetes Engine Admin`
    - `Storage Object Admin`
 
-5. Create a bucket that has the same name as your project. To create it,
-   run:
+6. Create a bucket **in the same project as your cluster**. The bucket must
+   have the same name as your project. To create it, run the following:
 
    ```sh
-   gsutil mb gs://$(gcloud config get-value project | tr ':' '/')
+   gsutil mb -p $PROJECT gs://$PROJECT
    ```
 
 Then, you can trigger a build:
 
 ```sh
-gcloud builds submit --timeout 1800s --config cloudbuild.yaml \
-  --substitutions _CLUSTER_NAME=$GKE_CLUSTER_NAME,_CLUSTER_LOCATION=$GKE_CLUSTER_LOCATION
+gcloud builds submit --project $PROJECT --timeout 1800s --config cloudbuild.yaml \
+  --substitutions _CLUSTER_NAME=$CLUSTER,_CLUSTER_LOCATION=$LOCATION
 ```
 
 This will run [`mpdev verify`]([Google Cloud Marketplace verification
