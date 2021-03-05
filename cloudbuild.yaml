@@ -175,7 +175,7 @@ steps:
         kubectl logs -n "$ns" $pod -f --tail=-1
     waitFor:
       - check-cloud-marketplace-tools
-      - push-ubbagent
+      - push-deployer-using-minor-version
 
   - id: logs-smoke-test
     name: gcr.io/cloud-builders/gcloud
@@ -198,7 +198,6 @@ steps:
         kubectl logs -n "$ns" smoke-test-pod -f --tail=-1
     waitFor:
       - check-cloud-marketplace-tools
-      - push-ubbagent
       - push-smoke-test
 
   - id: verify
@@ -216,6 +215,7 @@ steps:
       - --deployer=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
       - check-cloud-marketplace-tools
+      - push-deployer-using-minor-version
       - push-ubbagent
       - push-smoke-test
 
