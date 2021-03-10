@@ -19,7 +19,38 @@ spec:
         type: image/png
   selector:
     matchLabels:
-      app.kubernetes.io/instance: "{{ .Release.Name }}"
+      # In order to display the components of the application (the
+      # components are the application's Pods, Deployments, ConfigMap,
+      # Secret, CRD, Mutating and Validating webhook), the application uses
+      # label selectors [1].
+      #
+      # We use both the app.kubernetes.io/name and
+      # app.kubernetes.io/instance label in order to be able to distinguish
+      # two instances of the application:
+      app.kubernetes.io/name: "{{ .Chart.Name }}" # Will always be set to "jetstack-secure-gcm"
+      app.kubernetes.io/instance: "{{ .Release.Name }}" # For example: "jetstack-secure-for-cert-mana-3"
+
+      # All the manifests and subcharts must also have both labels set on
+      # every object:
+      #
+      #  metadata:
+      #    app.kubernetes.io/name: "{{ .Chart.Name }}"        # Will be "jetstack-secure-gcm" due to the name override
+      #    app.kubernetes.io/instance: "{{ .Release.Name }}"  # Example: "jetstack-secure-for-cert-mana-2"
+      #
+      # Note that we had to set nameOverride for all the subcharts so that
+      # the app.kubernetes.io/name is correctly set on the cert-manager.
+      # In values.yaml [2], we have set:
+      #
+      #   cert-manager:
+      #     nameOverride: jetstack-secure-gcm
+      #   google-cas-issuer:
+      #     nameOverride: jetstack-secure-gcm
+      #   preflight:
+      #     nameOverride: jetstack-secure-gcm
+      #
+      # [1]: https://sigs.k8s.io/application/docs/api.md
+      # [2] ./chart/jetstack-secure-gcm/values.yaml
+
   addOwnerRef: true
   componentKinds:
     - group: ""
@@ -36,3 +67,11 @@ spec:
       kind: ValidatingWebhookConfiguration
     - group: apiextensions.k8s.io
       kind: CustomResourceDefinition
+    - group: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+    - group: rbac.authorization.k8s.io/v1
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io/v1
+      kind: RoleBinding
+    - group: rbac.authorization.k8s.io/v1
+      kind: Role
