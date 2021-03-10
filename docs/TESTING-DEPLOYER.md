@@ -111,7 +111,7 @@ gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.1
 ```
 
 Here is the command I did to retag all `google-review` images to
-`1.1.0-gcm.1` since we don't have yet automated Google-OSPO-compliant image
+`1.1.0-gcm.2` since we don't have yet automated Google-OSPO-compliant image
 (will be done in
 [#10](https://github.com/jetstack/jetstack-secure-gcm/issues/10)):
 
@@ -119,14 +119,13 @@ Here is the command I did to retag all `google-review` images to
 retag() {
   docker pull $1 && docker tag $1 $2 && docker push $2
 }
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager{google-review,1.1.0-gcm.1}
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver{google-review,1.1.0-gcm.1}
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector{google-review,1.1.0-gcm.1}
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook{google-review,1.1.0-gcm.1}
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer{google-review,1.1.0-gcm.1}
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight{google-review,1.1.0-gcm.1}
-retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.1
-EOF
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager:{google-review,1.1.0-gcm.2}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver:{google-review,1.1.0-gcm.2}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector:{google-review,1.1.0-gcm.2}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:{google-review,1.1.0-gcm.2}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:{google-review,1.1.0-gcm.2}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight:{google-review,1.1.0-gcm.2}
+retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.2
 ```
 
 ## Cutting a new release
@@ -282,7 +281,6 @@ gcloud iam service-accounts add-iam-policy-binding sa-google-cas-issuer@$PROJECT
 kubectl annotate serviceaccount -n test-ns test-google-cas-issuer-serviceaccount-name \
   iam.gke.io/gcp-service-account=sa-google-cas-issuer@$PROJECT.iam.gserviceaccount.com
 ```
-
 
 ## Testing and releasing the deployer using Google Cloud Build
 
