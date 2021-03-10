@@ -5,6 +5,7 @@
 # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/building-deployer-helm.md
 
 cert-manager:
+  nameOverride: jetstack-secure-gcm
   installCRDs: true
   global:
     rbac:
@@ -35,6 +36,7 @@ cert-manager:
       tag: 1.1.0-gcm.1
 
 google-cas-issuer:
+  nameOverride: jetstack-secure-gcm
   installCRDs: true
   serviceAccount:
     create: false # see note (1)
@@ -43,6 +45,7 @@ google-cas-issuer:
     tag: 1.1.0-gcm.1
 
 preflight:
+  nameOverride: jetstack-secure-gcm
   serviceAccount:
     # name: foo
     create: false # see note (1)
