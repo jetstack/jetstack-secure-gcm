@@ -1,22 +1,3 @@
-# This cloudbuild builds and tests a deployer image of the form:
-#
-#     gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:build-3dc9ba45-d23c-441c-8809-ac693054716e
-#
-# Remember that you then have to "promote" this build by pushing the
-# deployer and tester image. Imagining that you want to release the
-# application version "1.1.0-gcm.2", you will have to run:
-#
-#     BUILD_TAG=build-3dc9ba45-d23c-441c-8809-ac693054716e
-#     RELEASE_TAG=1.1.0-gcm.2
-#     while read img; do
-#         docker pull $img:$BUILD_TAG
-#         docker tag $img:{$BUILD_TAG,$RELEASE_TAG}
-#         docker push $img:$RELEASE_TAG
-#     done <<EOF
-#     gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer
-#     gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test
-#     EOF
-
 timeout: 1800s # 30m
 substitutions:
   # WARNING: the "verify" step only works on the jetstack-public project.
