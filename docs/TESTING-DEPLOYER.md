@@ -116,49 +116,49 @@ Here is the command I did to retag all `google-review` images to
 [#10](https://github.com/jetstack/jetstack-secure-gcm/issues/10)):
 
 ```sh
-while read img; do
-    docker pull $img:google-review
-    docker tag $img:{google-review,1.1.0-gcm.1}
-    docker push $img:1.1.0-gcm.1
-done <<EOF
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
+retag() {
+  docker pull $1 && docker tag $1 $2 && docker push $2
+}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager{google-review,1.1.0-gcm.1}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver{google-review,1.1.0-gcm.1}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector{google-review,1.1.0-gcm.1}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook{google-review,1.1.0-gcm.1}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer{google-review,1.1.0-gcm.1}
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight{google-review,1.1.0-gcm.1}
+retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.1
 EOF
 ```
 
 ## Cutting a new release
 
 First, run Cloud Build. That will push the deployer and smoke-test images
-using a tag of the form `build-3dc9ba45-d23c-441c-8809-ac693054716e`.
+using the version set in `_APP_VERSION`, e.g., `1.1.0-gcm.1`.
 
 ```sh
 gcloud builds submit --project jetstack-public --timeout 1800s --config cloudbuild.yaml \
   --substitutions _CLUSTER_NAME=smoke-test,_CLUSTER_LOCATION=europe-west2-b
 ```
 
-Imagining that you want to release the application version `1.1.0-gcm.2`,
-you will have to run the following in order to "promote" the tester and
-deployer:
+Three images are pushed to the "staging" registry
 
 ```sh
-retag() {
-  docker pull $1:$2
-  docker tag $1:{$2,$3}
-  docker push $1:$3
-}
-
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer build-3dc9ba45-d23c-441c-8809-ac693054716e 1.1
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer build-3dc9ba45-d23c-441c-8809-ac693054716e 1.1.0-gcm.2
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test build-3dc9ba45-d23c-441c-8809-ac693054716e 1.1.0-gcm.2
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test:1.1.0-gcm.1
 ```
 
-> Note: pushing the `deployer:1.1.0-gcm.2` image is not mandatory; only the
-> `1.1` tag is required by the Marketplace UI. But we still push
-> `1.1.0-gcm.2` for debugging purposes.
+In order to get these images published to the official
+`marketplace.gcr.io`, you need to register the version.
+
+If the minor version, e.g. `1.1`, already exists, then you will need to
+update the existing minor version:
+
+<img src="https://user-images.githubusercontent.com/2195781/110706910-daf08380-81f8-11eb-92ef-d62ef7ff4de1.png" width="300" alt="To update the already released minor version, first open the existing minor version by clicking on the version itself (it is a link). This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+<img src="https://user-images.githubusercontent.com/2195781/110706906-d9bf5680-81f8-11eb-909f-faa1818b8f56.png" width="300" alt="Then, click on Update images and Save. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+Finally, you will need to click "Submit for review" and wait a couple of
+days until the Google team approves the new (or updated) minor version.
 
 ## Testing the application without having access to the Billing API
 
