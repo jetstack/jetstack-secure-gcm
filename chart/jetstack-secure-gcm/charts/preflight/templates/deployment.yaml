@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "preflight.fullname" . }}
+  name: {{ include "preflight.fullname" . }}-agent
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "preflight.labels" . | nindent 4 }}

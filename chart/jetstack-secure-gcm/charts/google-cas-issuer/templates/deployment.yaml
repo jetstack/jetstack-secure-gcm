@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "google-cas-issuer.fullname" . }}
+  name: {{ include "google-cas-issuer.fullname" . }}-controller
   namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "google-cas-issuer.labels" . | nindent 4 }}
