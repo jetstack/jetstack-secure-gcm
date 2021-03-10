@@ -19,10 +19,10 @@
 
 timeout: 1800s # 30m
 substitutions:
-  # WARNING: the "verify" step only works on the jetstack-public project
-  # due to the hardcoded tester image. For more information, look for the
-  # "hardcoded" word in the below steps.
-  _CLUSTER_NAME: jetstack-public
+  # WARNING: the "verify" step only works on the jetstack-public project.
+  # This is due to the hardcoded tester image. For more information, look
+  # for the "hardcoded" word in the below steps.
+  _CLUSTER_NAME: smoke-test
   _CLUSTER_LOCATION: europe-west2-b
 steps:
   - id: build-smoke-test
@@ -55,9 +55,9 @@ steps:
     args:
       - -exc
       - |
-        cat data-test/schema.yaml | env -i \
-          IMAGE=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:build-$BUILD_ID
-        envsubst | tee /dev/stderr > /tmp/schema.yaml && mv /tmp/schema.yaml data-test/schema.yaml
+        cat data-test/schema.yaml \
+          | IMAGE=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:build-$BUILD_ID envsubst \
+          | tee /dev/stderr > /tmp/schema.yaml && mv /tmp/schema.yaml data-test/schema.yaml
     waitFor:
       - "-"
 

@@ -10,7 +10,12 @@
 properties:
   smokeTestImage:
     type: string
-    # These variables are envsubt'd in cloudbuild.yml
+    # The variable IMAGE is envsubt'd in cloudbuild.yml. Note that due to
+    # this envsubst, the tester image is hardcoded into the deployer image.
+    # We wish we did not hardcode it, but we were not able to find a
+    # workaround. Consequence: if the deployer image was created on the
+    # "jetstack-public" project, then the "verify" step will only be able
+    # to be run inside the "jetstack-public" project.
     default: $IMAGE
     x-google-property:
       type: IMAGE
