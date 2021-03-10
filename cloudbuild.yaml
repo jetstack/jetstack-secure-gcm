@@ -39,7 +39,7 @@ steps:
       - -exc
       - |
         cat data-test/schema.yaml \
-          | IMAGE=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:build-${nvsubst \
+          | IMAGE=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:${_APP_VERSION} envsubst \
           | tee /dev/stderr > /tmp/schema.yaml && mv /tmp/schema.yaml data-test/schema.yaml
     waitFor:
       - "-"
@@ -51,7 +51,8 @@ steps:
       - --tag
       - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
       - "."
-    waitFor: ["set-data-test-schema-default-values"]
+    waitFor:
+      - set-data-test-schema-default-values
 
   - id: retag-deployer
     name: gcr.io/cloud-builders/docker
@@ -59,7 +60,8 @@ steps:
       - tag
       - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
       - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_MINOR_VERSION}
-    waitFor: ["set-data-test-schema-default-values"]
+    waitFor:
+      - build-deployer
 
   - id: push-deployer
     name: gcr.io/cloud-builders/docker
