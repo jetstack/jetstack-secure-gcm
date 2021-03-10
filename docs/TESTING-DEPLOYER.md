@@ -145,17 +145,20 @@ you will have to run the following in order to "promote" the tester and
 deployer:
 
 ```sh
-BUILD_TAG=build-3dc9ba45-d23c-441c-8809-ac693054716e
-RELEASE_TAG=1.1.0-gcm.2
-while read img; do
-    docker pull $img:$BUILD_TAG
-    docker tag $img:{$BUILD_TAG,$RELEASE_TAG}
-    docker push $img:$RELEASE_TAG
-done <<EOF
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test
-EOF
+retag() {
+  docker pull $1:$2
+  docker tag $1:{$2,$3}
+  docker push $1:$3
+}
+
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer build-3dc9ba45-d23c-441c-8809-ac693054716e 1.1
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer build-3dc9ba45-d23c-441c-8809-ac693054716e 1.1.0-gcm.2
+retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test build-3dc9ba45-d23c-441c-8809-ac693054716e 1.1.0-gcm.2
 ```
+
+> Note: pushing the `deployer:1.1.0-gcm.2` image is not mandatory; only the
+> `1.1` tag is required by the Marketplace UI. But we still push
+> `1.1.0-gcm.2` for debugging purposes.
 
 ## Testing the application without having access to the Billing API
 
