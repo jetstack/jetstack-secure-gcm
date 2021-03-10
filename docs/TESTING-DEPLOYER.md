@@ -1,4 +1,13 @@
-# Creating and testing the deployer image
+# Everything about the deployer image
+- [Creating and testing the deployer image](#creating-and-testing-the-deployer-image)
+- [Testing the application without having access to the Billing API](#testing-the-application-without-having-access-to-the-billing-api)
+- [How the Application object "wrangles" its components](#how-the-application-object-wrangles-its-components)
+- [Installing and manually testing the deployer image](#installing-and-manually-testing-the-deployer-image)
+- [Testing and releasing the deployer using Google Cloud Build](#testing-and-releasing-the-deployer-using-google-cloud-build)
+  - [Debugging deployer and smoke-tests when run in Cloud Build](#debugging-deployer-and-smoke-tests-when-run-in-cloud-build)
+- [Updating the upstream cert-manager chart version](#updating-the-upstream-cert-manager-chart-version)
+
+## Creating and testing the deployer image
 
 > Note: for passing the Google review, we had to enable the Container
 > Analysis API:
@@ -119,6 +128,17 @@ gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
 EOF
 ```
+
+## Testing the application without having access to the Billing API
+
+Jetstack members do not have access to the Billing API. In order to test
+the UI and CLI flows, the IT team needs to "Purchase" the application. It
+does not matter which project, the only important bit is that have the
+application purchased. Then, any project that is attached to that same
+billing account will be able to "Configure" the application on their own
+project, e.g. on `jetstack-mael-valais`.
+
+<img src="https://user-images.githubusercontent.com/2195781/110688721-3105fc80-81e2-11eb-9297-81e65dc8baa0.png" width="500" alt="The app must be purchased once by someone with access to the billing account. The project does not matter. After having it purchased once, any project that is attached to this billing account will be able to Configure the application. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 ## How the Application object "wrangles" its components
 
