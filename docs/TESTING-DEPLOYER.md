@@ -120,6 +120,48 @@ gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
 EOF
 ```
 
+## How the Application object "wrangles" its components
+
+In order to display its components (Pods, Deployments, ConfigMap, Secret,
+CRD, Mutating and Validating webhook), the Application uses a label
+selector. The [official Application
+API](https://github.com/kubernetes-sigs/application/blob/master/docs/api.md)
+reminds us that the `app.kubernetes.io/name` must be used. So we use both
+the `name` and `instance` [recommended
+labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/):
+
+```yaml
+# https://github.com/jetstack/jetstack-secure-gcm/blob/main/chart/jetstack-secure-gcm/templates/application.yaml
+kind: Application
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Chart.Name }}          # Will always be "jetstack-secure-gcm"
+      app.kubernetes.io/instance: {{ .Release.Name }}    # Example: "jetstack-secure-for-cert-mana-2"
+```
+
+First, we set the name override for all our charts:
+
+```yaml
+# https://github.com/jetstack/jetstack-secure-gcm/blob/main/chart/jetstack-secure-gcm/values.yaml
+cert-manager:
+  nameOverride: jetstack-secure-gcm
+google-cas-issuer:
+  nameOverride: jetstack-secure-gcm
+preflight:
+  nameOverride: jetstack-secure-gcm
+```
+
+Then we make sure all the objects are set with the labels:
+
+```yaml
+# All the manifests and subcharts under
+# https://github.com/jetstack/jetstack-secure-gcm/blob/main/chart/jetstack-secure-gcm/templates
+metadata:
+  app.kubernetes.io/name: "{{ .Chart.Name }}"        # Will be "jetstack-secure-gcm" due to the name override
+  app.kubernetes.io/instance: "{{ .Release.Name }}"  # Example: "jetstack-secure-for-cert-mana-2"
+```
+
 ## Installing and manually testing the deployer image
 
 First, let us set a couple of variables:
