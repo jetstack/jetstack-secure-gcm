@@ -17,7 +17,7 @@ x-google-marketplace:
   #
   # Important: it must have the same value as the version in the
   # Application manifest.
-  publishedVersion: "1.1.0-gcm.1"
+  publishedVersion: "1.1.0-gcm.2"
   publishedVersionMetadata:
     releaseNote: >-
       Initial release.
