@@ -136,10 +136,10 @@ using the version set in `_APP_VERSION`, e.g., `1.1.0-gcm.1`.
 
 ```sh
 gcloud builds submit --project jetstack-public --timeout 1800s --config cloudbuild.yaml \
-  --substitutions _CLUSTER_NAME=smoke-test,_CLUSTER_LOCATION=europe-west2-b
+  --substitutions _CLUSTER_NAME=smoke-test,_CLUSTER_LOCATION=europe-west2-b,_APP_MINOR_VERSION=1.1,_APP_VERSION=1.1.0-gcm.1
 ```
 
-Three images are pushed to the "staging" registry
+Three images are pushed to the "staging" registry:
 
 ```sh
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1

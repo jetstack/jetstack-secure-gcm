@@ -24,6 +24,8 @@ substitutions:
   # for the "hardcoded" word in the below steps.
   _CLUSTER_NAME: smoke-test
   _CLUSTER_LOCATION: europe-west2-b
+  _APP_VERSION: "0.1.0-build"
+  _APP_MINOR_VERSION: "0.1"
 steps:
   - id: build-smoke-test
     name: gcr.io/cloud-builders/docker
@@ -32,7 +34,7 @@ steps:
       - -f
       - "smoke-test.Dockerfile"
       - --tag
-      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:build-$BUILD_ID
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:${_APP_VERSION}
       - "."
     waitFor: ["-"]
 
@@ -40,7 +42,7 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:build-$BUILD_ID
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:${_APP_VERSION}
     waitFor:
       - build-smoke-test
 
@@ -56,7 +58,7 @@ steps:
       - -exc
       - |
         cat data-test/schema.yaml \
-          | IMAGE=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:build-$BUILD_ID envsubst \
+          | IMAGE=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:build-${nvsubst \
           | tee /dev/stderr > /tmp/schema.yaml && mv /tmp/schema.yaml data-test/schema.yaml
     waitFor:
       - "-"
@@ -66,20 +68,38 @@ steps:
     args:
       - build
       - --tag
-      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:build-$BUILD_ID
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
       - "."
+    waitFor: ["set-data-test-schema-default-values"]
+
+  - id: retag-deployer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_MINOR_VERSION}
     waitFor: ["set-data-test-schema-default-values"]
 
   - id: push-deployer
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:build-$BUILD_ID
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
     waitFor:
       - build-deployer
 
-  # The tag deployer:1.1 (for example) is the actual "important" image
-  # since it is the one that will be used in the Marketplace UI.
+  # Althouth the application version is, for example, "1.1.0-gcm.1", we
+  # still push a "minor version" tag "1.1". This "minor version" tag is the
+  # actual important image since it is the one that will be used in the
+  # Marketplace UI.
+  - id: push-retagged-deployer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
+    waitFor:
+      - retag-deployer
+
   #
   # We do not retag and push the deployer:1.1 as part of this cloudbuild
   # since this cloudbuild is meant for building the
@@ -196,7 +216,7 @@ steps:
       - ./mpdev
       - verify
       - --wait_timeout=99999999
-      - --deployer=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:build-$BUILD_ID
+      - --deployer=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
     waitFor:
       - check-cloud-marketplace-tools
       - push-deployer
@@ -212,10 +232,11 @@ steps:
       - ./mpdev
       - publish
       - --gcs_repo=gs://$PROJECT_ID
-      - --deployer_image=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:build-$BUILD_ID
+      - --deployer_image=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
     waitFor:
       - verify
 
 images:
-  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:build-$BUILD_ID
-  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:build-$BUILD_ID
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_MINOR_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:${_APP_VERSION}
