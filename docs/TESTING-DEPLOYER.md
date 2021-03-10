@@ -1,5 +1,6 @@
 # Everything about the deployer image
 - [Creating and testing the deployer image](#creating-and-testing-the-deployer-image)
+- [Cutting a new release](#cutting-a-new-release)
 - [Testing the application without having access to the Billing API](#testing-the-application-without-having-access-to-the-billing-api)
 - [How the Application object "wrangles" its components](#how-the-application-object-wrangles-its-components)
 - [Installing and manually testing the deployer image](#installing-and-manually-testing-the-deployer-image)
@@ -126,6 +127,33 @@ gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
+EOF
+```
+
+## Cutting a new release
+
+First, run Cloud Build. That will push the deployer and smoke-test images
+using a tag of the form `build-3dc9ba45-d23c-441c-8809-ac693054716e`.
+
+```sh
+gcloud builds submit --project jetstack-public --timeout 1800s --config cloudbuild.yaml \
+  --substitutions _CLUSTER_NAME=smoke-test,_CLUSTER_LOCATION=europe-west2-b
+```
+
+Imagining that you want to release the application version `1.1.0-gcm.2`,
+you will have to run the following in order to "promote" the tester and
+deployer:
+
+```sh
+BUILD_TAG=build-3dc9ba45-d23c-441c-8809-ac693054716e
+RELEASE_TAG=1.1.0-gcm.2
+while read img; do
+    docker pull $img:$BUILD_TAG
+    docker tag $img:{$BUILD_TAG,$RELEASE_TAG}
+    docker push $img:$RELEASE_TAG
+done <<EOF
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test
 EOF
 ```
 
