@@ -81,7 +81,7 @@ x-google-marketplace:
         ubbagent.image.tag:
           type: TAG
 
-  # Allow the deployer to create CRDs and webhook configurations See
+  # Allow the deployer to create CRDs and webhook configurations. See:
   # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md#deployerserviceaccount
   deployerServiceAccount:
     # Note: the created serviceaccount is "{{.Release.Name}}-deployer-sa".
@@ -97,8 +97,11 @@ x-google-marketplace:
           - apiGroups: ["admissionregistration.k8s.io"]
             resources: ["*"]
             verbs: ["*"]
-
-  # Other fields, like clusterConstraints, can be included here.
+            # Although the deployer does not create RBAC objets, it still
+            # needs to be able to list them.
+          - apiGroups: ["rbac.authorization.k8s.io"]
+            resources: ["clusterrolebindings", "clusterroles", "rolebindings", "roles"]
+            verbs: ["list", "get"]
 
 # The Properties and Required sections of v2 are structured the same as those of v1.
 properties:
