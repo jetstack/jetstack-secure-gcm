@@ -1,5 +1,6 @@
 # Everything about the deployer image
 - [Creating and testing the deployer image](#creating-and-testing-the-deployer-image)
+- [mpdev install on your own cluster](#mpdev-install-on-your-own-cluster)
 - [Cutting a new release](#cutting-a-new-release)
 - [Testing the application without having access to the Billing API](#testing-the-application-without-having-access-to-the-billing-api)
 - [How the Application object "wrangles" its components](#how-the-application-object-wrangles-its-components)
@@ -93,9 +94,10 @@ As a recap about image tags, here is what the tags look like now, taking
 `1.1.0-gcm.1` as an example:
 
 ```sh
-# The deployer image is built and pushed in cloudbuild.yaml:
+# The deployer and tester images is built and pushed in cloudbuild.yaml:
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test:1.1.0-gcm.1
 
 # These images are manually pushed (see below command):
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1.0-gcm.1 # this is cert-manager-controller
@@ -104,9 +106,6 @@ gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector:
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:1.1.0-gcm.1
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:1.1.0-gcm.1
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight:1.1.0-gcm.1
-
-# These images are built and pushed by cloudbuild.yaml:
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test:1.1.0-gcm.1
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.1
 ```
 
@@ -116,16 +115,66 @@ Here is the command I did to retag all `google-review` images to
 [#10](https://github.com/jetstack/jetstack-secure-gcm/issues/10)):
 
 ```sh
-retag() {
-  docker pull $1 && docker tag $1 $2 && docker push $2
+retag() { # Usage: retag FROM_IMAGE_WITH_TAG TO_IMAGE_WITH_TAG
+  local FROM=$1 TO=$2
+  docker pull $FROM && docker tag $FROM $TO && docker push $TO
 }
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager:{google-review,1.1.0-gcm.2}
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver:{google-review,1.1.0-gcm.2}
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector:{google-review,1.1.0-gcm.2}
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:{google-review,1.1.0-gcm.2}
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:{google-review,1.1.0-gcm.2}
-retag gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight:{google-review,1.1.0-gcm.2}
-retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.2
+retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
+  local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4
+  retag $FROM:$FROM_TAG                                         $TO:$TO_TAG
+  retag $FROM/cert-manager-acmesolver:$FROM_TAG                 $TO/cert-manager-acmesolver:$TO_TAG
+  retag $FROM/cert-manager-cainjector:$FROM_TAG                 $TO/cert-manager-cainjector:$TO_TAG
+  retag $FROM/cert-manager-webhook:$FROM_TAG                    $TO/cert-manager-webhook:$TO_TAG
+  retag $FROM/cert-manager-google-cas-issuer:$FROM_TAG          $TO/cert-manager-google-cas-issuer:$TO_TAG
+  retag $FROM/preflight:$FROM_TAG                               $TO/preflight:$TO_TAG
+  retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $TO/ubbagent:$TO_TAG
+}
+
+retagall gcr.io/jetstack-public/jetstack-secure-for-cert-manager{,} google-review 1.1.0-gcm.2
+```
+
+## mpdev install on your own cluster
+
+First, let us choose a deployer that we want to use. For example, let us
+use the existing deployer image `1.1.0-gcm.1`:
+
+```sh
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
+```
+
+Let us imagine your cluster is in the project `foobar`. In order to be able
+to install the application on your own cluster using `mpdev`, you will have
+to re-push all the images as well as the deployer to `foobar`:
+
+```sh
+retag() { # Usage: retag FROM_IMAGE_WITH_TAG TO_IMAGE_WITH_TAG
+  local FROM=$1 TO=$2
+  docker pull $FROM && docker tag $FROM $TO && docker push $TO
+}
+retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
+  local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4
+  retag $FROM:$FROM_TAG                                         $TO:$TO_TAG
+  retag $FROM/cert-manager-acmesolver:$FROM_TAG                 $TO/cert-manager-acmesolver:$TO_TAG
+  retag $FROM/cert-manager-cainjector:$FROM_TAG                 $TO/cert-manager-cainjector:$TO_TAG
+  retag $FROM/cert-manager-webhook:$FROM_TAG                    $TO/cert-manager-webhook:$TO_TAG
+  retag $FROM/cert-manager-google-cas-issuer:$FROM_TAG          $TO/cert-manager-google-cas-issuer:$TO_TAG
+  retag $FROM/preflight:$FROM_TAG                               $TO/preflight:$TO_TAG
+  retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $TO/ubbagent:$TO_TAG
+}
+
+APP_VERSION=1.1.0-gcm.1
+PROJECT=$(gcloud config get-value project | tr ':' '/')
+
+retag gcr.io/{jetstack-public,$PROJECT}/jetstack-secure-for-cert-manager:$APP_VERSION
+retagall gcr.io/{jetstack-public,$PROJECT}/jetstack-secure-for-cert-manager google-review $APP_VERSION
+```
+
+Finally, we can run `mpdev install`:
+
+```sh
+kubectl create ns test-1
+mpdev install --deployer=gcr.io/$PROJECT/jetstack-secure-for-cert-manager/deployer:$APP_VERSION \
+  --parameters='{"name": "test-1", "namespace": "test-1"}'
 ```
 
 ## Cutting a new release
