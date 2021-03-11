@@ -353,26 +353,28 @@ properties:
             rules:
               # The jetstack secure agent gathers services for pod readiness
               # probe rules.
-              - resources: ["services", "pods"]
+              - apiGroups: [""]
+                resources: ["services", "pods"]
                 verbs: ["get", "list"]
               # The jetstack secure agent gathers higher level resources to
               # ensure data to determine ownership is present.
-              - resources: ["deployments", "daemonsets", "replicasets", "statefulsets"]
-                apiGroups: ["apps"]
+              - apiGroups: ["apps"]
+                resources: ["deployments", "daemonsets", "replicasets", "statefulsets"]
                 verbs: ["get", "list"]
-              - resources: ["jobs", "cronjobs"]
-                apiGroups: ["batch"]
+              - apiGroups: ["batch"]
+                resources: ["jobs", "cronjobs"]
                 verbs: ["get", "list"]
               # The jetstack secure agent gathers resources for cert-manager package.
-              - resources: ["secrets"]
+              - apiGroups: [""]
+                resources: ["secrets"]
                 verbs: ["get", "list"]
-              - apiGroups: ["networking.k8s.iobeta1"]
+              - apiGroups: ["networking.k8s.io"]
                 resources: ["ingresses"]
                 verbs: ["get", "list"]
               - apiGroups: ["cert-manager.io"]
                 resources: ["certificates", "certificaterequests", "issuers", "clusterissuers"]
                 verbs: ["get", "list"]
-              - apiGroups: ["cas-issuer.jetstack.ioalpha1"]
+              - apiGroups: ["cas-issuer.jetstack.io"]
                 resources: ["googlecasissuers", "googlecasclusterissuers"]
                 verbs: ["get", "list"]
               - apiGroups: ["admissionregistration.k8s.io"]
