@@ -185,8 +185,8 @@ gcloud container clusters get-credentials --zone=$LOCATION $CLUSTER
 You can then apply the Jetstack Secure agent configuration to your cluster:
 
 ```sh
-kubectl -n $NAMESPACE apply  -f agent-config.yaml
-kubectl -n $NAMESPACE rollout restart deploy jetstack-secure-preflight
+cat agent-config.yaml | sed '/namespace:/d' | kubectl -n $NAMESPACE apply -f-
+kubectl -n $NAMESPACE rollout restart $(kubectl -n $NAMESPACE get deploy -oname | grep preflight)
 ```
 
 You may skip over the "Install agent" section:
