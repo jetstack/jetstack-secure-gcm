@@ -65,13 +65,11 @@ spec:
 {{ toYaml .Values.securityContext | indent 8 }}
         {{- end }}
       {{- end }}
-      {{- if .Values.volumes }}
       volumes:
         - name: ubbagent-config
           configMap:
             name: ubbagent-config
-{{ toYaml .Values.volumes | indent 8 }}
-      {{- end }}
+{{- toYaml .Values.volumes | indent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.image }}
