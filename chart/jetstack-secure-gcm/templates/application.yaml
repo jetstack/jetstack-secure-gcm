@@ -9,14 +9,12 @@ metadata:
     app.kubernetes.io/name: "{{ .Release.Name }}"
   annotations:
     marketplace.cloud.google.com/deploy-info: '{"partner_id": "partner", "product_id": "jetstack-secure", "partner_name": "Jetstack"}'
+    kubernetes-engine.cloud.google.com/icon: >-
+      data:image/png;base64,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
 spec:
   descriptor:
     type: Jetstack Secure Platform
     version: "1.1.0-gcm.2" # Must be the same as in the schema.yaml file.
-    icons:
-      - src: https://platform.jetstack.io/logo_icon.png
-        size: 458x500
-        type: image/png
   selector:
     matchLabels:
       # In order to display the components of the application (the
@@ -29,30 +27,6 @@ spec:
       # two instances of the application:
       app.kubernetes.io/name: "{{ .Chart.Name }}" # Will always be set to "jetstack-secure-gcm"
       app.kubernetes.io/instance: "{{ .Release.Name }}" # For example: "jetstack-secure-for-cert-mana-3"
-
-      # All the manifests and subcharts must also have both labels set on
-      # every object:
-      #
-      #  metadata:
-      #    app.kubernetes.io/name: "{{ .Chart.Name }}"        # Will be "jetstack-secure-gcm" due to the name override
-      #    app.kubernetes.io/instance: "{{ .Release.Name }}"  # Example: "jetstack-secure-for-cert-mana-2"
-      #
-      # Note that we had to set nameOverride and fullnameOverrode for all
-      # the subcharts so that the app.kubernetes.io/name the same across all
-      # objects. In values.yaml [2], we have set:
-      #
-      #   cert-manager:
-      #     nameOverride: jetstack-secure-gcm
-      #     fullnameOverride: jetstack-secure-gcm
-      #   google-cas-issuer:
-      #     nameOverride: jetstack-secure-gcm
-      #     fullnameOverride: google-cas-issuer
-      #   preflight:
-      #     nameOverride: jetstack-secure-gcm
-      #     fullnameOverride: preflight
-      #
-      # [1]: https://sigs.k8s.io/application/docs/api.md
-      # [2] ./chart/jetstack-secure-gcm/values.yaml
 
   addOwnerRef: true
   componentKinds:
