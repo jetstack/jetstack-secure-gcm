@@ -5,7 +5,7 @@ metadata:
   name: {{ template "webhook.fullname" . }}-psp
   labels:
     app: {{ include "webhook.name" . }}
-    app.kubernetes.io/name: {{ include "webhook.name" . }}
+    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: "webhook"
