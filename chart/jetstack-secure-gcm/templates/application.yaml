@@ -37,16 +37,19 @@ spec:
       #    app.kubernetes.io/name: "{{ .Chart.Name }}"        # Will be "jetstack-secure-gcm" due to the name override
       #    app.kubernetes.io/instance: "{{ .Release.Name }}"  # Example: "jetstack-secure-for-cert-mana-2"
       #
-      # Note that we had to set nameOverride for all the subcharts so that
-      # the app.kubernetes.io/name is correctly set on the cert-manager.
-      # In values.yaml [2], we have set:
+      # Note that we had to set nameOverride and fullnameOverrode for all
+      # the subcharts so that the app.kubernetes.io/name the same across all
+      # objects. In values.yaml [2], we have set:
       #
       #   cert-manager:
       #     nameOverride: jetstack-secure-gcm
+      #     fullnameOverride: jetstack-secure-gcm
       #   google-cas-issuer:
       #     nameOverride: jetstack-secure-gcm
+      #     fullnameOverride: google-cas-issuer
       #   preflight:
       #     nameOverride: jetstack-secure-gcm
+      #     fullnameOverride: preflight
       #
       # [1]: https://sigs.k8s.io/application/docs/api.md
       # [2] ./chart/jetstack-secure-gcm/values.yaml

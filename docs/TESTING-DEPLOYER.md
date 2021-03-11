@@ -190,16 +190,27 @@ spec:
       app.kubernetes.io/instance: {{ .Release.Name }}    # Example: "jetstack-secure-for-cert-mana-2"
 ```
 
-First, we set the name override for all our charts:
+Then, we use the `nameOverride` and `fullnameOverride`:
+1. `nameOverride` makes sure that all the objects across all subcharts have
+   the following label:
+   ```yaml
+   app.kubernetes.io/name: "jetstack-secure-gcm"
+   ```
+2. `fullnameOverride` makes sure that the object names actually make sense;
+   if we did not use this, we would end up with duplicate names in
+   deployments and services.
 
 ```yaml
 # https://github.com/jetstack/jetstack-secure-gcm/blob/main/chart/jetstack-secure-gcm/values.yaml
 cert-manager:
   nameOverride: jetstack-secure-gcm
+  fullnameOverride: jetstack-secure-gcm
 google-cas-issuer:
   nameOverride: jetstack-secure-gcm
+  fullnameOverride: google-cas-issuer
 preflight:
   nameOverride: jetstack-secure-gcm
+  fullnameOverride: preflight
 ```
 
 Then we make sure all the objects are set with the labels:

@@ -6,6 +6,7 @@
 
 cert-manager:
   nameOverride: jetstack-secure-gcm
+  fullnameOverride: cert-manager
   installCRDs: true
   global:
     rbac:
@@ -46,6 +47,7 @@ cert-manager:
 
 google-cas-issuer:
   nameOverride: jetstack-secure-gcm
+  fullnameOverride: google-cas-issuer
   installCRDs: true
   serviceAccount:
     create: false # see note (1)
@@ -55,6 +57,7 @@ google-cas-issuer:
 
 preflight:
   nameOverride: jetstack-secure-gcm
+  fullnameOverride: preflight
   serviceAccount:
     # name: foo
     create: false # see note (1)
