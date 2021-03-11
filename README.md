@@ -229,6 +229,36 @@ You can now click on "View clusters" to monitor your certificates. The
 documentation about the Jetstack Secure platform is available at
 <https://platform.jetstack.io/docs>.
 
+Let us try with an example. We can create a CA issuer and sign a
+certificate that only lasts for 30 days:
+
+```sh
+openssl genrsa -out ca.key 2048
+openssl req -x509 -new -nodes -key ca.key -subj "/CN=example" -out ca.crt
+kubectl create secret tls example --cert=ca.crt --key=ca.key
+kubectl apply -f- <<EOF
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: example
+spec:
+  duration: 721h # very short time to live
+  dnsNames:
+    - example.com
+  issuerRef:
+    kind: Issuer
+    name: letsencrypt-prod
+  secretName: example-tls
+EOF
+```
+
 ### Step 3 (optional): set up the Google Certificate Authority Service
 
 [Google Certificate Authority Service][] is a highly available, scalable Google Cloud

@@ -48,7 +48,7 @@ Selector labels
 {{- define "google-cas-issuer.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "google-cas-issuer.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-app.kubernetes.io/component: "controller"
+app.kubernetes.io/component: "google-cas-issuer"
 {{- end }}
 
 {{/*
