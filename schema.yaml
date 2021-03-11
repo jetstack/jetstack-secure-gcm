@@ -253,7 +253,7 @@ properties:
             rules:
               - apiGroups: [""]
                 resources: [secrets]
-                verbs: [get, list, update, patch, create]
+                verbs: [get, list, watch, update, patch, create]
 
   cert-manager.cainjector.serviceAccount.name:
     type: string
@@ -263,6 +263,22 @@ properties:
       serviceAccount:
         description: Service account used by cert-manager CA Injector Deployment
         roles:
+          - type: Role
+            rulesType: CUSTOM
+            rules:
+              # Leader election roles.
+              - apiGroups: [""]
+                resources: [configmaps]
+                verbs: [get, list, watch, create, update, patch, delete]
+              - apiGroups: [""]
+                resources: [configmaps/status]
+                verbs: [get, update, patch]
+              - apiGroups: [""]
+                resources: [events]
+                verbs: [create]
+              - apiGroups: [coordination.k8s.io]
+                resources: [leases]
+                verbs: [create, get, list, update]
           - type: ClusterRole
             rulesType: CUSTOM
             rules:
