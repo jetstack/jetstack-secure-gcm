@@ -233,31 +233,36 @@ Let us try with an example. We can create a CA issuer and sign a
 certificate that only lasts for 30 days:
 
 ```sh
-openssl genrsa -out ca.key 2048
-openssl req -x509 -new -nodes -key ca.key -subj "/CN=example" -out ca.crt
-kubectl create secret tls example --cert=ca.crt --key=ca.key
+docker run -it --rm -v "$(pwd)":/tmp frapsoft/openssl genrsa -out /tmp/ca.key 2048
+docker run -it --rm -v "$(pwd)":/tmp frapsoft/openssl req -x509 -new -nodes -key /tmp/ca.key -subj "/CN=example" -reqexts v3_req -extensions v3_ca -out /tmp/ca.crt
+kubectl create secret tls example-ca-key-pair --cert=ca.crt --key=ca.key
 kubectl apply -f- <<EOF
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: selfsigned-issuer
+  name: example-ca-issuer
 spec:
-  selfSigned: {}
+  ca:
+    secretName: example-ca-key-pair
 ---
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
-  name: example
+  name: example-cert
 spec:
   duration: 721h # very short time to live
   dnsNames:
     - example.com
   issuerRef:
     kind: Issuer
-    name: letsencrypt-prod
+    name: example-ca-issuer
   secretName: example-tls
-EOF
 ```
+
+A few seconds later, you will see the certificate `example-cert` appear in
+the Jetstack Secure Platform UI:
+
+<img src="https://user-images.githubusercontent.com/2195781/110807883-bf7e8a80-8283-11eb-9d0d-57be5c063d3d.png" width="500" alt="The certificate example-cert shows in the UI at platform.jetstack.io. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 ### Step 3 (optional): set up the Google Certificate Authority Service
 
