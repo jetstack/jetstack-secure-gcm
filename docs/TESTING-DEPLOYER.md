@@ -119,7 +119,10 @@ retag() { # Usage: retag FROM_IMAGE_WITH_TAG TO_IMAGE_WITH_TAG
   local FROM=$1 TO=$2
   docker pull $FROM && docker tag $FROM $TO && docker push $TO
 }
-retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
+retagall() {
+  # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
+  # Does not retag the deployer, you have to use "retag" directly for the
+  # deployer.
   local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4
   retag $FROM:$FROM_TAG                                         $TO:$TO_TAG
   retag $FROM/cert-manager-acmesolver:$FROM_TAG                 $TO/cert-manager-acmesolver:$TO_TAG
@@ -129,8 +132,8 @@ retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
   retag $FROM/preflight:$FROM_TAG                               $TO/preflight:$TO_TAG
   retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $TO/ubbagent:$TO_TAG
 }
-
-retagall gcr.io/jetstack-public/jetstack-secure-for-cert-manager{,} google-review 1.1.0-gcm.2
+APP_VERSION=1.1.0-gcm.2
+retagall gcr.io/jetstack-public/jetstack-secure-for-cert-manager{,} google-review $APP_VERSION
 ```
 
 ## mpdev install on your own cluster
@@ -139,7 +142,7 @@ First, let us choose a deployer that we want to use. For example, let us
 use the existing deployer image `1.1.0-gcm.1`:
 
 ```sh
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
+APP_VERSION=1.1.0-gcm.1
 ```
 
 Let us imagine your cluster is in the project `foobar`. In order to be able
@@ -151,7 +154,10 @@ retag() { # Usage: retag FROM_IMAGE_WITH_TAG TO_IMAGE_WITH_TAG
   local FROM=$1 TO=$2
   docker pull $FROM && docker tag $FROM $TO && docker push $TO
 }
-retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
+retagall() {
+  # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
+  # Does not retag the deployer, you have to use "retag" directly for the
+  # deployer.
   local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4
   retag $FROM:$FROM_TAG                                         $TO:$TO_TAG
   retag $FROM/cert-manager-acmesolver:$FROM_TAG                 $TO/cert-manager-acmesolver:$TO_TAG
@@ -162,20 +168,39 @@ retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
   retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $TO/ubbagent:$TO_TAG
 }
 
-APP_VERSION=1.1.0-gcm.1
 PROJECT=$(gcloud config get-value project | tr ':' '/')
-
 retag gcr.io/{jetstack-public,$PROJECT}/jetstack-secure-for-cert-manager:$APP_VERSION
 retagall gcr.io/{jetstack-public,$PROJECT}/jetstack-secure-for-cert-manager google-review $APP_VERSION
 ```
 
-Finally, we can run `mpdev install`:
+We can run `mpdev install`:
 
 ```sh
 kubectl create ns test-1
 mpdev install --deployer=gcr.io/$PROJECT/jetstack-secure-for-cert-manager/deployer:$APP_VERSION \
   --parameters='{"name": "test-1", "namespace": "test-1"}'
 ```
+
+Then, download a `license.yaml` key (can be from any project on an
+organization, as long as the IT dept has already "Purchased" the
+application once for one of the projects). If you are at Jetstack, you own
+project (e.g., `jetstack-mael-valais`) will work out of the box since the
+IT team [already did the "Purchase"
+step](https://github.com/jetstack/platform-board/issues/338).
+
+<img src="https://user-images.githubusercontent.com/2195781/110790775-c0a6bc00-8271-11eb-9ea4-c701ef7f58a1.png" width="300" alt="To download the lincese.yaml file, click on Download license key. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+Finally, do:
+
+```sh
+cat license.yaml | sed 's/name:.*/name: test-1-license/' | k apply -f- -n test-1
+```
+
+If you go to GKE's [applications
+page](https://console.cloud.google.com/kubernetes/application), you should
+see everything green:
+
+<img src="https://user-images.githubusercontent.com/2195781/110791519-9acde700-8272-11eb-81f4-4f27fb8a174d.png" width="300" alt="The application page on GKE should show the test-1 application. The preflight deployment is failing because the user has not (yet) gone to http://platform.jetstack.io/ to register their cluster. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 ## Cutting a new release
 
