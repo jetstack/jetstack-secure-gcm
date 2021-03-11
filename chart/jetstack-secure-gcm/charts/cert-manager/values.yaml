@@ -1,3 +1,13 @@
+# GCM-specific Helm values added by Mael.
+ubbagent:
+  # By default, the reportingSecretName will be set to
+  #  ${helm-release}-license.
+  #
+  # reportingSecretName: chartname-license
+  image:
+    repository: gcr.io/cloud-marketplace-tools/metering/ubbagent
+    tag: latest
+
 # Default values for cert-manager.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
@@ -28,7 +38,8 @@ installCRDs: false
 
 replicaCount: 1
 
-strategy: {}
+strategy:
+  {}
   # type: RollingUpdate
   # rollingUpdate:
   #   maxSurge: 0
@@ -67,7 +78,8 @@ serviceAccount:
   # annotations: {}
 
 # Optional additional arguments
-extraArgs: []
+extraArgs:
+  []
   # Use this flag to set a namespace that cert-manager will use to store
   # supporting resources required for each ClusterIssuer (default is kube-system)
   # - --cluster-resource-namespace=kube-system
@@ -78,7 +90,8 @@ extraEnv: []
 # - name: SOME_VAR
 #   value: 'some value'
 
-resources: {}
+resources:
+  {}
   # requests:
   #   cpu: 10m
   #   memory: 32Mi
@@ -100,13 +113,13 @@ securityContext: {}
 
 # Container Security Context to be set on the controller component container
 # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-containerSecurityContext: {}
+containerSecurityContext:
+  {}
   # capabilities:
   #   drop:
   #   - ALL
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
-
 
 volumes: []
 
@@ -133,7 +146,8 @@ podLabels: {}
 
 nodeSelector: {}
 
-ingressShim: {}
+ingressShim:
+  {}
   # defaultIssuerName: ""
   # defaultIssuerKind: ""
   # defaultIssuerGroup: ""
@@ -180,7 +194,8 @@ webhook:
   replicaCount: 1
   timeoutSeconds: 10
 
-  strategy: {}
+  strategy:
+    {}
     # type: RollingUpdate
     # rollingUpdate:
     #   maxSurge: 0
@@ -190,7 +205,8 @@ webhook:
 
   # Container Security Context to be set on the webhook component container
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  containerSecurityContext: {}
+  containerSecurityContext:
+    {}
     # capabilities:
     #   drop:
     #   - ALL
@@ -212,7 +228,8 @@ webhook:
   # Optional additional arguments for webhook
   extraArgs: []
 
-  resources: {}
+  resources:
+    {}
     # requests:
     #   cpu: 10m
     #   memory: 32Mi
@@ -288,7 +305,8 @@ cainjector:
   enabled: true
   replicaCount: 1
 
-  strategy: {}
+  strategy:
+    {}
     # type: RollingUpdate
     # rollingUpdate:
     #   maxSurge: 0
@@ -298,13 +316,13 @@ cainjector:
 
   # Container Security Context to be set on the cainjector component container
   # ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
-  containerSecurityContext: {}
+  containerSecurityContext:
+    {}
     # capabilities:
     #   drop:
     #   - ALL
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
-
 
   # Optional additional annotations to add to the cainjector Deployment
   # deploymentAnnotations: {}
@@ -315,7 +333,8 @@ cainjector:
   # Optional additional arguments for cainjector
   extraArgs: []
 
-  resources: {}
+  resources:
+    {}
     # requests:
     #   cpu: 10m
     #   memory: 32Mi

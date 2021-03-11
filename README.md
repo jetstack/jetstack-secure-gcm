@@ -494,8 +494,8 @@ helm template "$APP_INSTANCE_NAME" chart/jetstack-secure-gcm \
   --set preflight.image.tag="$TAG" \
   --set preflight.serviceAccount.create=true \
   --set preflight.rbac.create=true \
-  --set ubbagent.image.tag="$TAG" \
-  --set ubbagent.reportingSecretName=$APP_INSTANCE_NAME-license \
+  --set cert-manager.ubbagent.image.tag="$TAG" \
+  --set cert-manager.ubbagent.reportingSecretName=$APP_INSTANCE_NAME-license \
   > "${APP_INSTANCE_NAME}_manifest.yaml"
 ```
 
@@ -508,7 +508,7 @@ helm template "$APP_INSTANCE_NAME" chart/jetstack-secure-gcm \
 > --set cert-manager.webhook.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook
 > --set google-cas-issuer.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer
 > --set preflight.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
-> --set ubbagent.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent
+> --set cert-manager.ubbagent.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent
 > ```
 
 #### Apply the manifest to your Kubernetes cluster
