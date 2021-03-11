@@ -5,7 +5,6 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ template "cainjector.fullname" . }}-psp
   labels:
-    app: {{ include "cainjector.name" . }}
     app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
