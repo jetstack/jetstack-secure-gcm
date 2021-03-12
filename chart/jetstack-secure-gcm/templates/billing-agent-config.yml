@@ -53,9 +53,10 @@ data:
     - name: servicecontrol
       servicecontrol:
         identity: gcp
-        # The service name is unique to your application and will be
-        # provided during onboarding.
-        serviceName: jetstack-secure-for-cert-manager.jetstack-public.appspot.com
+        # The service name was sent by email by Google in the file
+        # jetstack-secure-for-cert-manager.yaml. See:
+        # https://github.com/jetstack/platform-board/issues/347
+        serviceName: jetstack-secure-for-cert-manager.mp-jetstack-public.appspot.com
         consumerId: $AGENT_CONSUMER_ID
 
     # The sources section lists metric data sources run by the agent
