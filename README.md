@@ -163,6 +163,7 @@ to you:
   page and click on the name of the cluster:
 
   <img src="https://user-images.githubusercontent.com/2195781/109160131-af3fb900-7775-11eb-9a46-c1bcebdf8315.png" width="600px" alt="Click on the cluster name on the applications page in the Google Kubernetes Engine console. this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
   <img src="https://user-images.githubusercontent.com/2195781/109160135-afd84f80-7775-11eb-9f74-0847413cab7f.png" width="600px" alt="Grab the cluster location on the GKE console page of your GKE cluster. this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 The next steps require to have a terminal open as well as to have the
