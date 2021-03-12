@@ -14,7 +14,7 @@ metadata:
 spec:
   descriptor:
     type: Jetstack Secure Platform
-    version: "1.1.0-gcm.3" # Must be the same as in the schema.yaml file.
+    version: "1.1.0-gcm.4" # Must be the same as in the schema.yaml file.
   selector:
     matchLabels:
       # In order to display the components of the application (the
