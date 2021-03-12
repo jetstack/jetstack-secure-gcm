@@ -104,7 +104,7 @@ the [Applications](https://console.cloud.google.com/kubernetes/application) page
 
 <img src="https://user-images.githubusercontent.com/2195781/110791519-9acde700-8272-11eb-81f4-4f27fb8a174d.png" width="300" alt="The application page on GKE should show the test-1 application. The preflight deployment is failing because the user has not (yet) gone to http://platform.jetstack.io/ to register their cluster. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-**Note:** the preflight deploymnent is expected to be failing when the
+**Note:** the preflight deployment is expected to be failing when the
 application is first deployed. After registering your cluster on
 <https://platform.jetstack.io>, the deployment will start working. To register your cluster, keep reading the [next section](#step-2-log-into-the-jetstack-secure-dashboard).
 
@@ -189,7 +189,7 @@ gcloud container clusters get-credentials --zone=$LOCATION $CLUSTER
 You can then apply the Jetstack Secure agent configuration to your cluster:
 
 ```sh
-cat agent-config.yaml | sed '/namespace:/d' | kubectl -n $NAMESPACE apply -f-
+sed '/namespace:/d' agent-config.yaml | kubectl -n $NAMESPACE apply -f-
 kubectl -n $NAMESPACE rollout restart $(kubectl -n $NAMESPACE get deploy -oname | grep preflight)
 ```
 
