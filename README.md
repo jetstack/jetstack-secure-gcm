@@ -102,7 +102,11 @@ When you are done, click the "Deploy" button:
 This will install Jetstack Secure for cert-manager, and will redirect to
 the [Applications](https://console.cloud.google.com/kubernetes/application) page:
 
-<img src="https://user-images.githubusercontent.com/2195781/108228677-61a4ca00-713f-11eb-971a-7306b220db23.png" width="600px" alt="this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/2195781/110791519-9acde700-8272-11eb-81f4-4f27fb8a174d.png" width="300" alt="The application page on GKE should show the test-1 application. The preflight deployment is failing because the user has not (yet) gone to http://platform.jetstack.io/ to register their cluster. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+**Note:** the preflight deploymnent is expected to be failing when the
+application is first deployed. After registering your cluster on
+<https://platform.jetstack.io>, the deployment will start working. To register your cluster, keep reading the [next section](#step-2-log-into-the-jetstack-secure-dashboard).
 
 ### Step 2: log into the Jetstack Secure dashboard
 
@@ -185,8 +189,8 @@ gcloud container clusters get-credentials --zone=$LOCATION $CLUSTER
 You can then apply the Jetstack Secure agent configuration to your cluster:
 
 ```sh
-kubectl -n $NAMESPACE apply  -f agent-config.yaml
-kubectl -n $NAMESPACE rollout restart deploy jetstack-secure-preflight
+cat agent-config.yaml | sed '/namespace:/d' | kubectl -n $NAMESPACE apply -f-
+kubectl -n $NAMESPACE rollout restart $(kubectl -n $NAMESPACE get deploy -oname | grep preflight)
 ```
 
 You may skip over the "Install agent" section:
@@ -224,6 +228,41 @@ A few seconds later, a green mark will appear:
 You can now click on "View clusters" to monitor your certificates. The
 documentation about the Jetstack Secure platform is available at
 <https://platform.jetstack.io/docs>.
+
+Let us try with an example. We can create a CA issuer and sign a
+certificate that only lasts for 30 days:
+
+```sh
+docker run -it --rm -v "$(pwd)":/tmp frapsoft/openssl genrsa -out /tmp/ca.key 2048
+docker run -it --rm -v "$(pwd)":/tmp frapsoft/openssl req -x509 -new -nodes -key /tmp/ca.key -subj "/CN=example" -reqexts v3_req -extensions v3_ca -out /tmp/ca.crt
+kubectl create secret tls example-ca-key-pair --cert=ca.crt --key=ca.key
+kubectl apply -f- <<EOF
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: example-ca-issuer
+spec:
+  ca:
+    secretName: example-ca-key-pair
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: example-cert
+spec:
+  duration: 721h # very short time to live
+  dnsNames:
+    - example.com
+  issuerRef:
+    kind: Issuer
+    name: example-ca-issuer
+  secretName: example-tls
+```
+
+A few seconds later, you will see the certificate `example-cert` appear in
+the Jetstack Secure Platform UI:
+
+<img src="https://user-images.githubusercontent.com/2195781/110807883-bf7e8a80-8283-11eb-9d0d-57be5c063d3d.png" width="500" alt="The certificate example-cert shows in the UI at platform.jetstack.io. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 ### Step 3 (optional): set up the Google Certificate Authority Service
 
@@ -494,8 +533,8 @@ helm template "$APP_INSTANCE_NAME" chart/jetstack-secure-gcm \
   --set preflight.image.tag="$TAG" \
   --set preflight.serviceAccount.create=true \
   --set preflight.rbac.create=true \
-  --set ubbagent.image.tag="$TAG" \
-  --set ubbagent.reportingSecretName=$APP_INSTANCE_NAME-license \
+  --set cert-manager.ubbagent.image.tag="$TAG" \
+  --set cert-manager.ubbagent.reportingSecretName=$APP_INSTANCE_NAME-license \
   > "${APP_INSTANCE_NAME}_manifest.yaml"
 ```
 
@@ -508,7 +547,7 @@ helm template "$APP_INSTANCE_NAME" chart/jetstack-secure-gcm \
 > --set cert-manager.webhook.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook
 > --set google-cas-issuer.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer
 > --set preflight.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
-> --set ubbagent.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent
+> --set cert-manager.ubbagent.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent
 > ```
 
 #### Apply the manifest to your Kubernetes cluster

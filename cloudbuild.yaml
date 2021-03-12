@@ -1,37 +1,13 @@
 timeout: 1800s # 30m
 substitutions:
-  _CLUSTER_NAME: cluster-1
+  # WARNING: the "verify" step only works on the jetstack-public project.
+  # This is due to the hardcoded tester image. For more information, look
+  # for the "hardcoded" word in the below steps.
+  _CLUSTER_NAME: smoke-test
   _CLUSTER_LOCATION: europe-west2-b
-  # The deployer version must always be a minor version at any time since
-  # the Marketplace UI will only accept minor tags for the deployer.
-  _DEPLOYER_VERSION: "1.1"
-  # The _APP_VERSION must be equal to the value set on the publishedVersion
-  # field in schema.yaml.
-  _APP_VERSION: "1.1.0-gcm.1"
-  _SOLUTION_NAME: jetstack-secure-for-cert-manager
+  _APP_VERSION: "0.1.0-build"
+  _APP_MINOR_VERSION: "0.1"
 steps:
-  - id: pull-ubbagent
-    name: gcr.io/cloud-builders/docker
-    args:
-      - pull
-      - gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
-    waitFor: ["-"]
-
-  - id: tag-ubbagent
-    name: gcr.io/cloud-builders/docker
-    args:
-      - tag
-      - gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
-    waitFor: ["pull-ubbagent"]
-
-  - id: push-ubbagent
-    name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
-    waitFor: ["tag-ubbagent"]
-
   - id: build-smoke-test
     name: gcr.io/cloud-builders/docker
     args:
@@ -39,7 +15,7 @@ steps:
       - -f
       - "smoke-test.Dockerfile"
       - --tag
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION}
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:${_APP_VERSION}
       - "."
     waitFor: ["-"]
 
@@ -47,58 +23,69 @@ steps:
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION}
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:${_APP_VERSION}
     waitFor:
       - build-smoke-test
 
+  # The tester image "smoke-test" is hardcoded into the deployer image. We
+  # wish we did not hardcode it, but we were not able to find a workaround.
+  # Consequence: if the deployer image was created on the "jetstack-public"
+  # project, then the "verify" step will only be able to be run inside the
+  # "jetstack-public" project.
   - id: set-data-test-schema-default-values
     name: gcr.io/cloud-marketplace-tools/k8s/dev
     entrypoint: bash
     args:
       - -exc
       - |
-        cat data-test/schema.yaml | env -i \
-          IMAGE=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION} \
-        envsubst | tee /dev/stderr > tmp && mv tmp data-test/schema.yaml
+        cat data-test/schema.yaml \
+          | IMAGE=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:${_APP_VERSION} envsubst \
+          | tee /dev/stderr > /tmp/schema.yaml && mv /tmp/schema.yaml data-test/schema.yaml
     waitFor:
       - "-"
 
-  # We push a deployer:1.1.0-gcm.1 for our debugging purposes.
-  - id: build-deployer-using-app-version
+  - id: build-deployer
     name: gcr.io/cloud-builders/docker
     args:
       - build
       - --tag
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
       - "."
-    waitFor: ["set-data-test-schema-default-values"]
-
-  - id: push-deployer-using-app-version
-    name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
     waitFor:
-      - build-deployer-using-app-version
+      - set-data-test-schema-default-values
 
-  # The tag deployer:1.1 (for example) is the actual "important" image
-  # since it is the one that will be used in the Marketplace UI.
-  - id: tag-deployer-using-minor-version
+  - id: retag-deployer
     name: gcr.io/cloud-builders/docker
     args:
       - tag
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_DEPLOYER_VERSION}
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_MINOR_VERSION}
     waitFor:
-      - build-deployer-using-app-version
+      - build-deployer
 
-  - id: push-deployer-using-minor-version
+  - id: push-deployer
     name: gcr.io/cloud-builders/docker
     args:
       - push
-      - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
     waitFor:
-      - tag-deployer-using-minor-version
+      - build-deployer
+
+  # Althouth the application version is, for example, "1.1.0-gcm.1", we
+  # still push a "minor version" tag "1.1". This "minor version" tag is the
+  # actual important image since it is the one that will be used in the
+  # Marketplace UI.
+  - id: push-retagged-deployer
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
+    waitFor:
+      - retag-deployer
+
+  #
+  # We do not retag and push the deployer:1.1 as part of this cloudbuild
+  # since this cloudbuild is meant for building the
 
   - id: gcloud-credentials
     name: gcr.io/cloud-builders/gcloud
@@ -175,7 +162,7 @@ steps:
         kubectl logs -n "$ns" $pod -f --tail=-1
     waitFor:
       - check-cloud-marketplace-tools
-      - push-deployer-using-minor-version
+      - push-deployer
 
   - id: logs-smoke-test
     name: gcr.io/cloud-builders/gcloud
@@ -212,11 +199,10 @@ steps:
       - ./mpdev
       - verify
       - --wait_timeout=99999999
-      - --deployer=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+      - --deployer=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
     waitFor:
       - check-cloud-marketplace-tools
-      - push-deployer-using-minor-version
-      - push-ubbagent
+      - push-deployer
       - push-smoke-test
 
   - id: publish
@@ -229,12 +215,11 @@ steps:
       - ./mpdev
       - publish
       - --gcs_repo=gs://$PROJECT_ID
-      - --deployer_image=gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
+      - --deployer_image=gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
     waitFor:
       - verify
 
 images:
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_APP_VERSION}
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/deployer:${_DEPLOYER_VERSION}
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/ubbagent:${_APP_VERSION}
-  - gcr.io/$PROJECT_ID/${_SOLUTION_NAME}/smoke-test:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/deployer:${_APP_MINOR_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/smoke-test:${_APP_VERSION}

@@ -8,7 +8,7 @@ x-google-marketplace:
   schemaVersion: v2
 
   # MUST match the version of the Application custom resource object.
-  # This is the same as the top level applicationApiVersion field in v1.
+  # This is the same as the top level applicationApiVersion field in v1.beta1
   applicationApiVersion: v1beta1
 
   # We are not "truely" following semver.org since we use a "-" for a final
@@ -17,7 +17,7 @@ x-google-marketplace:
   #
   # Important: it must have the same value as the version in the
   # Application manifest.
-  publishedVersion: "1.1.0-gcm.1"
+  publishedVersion: "1.1.0-gcm.3"
   publishedVersionMetadata:
     releaseNote: >-
       Initial release.
@@ -76,12 +76,12 @@ x-google-marketplace:
           type: TAG
     ubbagent:
       properties:
-        ubbagent.image.repository:
+        cert-manager.ubbagent.image.repository:
           type: REPO_WITH_REGISTRY
-        ubbagent.image.tag:
+        cert-manager.ubbagent.image.tag:
           type: TAG
 
-  # Allow the deployer to create CRDs and webhook configurations See
+  # Allow the deployer to create CRDs and webhook configurations. See:
   # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/schema.md#deployerserviceaccount
   deployerServiceAccount:
     # Note: the created serviceaccount is "{{.Release.Name}}-deployer-sa".
@@ -97,8 +97,11 @@ x-google-marketplace:
           - apiGroups: ["admissionregistration.k8s.io"]
             resources: ["*"]
             verbs: ["*"]
-
-  # Other fields, like clusterConstraints, can be included here.
+            # Although the deployer does not create RBAC objets, it still
+            # needs to be able to list them.
+          - apiGroups: ["rbac.authorization.k8s.io"]
+            resources: ["clusterrolebindings", "clusterroles", "rolebindings", "roles"]
+            verbs: ["list", "get"]
 
 # The Properties and Required sections of v2 are structured the same as those of v1.
 properties:
@@ -250,7 +253,7 @@ properties:
             rules:
               - apiGroups: [""]
                 resources: [secrets]
-                verbs: [get, list, update, patch, create]
+                verbs: [get, list, watch, update, patch, create]
 
   cert-manager.cainjector.serviceAccount.name:
     type: string
@@ -260,6 +263,22 @@ properties:
       serviceAccount:
         description: Service account used by cert-manager CA Injector Deployment
         roles:
+          - type: Role
+            rulesType: CUSTOM
+            rules:
+              # Leader election roles.
+              - apiGroups: [""]
+                resources: [configmaps]
+                verbs: [get, list, watch, create, update, patch, delete]
+              - apiGroups: [""]
+                resources: [configmaps/status]
+                verbs: [get, update, patch]
+              - apiGroups: [""]
+                resources: [events]
+                verbs: [create]
+              - apiGroups: [coordination.k8s.io]
+                resources: [leases]
+                verbs: [create, get, list, update]
           - type: ClusterRole
             rulesType: CUSTOM
             rules:
@@ -343,49 +362,43 @@ properties:
     x-google-marketplace:
       type: SERVICE_ACCOUNT
       serviceAccount:
-        description: Service account used by preflight
+        description: Service account used by the Jetstack Secure Platform agent
         roles:
           - type: ClusterRole
             rulesType: CUSTOM
             rules:
+              # The jetstack secure agent gathers services for pod readiness
+              # probe rules.
               - apiGroups: [""]
-                resources: ["nodes"]
+                resources: ["services", "pods"]
                 verbs: ["get", "list"]
-          - type: ClusterRole
-            rulesType: CUSTOM
-            rules:
+              # The jetstack secure agent gathers higher level resources to
+              # ensure data to determine ownership is present.
+              - apiGroups: ["apps"]
+                resources: ["deployments", "daemonsets", "replicasets", "statefulsets"]
+                verbs: ["get", "list"]
+              - apiGroups: ["batch"]
+                resources: ["jobs", "cronjobs"]
+                verbs: ["get", "list"]
+              # The jetstack secure agent gathers resources for cert-manager package.
               - apiGroups: [""]
                 resources: ["secrets"]
                 verbs: ["get", "list"]
-          - type: ClusterRole
-            rulesType: CUSTOM
-            rules:
+              - apiGroups: ["networking.k8s.io"]
+                resources: ["ingresses"]
+                verbs: ["get", "list"]
               - apiGroups: ["cert-manager.io"]
-                resources:
-                  - certificates
-                  - certificaterequests
-                  - issuers
-                  - clusterissuers
+                resources: ["certificates", "certificaterequests", "issuers", "clusterissuers"]
                 verbs: ["get", "list"]
-          - type: ClusterRole
-            rulesType: CUSTOM
-            rules:
               - apiGroups: ["cas-issuer.jetstack.io"]
-                resources:
-                  - googlecasissuers
-                  - googlecasclusterissuers
+                resources: ["googlecasissuers", "googlecasclusterissuers"]
                 verbs: ["get", "list"]
-          - type: ClusterRole
-            rulesType: CUSTOM
-            rules:
               - apiGroups: ["admissionregistration.k8s.io"]
-                resources:
-                  - validatingwebhookconfigurations
-                  - mutatingwebhookconfigurations
+                resources: ["mutatingwebhookconfigurations", "validatingwebhookconfigurations"]
                 verbs: ["get", "list"]
 
   # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/64181be/docs/billing-integration.md
-  ubbagent.reportingSecretName:
+  cert-manager.ubbagent.reportingSecretName:
     type: string
     x-google-marketplace:
       type: REPORTING_SECRET

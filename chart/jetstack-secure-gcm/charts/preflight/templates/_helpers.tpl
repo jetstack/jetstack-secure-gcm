@@ -48,6 +48,7 @@ Selector labels
 {{- define "preflight.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "preflight.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: preflight
 {{- end }}
 
 {{/*
