@@ -1,4 +1,5 @@
 # Everything about the deployer image
+- [Pricing mechanism](#pricing-mechanism)
 - [Creating and testing the deployer image](#creating-and-testing-the-deployer-image)
 - [mpdev install on your own cluster](#mpdev-install-on-your-own-cluster)
 - [Cutting a new release](#cutting-a-new-release)
@@ -8,6 +9,97 @@
 - [Testing and releasing the deployer using Google Cloud Build](#testing-and-releasing-the-deployer-using-google-cloud-build)
   - [Debugging deployer and smoke-tests when run in Cloud Build](#debugging-deployer-and-smoke-tests-when-run-in-cloud-build)
 - [Updating the upstream cert-manager chart version](#updating-the-upstream-cert-manager-chart-version)
+
+## Pricing mechanism
+
+The [pricing panel](https://console.cloud.google.com/partner/editor/jetstack-public/jetstack-secure-for-cert-manager?project=jetstack-public&authuser=4&form=saasK8sPricingPanel) is set as:
+
+| Field          | Value  |
+| -------------- | ------ |
+| Name           | `Time` |
+| ID             | `time` |
+| Unit           | `h`    |
+| Reporting Unit | `h`    |
+
+The application contains a ConfigMap that we configured with a heartbeat
+period of 1 hour. And since the heartbeat period must be given in seconds,
+we give the field `intervalSeconds` a value of 3600. The heartbeat is
+configured in
+[billing-agent-config.yml](https://github.com/jetstack/jetstack-secure-gcm/blob/c43be00b36f7fd1d01f15771025308b8f5ab69f7/chart/jetstack-secure-gcm/templates/billing-agent-config.yml#L15-L74):
+
+```yaml
+# File: billing-agent-config.yml
+
+# The metrics section defines the metric that will be reported.
+# Metric names should match verbatim the identifiers created
+# during pricing setup.
+metrics:
+- name: time
+  type: int
+  endpoints:
+  - name: servicecontrol
+
+# The endpoints section defines where metering data is ultimately
+# sent. Currently supported endpoints include:
+# * disk - some directory on the local filesystem
+# * servicecontrol - Google Service Control
+endpoints:
+- name: servicecontrol
+  servicecontrol:
+    identity: gcp
+    # This service name comes from the service name that Google gave us in
+    # jetstack-secure-for-cert-manager.yaml (see below).
+    serviceName: jetstack-secure-for-cert-manager.mp-jetstack-public.appspot.com
+    consumerId: $AGENT_CONSUMER_ID
+
+# The sources section lists metric data sources run by the agent
+# itself. The currently-supported source is 'heartbeat', which
+# sends a defined value to a metric at a defined interval.
+sources:
+- name: instance_time_heartbeat
+  heartbeat:
+    # The heartbeat sends a 1-hour value through the "time" metric every
+    # hour.
+    metric: time
+    intervalSeconds: 3600
+    value:
+      int64Value: 1
+```
+
+Note that the only supported number of replicas for the cert-manager controller [deployment](https://github.com/jetstack/jetstack-secure-gcm/blob/c43be00b36f7fd1d01f15771025308b8f5ab69f7/chart/jetstack-secure-gcm/charts/cert-manager/templates/deployment.yaml#L1) is 1.
+
+For information, here is the `jetstack-secure-for-cert-manager.yaml` that
+was provided to us; this file contains the name of the "services" that can
+be used in the above `billing-agent-config.yml`:
+
+```yaml
+# This manifest is called jetstack-secure-for-cert-manager.yaml and was
+# provided by Google on 5 March 2021 in an onboarding email.
+# See: https://github.com/jetstack/platform-board/issues/347.
+
+type: google.api.Service
+config_version: 3
+name: jetstack-secure-for-cert-manager.mp-jetstack-public.appspot.com
+title: "Jetstack Ltd. Jetstack Secure for cert-manager Reporting Service"
+producer_project_id: mp-jetstack-public
+
+control:
+  environment: servicecontrol.googleapis.com
+
+metrics:
+- name: jetstack-secure-for-cert-manager.mp-jetstack-public.appspot.com/time
+  metric_kind: DELTA
+  value_type: INT64
+  unit: h
+
+billing:
+  metrics:
+  - jetstack-secure-for-cert-manager.mp-jetstack-public.appspot.com/time
+  rules:
+  - selector: "*"
+    allowed_statuses:
+    - current
+```
 
 ## Creating and testing the deployer image
 
