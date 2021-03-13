@@ -62,12 +62,12 @@ data:
     # The sources section lists metric data sources run by the agent
     # itself. The currently-supported source is 'heartbeat', which
     # sends a defined value to a metric at a defined interval. In
-    # this example, the heartbeat sends a 60-second value through the
-    # "instance_time" metric every minute.
+    # this example, the heartbeat sends a 1-hour value through the
+    # "instance_time" metric every hour.
     sources:
     - name: instance_time_heartbeat
       heartbeat:
         metric: time
-        intervalSeconds: 60
+        intervalSeconds: 3600
         value:
-          int64Value: 60
+          int64Value: 1
