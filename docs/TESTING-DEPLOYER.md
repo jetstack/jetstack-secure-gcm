@@ -246,11 +246,8 @@ retag() { # Usage: retag FROM_IMAGE_WITH_TAG TO_IMAGE_WITH_TAG
   local FROM=$1 TO=$2
   docker pull $FROM && docker tag $FROM $TO && docker push $TO
 }
-retagall() {
-  # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
-  # Does not retag the deployer, you have to use "retag" directly for the
-  # deployer.
-  local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4
+retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
+  local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4; local -; set -eu
   retag $FROM:$FROM_TAG                                         $TO:$TO_TAG
   retag $FROM/cert-manager-acmesolver:$FROM_TAG                 $TO/cert-manager-acmesolver:$TO_TAG
   retag $FROM/cert-manager-cainjector:$FROM_TAG                 $TO/cert-manager-cainjector:$TO_TAG
