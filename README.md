@@ -258,6 +258,7 @@ spec:
     kind: Issuer
     name: example-ca-issuer
   secretName: example-tls
+EOF
 ```
 
 A few seconds later, you will see the certificate `example-cert` appear in
