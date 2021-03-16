@@ -150,6 +150,7 @@ disk. You can call it `agent-config.yaml`.
 
 For the next step, make sure you have the following information available
 to you:
+
 - The **namespace** and **cluster name** on which you installed the
   application. If you are not sure about this, you can open the
   [Applications](https://console.cloud.google.com/kubernetes/application)
@@ -196,8 +197,8 @@ kubectl -n $NAMESPACE rollout restart $(kubectl -n $NAMESPACE get deploy -oname 
 
 You may skip over the "Install agent" section:
 
-<img src="https://user-images.githubusercontent.com/2195781/109156989-cb415b80-7771-11eb-910c-de247ad67ac2.png" width="600px" alt="Clicking on 'The agent is ready', you should see a green check mark. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
-=
+# <img src="https://user-images.githubusercontent.com/2195781/109156989-cb415b80-7771-11eb-910c-de247ad67ac2.png" width="600px" alt="Clicking on 'The agent is ready', you should see a green check mark. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
 After skipping the "Install agent" section, follow the instructions in the
 "Check the agent is running" section.
 
@@ -230,34 +231,31 @@ You can now click on "View clusters" to monitor your certificates. The
 documentation about the Jetstack Secure platform is available at
 <https://platform.jetstack.io/docs>.
 
-Let us try with an example. We can create a CA issuer and sign a
+Let us try with an example. We can create a self-signed issuer and sign a
 certificate that only lasts for 30 days:
 
 ```sh
-docker run -it --rm -v "$(pwd)":/tmp frapsoft/openssl genrsa -out /tmp/ca.key 2048
-docker run -it --rm -v "$(pwd)":/tmp frapsoft/openssl req -x509 -new -nodes -key /tmp/ca.key -subj "/CN=example" -reqexts v3_req -extensions v3_ca -out /tmp/ca.crt
-kubectl create secret tls example-ca-key-pair --cert=ca.crt --key=ca.key
 kubectl apply -f- <<EOF
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: example-ca-issuer
+  name: example-selfsigned-issuer
 spec:
-  ca:
-    secretName: example-ca-key-pair
+  selfSigned: {}
 ---
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: example-cert
 spec:
   duration: 721h # very short time to live
+  secretName: example-cert-tls
+  commonName: example-cert
   dnsNames:
-    - example.com
+  - example.com
   issuerRef:
+    name: example-selfsigned-issuer
     kind: Issuer
-    name: example-ca-issuer
-  secretName: example-tls
 EOF
 ```
 
@@ -273,7 +271,7 @@ service that enables you to simplify, automate, and customize the
 deployment, management, and security of private certificate authorities
 (CA).
 
-[Google Certificate Authority Service]: https://cloud.google.com/certificate-authority-service/
+[google certificate authority service]: https://cloud.google.com/certificate-authority-service/
 
 If you wish to use [Google Certificate Authority
 Service](https://cloud.google.com/certificate-authority-service) to issue
