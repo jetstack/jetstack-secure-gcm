@@ -266,19 +266,18 @@ the Jetstack Secure Platform UI:
 
 ### Step 3 (optional): set up the Google Certificate Authority Service
 
-[Google Certificate Authority Service][] is a highly available, scalable Google Cloud
-service that enables you to simplify, automate, and customize the
-deployment, management, and security of private certificate authorities
-(CA).
+[Google Certificate Authority Service][google-cas] is a highly available,
+scalable Google Cloud service that enables you to simplify, automate, and
+customize the deployment, management, and security of private certificate
+authorities (CA).
 
-[google certificate authority service]: https://cloud.google.com/certificate-authority-service/
-
-If you wish to use [Google Certificate Authority
-Service](https://cloud.google.com/certificate-authority-service) to issue
+If you wish to use [Google Certificate Authority Service][google-cas] to issue
 certificates, you can create a root certificate authority and a subordinate
-certificate authority (i.e., an intermediate CA) on your Google Cloud
-project. To create a root and a subordinate CA, please follow the [official
+certificate authority (i.e., an intermediate CA) on your Google Cloud project.
+To create a root and a subordinate CA, please follow the [official
 documentation](https://cloud.google.com/certificate-authority-service/docs/creating-certificate-authorities).
+
+[google-cas]: https://cloud.google.com/certificate-authority-service/
 
 After creating the root and subordinate, set the following variable with
 the subordinate name:
