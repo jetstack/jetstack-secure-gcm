@@ -1,4 +1,16 @@
 # Everything about the deployer image
+
+> Note: for passing the Google review, we had to enable the Container
+> Analysis API:
+>
+> ```sh
+> PROJECT=jetstack-public
+> gcloud services --project=$PROJECT enable containeranalysis.googleapis.com
+> ```
+
+**Contents:**
+
+- [Pricing mechanism](#pricing-mechanism)
 - [Creating and testing the deployer image](#creating-and-testing-the-deployer-image)
 - [mpdev install on your own cluster](#mpdev-install-on-your-own-cluster)
 - [Cutting a new release](#cutting-a-new-release)
@@ -9,15 +21,99 @@
   - [Debugging deployer and smoke-tests when run in Cloud Build](#debugging-deployer-and-smoke-tests-when-run-in-cloud-build)
 - [Updating the upstream cert-manager chart version](#updating-the-upstream-cert-manager-chart-version)
 
-## Creating and testing the deployer image
+## Pricing mechanism
 
-> Note: for passing the Google review, we had to enable the Container
-> Analysis API:
->
-> ```sh
-> PROJECT=jetstack-public
-> gcloud services --project=$PROJECT enable containeranalysis.googleapis.com
-> ```
+The [pricing panel](https://console.cloud.google.com/partner/editor/jetstack-public/jetstack-secure-for-cert-manager?project=jetstack-public&authuser=4&form=saasK8sPricingPanel) is set as:
+
+| Field          | Value  |
+| -------------- | ------ |
+| Name           | `Time` |
+| ID             | `time` |
+| Unit           | `h`    |
+| Reporting Unit | `h`    |
+
+The application contains a ConfigMap that we configured with a heartbeat
+period of 1 hour. And since the heartbeat period must be given in seconds,
+we give the field `intervalSeconds` a value of 3600. The heartbeat is
+configured in
+[billing-agent-config.yml](https://github.com/jetstack/jetstack-secure-gcm/blob/c43be00b36f7fd1d01f15771025308b8f5ab69f7/chart/jetstack-secure-gcm/templates/billing-agent-config.yml#L15-L74):
+
+```yaml
+# File: billing-agent-config.yml
+
+# The metrics section defines the metric that will be reported.
+# Metric names should match verbatim the identifiers created
+# during pricing setup.
+metrics:
+  - name: time
+    type: int
+    endpoints:
+      - name: servicecontrol
+
+# The endpoints section defines where metering data is ultimately
+# sent. Currently supported endpoints include:
+# * disk - some directory on the local filesystem
+# * servicecontrol - Google Service Control
+endpoints:
+  - name: servicecontrol
+    servicecontrol:
+      identity: gcp
+      # This service name comes from the service name that Google gave us in
+      # jetstack-secure-for-cert-manager.yaml (see below).
+      serviceName: jetstack-secure-for-cert-manager.mp-jetstack-public.appspot.com
+      consumerId: $AGENT_CONSUMER_ID
+
+# The sources section lists metric data sources run by the agent
+# itself. The currently-supported source is 'heartbeat', which
+# sends a defined value to a metric at a defined interval.
+sources:
+  - name: instance_time_heartbeat
+    heartbeat:
+      # The heartbeat sends a 1-hour value through the "time" metric every
+      # hour.
+      metric: time
+      intervalSeconds: 3600
+      value:
+        int64Value: 1
+```
+
+Note that the only supported number of replicas for the cert-manager controller [deployment](https://github.com/jetstack/jetstack-secure-gcm/blob/c43be00b36f7fd1d01f15771025308b8f5ab69f7/chart/jetstack-secure-gcm/charts/cert-manager/templates/deployment.yaml#L1) is 1.
+
+For information, here is the `jetstack-secure-for-cert-manager.yaml` that was
+[provided to us](https://github.com/jetstack/platform-board/issues/347); this
+file contains the name of the "services" that can be used in the above
+`billing-agent-config.yml`:
+
+```yaml
+# This manifest is called jetstack-secure-for-cert-manager.yaml and was
+# provided by Google on 5 March 2021 in an onboarding email.
+# See: https://github.com/jetstack/platform-board/issues/347.
+
+type: google.api.Service
+config_version: 3
+name: jetstack-secure-for-cert-manager.mp-jetstack-public.appspot.com
+title: "Jetstack Ltd. Jetstack Secure for cert-manager Reporting Service"
+producer_project_id: mp-jetstack-public
+
+control:
+  environment: servicecontrol.googleapis.com
+
+metrics:
+  - name: jetstack-secure-for-cert-manager.mp-jetstack-public.appspot.com/time
+    metric_kind: DELTA
+    value_type: INT64
+    unit: h
+
+billing:
+  metrics:
+    - jetstack-secure-for-cert-manager.mp-jetstack-public.appspot.com/time
+  rules:
+    - selector: "*"
+      allowed_statuses:
+        - current
+```
+
+## Creating and testing the deployer image
 
 The deployer image is **only** used when the Jetstack Secure for
 cert-manager is deployed in through the UI; it is not used for when
@@ -46,7 +142,7 @@ The other tags (e.g., `1.1.0` or `1.1.0-gcm.1`) cannot be used for the
 Marketplace UI:
 
 > A version should correspond to a minor version (e.g. `1.0`) according to
-> semantic versioning  (not a patch version, such as `1.1.0`). Update the
+> semantic versioning (not a patch version, such as `1.1.0`). Update the
 > same version for patch releases, which should be backward-compatible,
 > instead of creating a new version.
 
@@ -154,11 +250,8 @@ retag() { # Usage: retag FROM_IMAGE_WITH_TAG TO_IMAGE_WITH_TAG
   local FROM=$1 TO=$2
   docker pull $FROM && docker tag $FROM $TO && docker push $TO
 }
-retagall() {
-  # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
-  # Does not retag the deployer, you have to use "retag" directly for the
-  # deployer.
-  local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4
+retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
+  local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4; local -; set -eu
   retag $FROM:$FROM_TAG                                         $TO:$TO_TAG
   retag $FROM/cert-manager-acmesolver:$FROM_TAG                 $TO/cert-manager-acmesolver:$TO_TAG
   retag $FROM/cert-manager-cainjector:$FROM_TAG                 $TO/cert-manager-cainjector:$TO_TAG
@@ -204,34 +297,19 @@ see everything green:
 
 ## Cutting a new release
 
-First, run Cloud Build. That will push the deployer and smoke-test images
-using the version set in `_APP_VERSION`, e.g., `1.1.0-gcm.1`.
+Since the process is manual and evolves from release to release, we document all
+the steps taken in each release directly on the GitHub Release itself in a
+`<details>` block that looks like this:
 
-```sh
-gcloud builds submit --project jetstack-public --timeout 1800s --config cloudbuild.yaml \
-  --substitutions _CLUSTER_NAME=smoke-test,_CLUSTER_LOCATION=europe-west2-b,_APP_MINOR_VERSION=1.1,_APP_VERSION=1.1.0-gcm.1
-```
+> ▶ 📦 Recording of the manual steps of the release process
 
-Three images are pushed to the "staging" registry:
+For example, when releasing `1.1.0-gcm.5`, the steps were:
 
-```sh
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test:1.1.0-gcm.1
-```
-
-In order to get these images published to the official
-`marketplace.gcr.io`, you need to register the version.
-
-If the minor version, e.g. `1.1`, already exists, then you will need to
-update the existing minor version:
-
-<img src="https://user-images.githubusercontent.com/2195781/110706910-daf08380-81f8-11eb-92ef-d62ef7ff4de1.png" width="300" alt="To update the already released minor version, first open the existing minor version by clicking on the version itself (it is a link). This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
-
-<img src="https://user-images.githubusercontent.com/2195781/110706906-d9bf5680-81f8-11eb-909f-faa1818b8f56.png" width="300" alt="Then, click on Update images and Save. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
-
-Finally, you will need to click "Submit for review" and wait a couple of
-days until the Google team approves the new (or updated) minor version.
+1. Copy the `<details>` block from the previous release [1.1.0-gcm.4](https://github.com/jetstack/jetstack-secure-gcm/releases/tag/1.1.0-gcm.4)
+2. In an editor, change the references to 1.1.0-gcm.4
+3. Follow the steps and tick the checkboxes
+4. After the `1.1.0-gcm.5` is pushed to GitHub, create a GitHub Release for that
+   tag and paste the content the `<details>` block to the GitHub Release.
 
 ## Testing the application without having access to the Billing API
 
@@ -260,11 +338,12 @@ kind: Application
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .Chart.Name }}          # Will always be "jetstack-secure-gcm"
-      app.kubernetes.io/instance: {{ .Release.Name }}    # Example: "jetstack-secure-for-cert-mana-2"
+      app.kubernetes.io/name: { { .Chart.Name } } # Will always be "jetstack-secure-gcm"
+      app.kubernetes.io/instance: { { .Release.Name } } # Example: "jetstack-secure-for-cert-mana-2"
 ```
 
 Then, we use the `nameOverride` and `fullnameOverride`:
+
 1. `nameOverride` makes sure that all the objects across all subcharts have
    the following label:
    ```yaml
@@ -293,8 +372,8 @@ Then we make sure all the objects are set with the labels:
 # All the manifests and subcharts under
 # https://github.com/jetstack/jetstack-secure-gcm/blob/main/chart/jetstack-secure-gcm/templates
 metadata:
-  app.kubernetes.io/name: "{{ .Chart.Name }}"        # Will be "jetstack-secure-gcm" due to the name override
-  app.kubernetes.io/instance: "{{ .Release.Name }}"  # Example: "jetstack-secure-for-cert-mana-2"
+  app.kubernetes.io/name: "{{ .Chart.Name }}" # Will be "jetstack-secure-gcm" due to the name override
+  app.kubernetes.io/instance: "{{ .Release.Name }}" # Example: "jetstack-secure-for-cert-mana-2"
 ```
 
 ## Installing and manually testing the deployer image
@@ -384,7 +463,7 @@ Requirements before running `gcloud builds`:
    ```
 
 2. Enable the necessary Google APIs on your project. To enable them, you
-      can run the following:
+   can run the following:
 
    ```sh
    gcloud services --project=$PROJECT enable cloudbuild.googleapis.com
@@ -426,17 +505,17 @@ Requirements before running `gcloud builds`:
    > google-cas-issuer Kubernetes service account is done in
    > `cloudbuild.yml`. The annotation will look like:
    >
-   >  ```yaml
-   >  metadata:
-   >    annotations:
-   >      iam.gke.io/gcp-service-account=sa-google-cas-issuer@PROJECT_ID.iam.gserviceaccount.com
-   >  ```
+   > ```yaml
+   > metadata:
+   >   annotations: iam.gke.io/gcp-service-account=sa-google-cas-issuer@PROJECT_ID.iam.gserviceaccount.com
+   > ```
 
 5. Go to [IAM and Admin > Permissions for
    project](https://console.cloud.google.com/iam-admin/iam) and configure
    the `0123456789@cloudbuild.gserviceaccount.com` service account with the
    following roles so that it has permission to deploy RBAC configuration
    to the target cluster and to publish it to a bucket:
+
    - `Cloud Build Service Agent`
    - `Kubernetes Engine Admin`
    - `Storage Object Admin`
@@ -470,41 +549,41 @@ the example [suite.yaml](https://github.com/GoogleCloudPlatform/marketplace-test
 
 ```yaml
 actions:
-- name: {{ .Env.TEST_NAME }}
-  httpTest:
-    url: http://{{ .Var.MainVmIp }}:9012
-    expect:
-      statusCode:
-        equals: 200
-      statusText:
-        contains: OK
-      bodyText:
-        html:
-          title:
-            contains: Hello World!
-- name: Update success variable
-  gcp:
-    setRuntimeConfigVar:
-      runtimeConfigSelfLink: https://runtimeconfig.googleapis.com/v1beta1/projects/my-project/configs/my-config
-      variablePath: status/success
-      base64Value: c3VjY2Vzcwo=
-- name: Can echo to stdout and stderr
-  bashTest:
-    script: |-
-      echo "Text1"
-      >2& echo "Text2"
-    expect:
-      exitCode:
-        equals: 0
-        notEquals: 1
-      stdout:
-        contains: "Text1"
-        notContains: "Foo"
-        matches: "T.xt1"
-      stderr:
-        contains: "Text2"
-        notContains: "Foo"
-        matches: "T.xt2"
+  - name: { { .Env.TEST_NAME } }
+    httpTest:
+      url: http://{{ .Var.MainVmIp }}:9012
+      expect:
+        statusCode:
+          equals: 200
+        statusText:
+          contains: OK
+        bodyText:
+          html:
+            title:
+              contains: Hello World!
+  - name: Update success variable
+    gcp:
+      setRuntimeConfigVar:
+        runtimeConfigSelfLink: https://runtimeconfig.googleapis.com/v1beta1/projects/my-project/configs/my-config
+        variablePath: status/success
+        base64Value: c3VjY2Vzcwo=
+  - name: Can echo to stdout and stderr
+    bashTest:
+      script: |-
+        echo "Text1"
+        >2& echo "Text2"
+      expect:
+        exitCode:
+          equals: 0
+          notEquals: 1
+        stdout:
+          contains: "Text1"
+          notContains: "Foo"
+          matches: "T.xt1"
+        stderr:
+          contains: "Text2"
+          notContains: "Foo"
+          matches: "T.xt2"
 ```
 
 Unfortunately, the `stdout` or `stderr` output won't be shown whenever a
@@ -516,9 +595,9 @@ stdout and returns if mismatch, and finally checks stderr.
 **Workaround:**: add to `smoke-test.yaml` a step that hangs, e.g.:
 
 ```yaml
-  - name: hang for debugging purposes
-    bashTest:
-      script: sleep 1200
+- name: hang for debugging purposes
+  bashTest:
+    script: sleep 1200
 ```
 
 then you can `exec` into the snoke-test pod and debug around.

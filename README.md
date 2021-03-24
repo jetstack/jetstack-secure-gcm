@@ -104,7 +104,7 @@ the [Applications](https://console.cloud.google.com/kubernetes/application) page
 
 <img src="https://user-images.githubusercontent.com/2195781/110791519-9acde700-8272-11eb-81f4-4f27fb8a174d.png" width="300" alt="The application page on GKE should show the test-1 application. The preflight deployment is failing because the user has not (yet) gone to http://platform.jetstack.io/ to register their cluster. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-**Note:** the preflight deploymnent is expected to be failing when the
+**Note:** the preflight deployment is expected to be failing when the
 application is first deployed. After registering your cluster on
 <https://platform.jetstack.io>, the deployment will start working. To register your cluster, keep reading the [next section](#step-2-log-into-the-jetstack-secure-dashboard).
 
@@ -150,6 +150,7 @@ disk. You can call it `agent-config.yaml`.
 
 For the next step, make sure you have the following information available
 to you:
+
 - The **namespace** and **cluster name** on which you installed the
   application. If you are not sure about this, you can open the
   [Applications](https://console.cloud.google.com/kubernetes/application)
@@ -163,6 +164,7 @@ to you:
   page and click on the name of the cluster:
 
   <img src="https://user-images.githubusercontent.com/2195781/109160131-af3fb900-7775-11eb-9a46-c1bcebdf8315.png" width="600px" alt="Click on the cluster name on the applications page in the Google Kubernetes Engine console. this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
   <img src="https://user-images.githubusercontent.com/2195781/109160135-afd84f80-7775-11eb-9f74-0847413cab7f.png" width="600px" alt="Grab the cluster location on the GKE console page of your GKE cluster. this screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 The next steps require to have a terminal open as well as to have the
@@ -189,14 +191,14 @@ gcloud container clusters get-credentials --zone=$LOCATION $CLUSTER
 You can then apply the Jetstack Secure agent configuration to your cluster:
 
 ```sh
-cat agent-config.yaml | sed '/namespace:/d' | kubectl -n $NAMESPACE apply -f-
+sed '/namespace:/d' agent-config.yaml | kubectl -n $NAMESPACE apply -f-
 kubectl -n $NAMESPACE rollout restart $(kubectl -n $NAMESPACE get deploy -oname | grep preflight)
 ```
 
 You may skip over the "Install agent" section:
 
-<img src="https://user-images.githubusercontent.com/2195781/109156989-cb415b80-7771-11eb-910c-de247ad67ac2.png" width="600px" alt="Clicking on 'The agent is ready', you should see a green check mark. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
-=
+# <img src="https://user-images.githubusercontent.com/2195781/109156989-cb415b80-7771-11eb-910c-de247ad67ac2.png" width="600px" alt="Clicking on 'The agent is ready', you should see a green check mark. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
 After skipping the "Install agent" section, follow the instructions in the
 "Check the agent is running" section.
 
@@ -229,34 +231,32 @@ You can now click on "View clusters" to monitor your certificates. The
 documentation about the Jetstack Secure platform is available at
 <https://platform.jetstack.io/docs>.
 
-Let us try with an example. We can create a CA issuer and sign a
+Let us try with an example. We can create a self-signed issuer and sign a
 certificate that only lasts for 30 days:
 
 ```sh
-docker run -it --rm -v "$(pwd)":/tmp frapsoft/openssl genrsa -out /tmp/ca.key 2048
-docker run -it --rm -v "$(pwd)":/tmp frapsoft/openssl req -x509 -new -nodes -key /tmp/ca.key -subj "/CN=example" -reqexts v3_req -extensions v3_ca -out /tmp/ca.crt
-kubectl create secret tls example-ca-key-pair --cert=ca.crt --key=ca.key
 kubectl apply -f- <<EOF
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: example-ca-issuer
+  name: example-selfsigned-issuer
 spec:
-  ca:
-    secretName: example-ca-key-pair
+  selfSigned: {}
 ---
-apiVersion: cert-manager.io/v1alpha2
+apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: example-cert
 spec:
   duration: 721h # very short time to live
+  secretName: example-cert-tls
+  commonName: example-cert
   dnsNames:
-    - example.com
+  - example.com
   issuerRef:
+    name: example-selfsigned-issuer
     kind: Issuer
-    name: example-ca-issuer
-  secretName: example-tls
+EOF
 ```
 
 A few seconds later, you will see the certificate `example-cert` appear in
@@ -266,19 +266,18 @@ the Jetstack Secure Platform UI:
 
 ### Step 3 (optional): set up the Google Certificate Authority Service
 
-[Google Certificate Authority Service][] is a highly available, scalable Google Cloud
-service that enables you to simplify, automate, and customize the
-deployment, management, and security of private certificate authorities
-(CA).
+[Google Certificate Authority Service][google-cas] is a highly available,
+scalable Google Cloud service that enables you to simplify, automate, and
+customize the deployment, management, and security of private certificate
+authorities (CA).
 
-[Google Certificate Authority Service]: https://cloud.google.com/certificate-authority-service/
-
-If you wish to use [Google Certificate Authority
-Service](https://cloud.google.com/certificate-authority-service) to issue
+If you wish to use [Google Certificate Authority Service][google-cas] to issue
 certificates, you can create a root certificate authority and a subordinate
-certificate authority (i.e., an intermediate CA) on your Google Cloud
-project. To create a root and a subordinate CA, please follow the [official
+certificate authority (i.e., an intermediate CA) on your Google Cloud project.
+To create a root and a subordinate CA, please follow the [official
 documentation](https://cloud.google.com/certificate-authority-service/docs/creating-certificate-authorities).
+
+[google-cas]: https://cloud.google.com/certificate-authority-service/
 
 After creating the root and subordinate, set the following variable with
 the subordinate name:
