@@ -102,7 +102,7 @@ When you are done, click the "Deploy" button:
 This will install Jetstack Secure for cert-manager, and will redirect to
 the [Applications](https://console.cloud.google.com/kubernetes/application) page:
 
-<img src="https://user-images.githubusercontent.com/2195781/110791519-9acde700-8272-11eb-81f4-4f27fb8a174d.png" width="300" alt="The application page on GKE should show the test-1 application. The preflight deployment is failing because the user has not (yet) gone to http://platform.jetstack.io/ to register their cluster. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/2195781/112529074-28e2bb00-8da5-11eb-9aca-f347fbfe0330.png" width="600" alt="The Application view on GKE after deploying the application test-1 onto the test-1 namespace. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 **Note:** the preflight deployment is expected to be failing when the
 application is first deployed. After registering your cluster on
