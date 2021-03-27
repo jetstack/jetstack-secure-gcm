@@ -6,9 +6,6 @@
 
 x-google-marketplace:
   schemaVersion: v2
-
-  # MUST match the version of the Application custom resource object.
-  # This is the same as the top level applicationApiVersion field in v1.beta1
   applicationApiVersion: v1beta1
 
   # We are not "truely" following semver.org since we use a "-" for a final
@@ -21,23 +18,11 @@ x-google-marketplace:
   publishedVersionMetadata:
     releaseNote: >-
       Initial release.
-    # releaseTypes list is optional.
-    # "Security" should only be used if this is an important update to patch
-    # an existing vulnerability, as such updates will display more prominently for users.
-    releaseTypes:
-      - Feature
-      - BugFix
-      - Security
-    # If "recommended" is "true", users using older releases are encouraged
-    # to update as soon as possible. This is useful if, for example, this release
-    # fixes a critical issue.
+    # Means that this upgrade is very much encouraged (e.g. security reasons)
     recommended: true
 
   # Image declaration is required here. Refer to the Images section below.
   images:
-    # The Marketplace requires us to use a "primary image". In our case,
-    # this is cert-manager-controller. See "primary image" in
-    # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/d9d3a6/docs/schema.md
     "": # This is cert-manager-controller.
       properties:
         cert-manager.image.repository:
