@@ -102,11 +102,12 @@ When you are done, click the "Deploy" button:
 This will install Jetstack Secure for cert-manager, and will redirect to
 the [Applications](https://console.cloud.google.com/kubernetes/application) page:
 
-<img src="https://user-images.githubusercontent.com/2195781/112529074-28e2bb00-8da5-11eb-9aca-f347fbfe0330.png" width="600" alt="The Application view on GKE after deploying the application test-1 onto the test-1 namespace. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/2195781/110795922-a96acd00-8277-11eb-959e-bf7ea51ae992.png" width="500" alt="The application page for test-1 shows that all the deployments are green. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-**Note:** the preflight deployment is expected to be failing when the
-application is first deployed. After registering your cluster on
-<https://platform.jetstack.io>, the deployment will start working. To register your cluster, keep reading the [next section](#step-2-log-into-the-jetstack-secure-dashboard).
+**Note:** by default, the `preflight` deployment is scaled to 0. After
+completing the steps in the [next
+section](#step-2-log-into-the-jetstack-secure-dashboard), the deployment will
+start working.
 
 ### Step 2: log into the Jetstack Secure dashboard
 
@@ -192,6 +193,7 @@ You can then apply the Jetstack Secure agent configuration to your cluster:
 
 ```sh
 sed '/namespace:/d' agent-config.yaml | kubectl -n $NAMESPACE apply -f-
+kubectl -n $NAMESPACE scale --replicas=1 $(kubectl -n $NAMESPACE get deploy -oname | grep preflight)
 kubectl -n $NAMESPACE rollout restart $(kubectl -n $NAMESPACE get deploy -oname | grep preflight)
 ```
 
