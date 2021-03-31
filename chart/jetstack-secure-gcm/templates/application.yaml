@@ -64,7 +64,7 @@ spec:
       metadata:
         name: example-cert
       spec:
-        duration: 721h # very short time to live
+        duration: 721h # 30 days is the minimum duration possible for this issuer.
         secretName: example-cert-tls
         commonName: example-cert
         dnsNames:
