@@ -189,11 +189,16 @@ gcloud auth login
 gcloud container clusters get-credentials --zone=$LOCATION $CLUSTER
 ```
 
+You will now be able to "activate" the Preflight deployment:
+
+```sh
+kubectl -n $NAMESPACE scale deploy --replicas=1 --selector=app.kubernetes.io/component=preflight
+```
+
 You can then apply the Jetstack Secure agent configuration to your cluster:
 
 ```sh
 sed '/namespace:/d' agent-config.yaml | kubectl -n $NAMESPACE apply -f-
-kubectl -n $NAMESPACE scale --replicas=1 $(kubectl -n $NAMESPACE get deploy -oname | grep preflight)
 kubectl -n $NAMESPACE rollout restart $(kubectl -n $NAMESPACE get deploy -oname | grep preflight)
 ```
 
