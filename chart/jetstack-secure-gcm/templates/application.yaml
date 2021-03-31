@@ -19,8 +19,8 @@ spec:
     type: Jetstack Secure Platform
     version: "{{ index .Values "cert-manager" "image" "tag" }}"
     description: >-
-      Jetstack Secure Platform is an enterprise-grade machine identity
-      automation for Kubernetes built on top of cert-manager.
+      Jetstack Secure Platform provides enterprise-grade machine identity
+      automation for Kubernetes and is built on top of cert-manager.
 
       ### Support
 
