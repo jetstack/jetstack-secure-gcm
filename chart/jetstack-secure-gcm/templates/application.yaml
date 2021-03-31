@@ -77,10 +77,10 @@ spec:
 
       ### Manage your certificates using the Jetstack Secure Platform dashboard
 
-      After having logged in to the dashboard at <https://platform.jetstack.io>,
-      you will be able to add this cluster to the dashboard (see
-      [instructions](https://platform.jetstack.io/docs/google-cloud-marketplace#step-2-log-into-the-jetstack-secure-dashboard))
-      and to see the details of the above `example-cert` on the UI.
+      Sign in to the dashboard at <https://platform.jetstack.io>,
+      and add this cluster to the dashboard (see
+      [instructions](https://platform.jetstack.io/docs/google-cloud-marketplace#step-2-log-into-the-jetstack-secure-dashboard)).
+      Then you will see the details of the above `example-cert` in the UI.
   addOwnerRef: true
   selector:
     matchLabels:
