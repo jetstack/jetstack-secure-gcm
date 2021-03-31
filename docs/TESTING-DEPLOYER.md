@@ -303,8 +303,8 @@ the steps taken in each release directly on the GitHub Release itself in a
 For example, when releasing `1.1.0-gcm.5`, the steps were:
 
 1. Copy the `<details>` block from the previous release [1.1.0-gcm.4](https://github.com/jetstack/jetstack-secure-gcm/releases/tag/1.1.0-gcm.4)
-2. In an editor, change the references to 1.1.0-gcm.4
-3. Follow the steps and tick the checkboxes
+2. In an editor, change the references to `1.1.0-gcm.4`.
+3. Follow the steps and tick the checkboxes.
 4. After the `1.1.0-gcm.5` is pushed to GitHub, create a GitHub Release for that
    tag and paste the content the `<details>` block to the GitHub Release.
 
