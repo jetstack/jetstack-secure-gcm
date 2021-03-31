@@ -213,7 +213,7 @@ Here is the command shown in the below screenshot that you can copy-paste
 for your convenience:
 
 ```sh
-kubectl -n $NAMESPACE get pod -l app.kubernetes.io/name=preflight
+kubectl -n $NAMESPACE get pod -l app.kubernetes.io/component=preflight
 ```
 
 <img src="https://user-images.githubusercontent.com/2195781/109156984-ca102e80-7771-11eb-9087-56c2b2781108.png" width="600px" alt="Use kubectl to check that the pod is ready. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
@@ -221,7 +221,7 @@ kubectl -n $NAMESPACE get pod -l app.kubernetes.io/name=preflight
 You should eventually see that the pod is `READY 1/1`:
 
 ```sh
-% kubectl -n $NAMESPACE get pod -l app.kubernetes.io/name=preflight
+% kubectl -n $NAMESPACE get pod -l app.kubernetes.io/component=preflight
 NAME                                         READY   STATUS     AGE
 jetstack-secure-preflight-6b8d5ccb6f-6gnjm   1/1     Running    20h
 ```
