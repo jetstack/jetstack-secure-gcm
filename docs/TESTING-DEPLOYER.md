@@ -215,18 +215,15 @@ retag() { # Usage: retag FROM_IMAGE_WITH_TAG TO_IMAGE_WITH_TAG
   local FROM=$1 TO=$2
   docker pull $FROM && docker tag $FROM $TO && docker push $TO
 }
-retagall() {
-  # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
-  # Does not retag the deployer, you have to use "retag" directly for the
-  # deployer.
+retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
   local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4
-  retag $FROM:$FROM_TAG                                         $TO:$TO_TAG
-  retag $FROM/cert-manager-acmesolver:$FROM_TAG                 $TO/cert-manager-acmesolver:$TO_TAG
-  retag $FROM/cert-manager-cainjector:$FROM_TAG                 $TO/cert-manager-cainjector:$TO_TAG
-  retag $FROM/cert-manager-webhook:$FROM_TAG                    $TO/cert-manager-webhook:$TO_TAG
-  retag $FROM/cert-manager-google-cas-issuer:$FROM_TAG          $TO/cert-manager-google-cas-issuer:$TO_TAG
-  retag $FROM/preflight:$FROM_TAG                               $TO/preflight:$TO_TAG
-  retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $TO/ubbagent:$TO_TAG
+  retag $FROM:$FROM_TAG $TO:$TO_TAG || exit 1
+  retag $FROM/cert-manager-acmesolver:$FROM_TAG $TO/cert-manager-acmesolver:$TO_TAG || exit 1
+  retag $FROM/cert-manager-cainjector:$FROM_TAG $TO/cert-manager-cainjector:$TO_TAG || exit 1
+  retag $FROM/cert-manager-webhook:$FROM_TAG $TO/cert-manager-webhook:$TO_TAG || exit 1
+  retag $FROM/cert-manager-google-cas-issuer:$FROM_TAG $TO/cert-manager-google-cas-issuer:$TO_TAG || exit 1
+  retag $FROM/preflight:$FROM_TAG $TO/preflight:$TO_TAG || exit 1
+  retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $TO/ubbagent:$TO_TAG || exit 1
 }
 APP_VERSION=1.1.0-gcm.2
 retagall gcr.io/jetstack-public/jetstack-secure-for-cert-manager{,} google-review $APP_VERSION
@@ -251,14 +248,14 @@ retag() { # Usage: retag FROM_IMAGE_WITH_TAG TO_IMAGE_WITH_TAG
   docker pull $FROM && docker tag $FROM $TO && docker push $TO
 }
 retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
-  local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4; local -; set -eu
-  retag $FROM:$FROM_TAG                                         $TO:$TO_TAG
-  retag $FROM/cert-manager-acmesolver:$FROM_TAG                 $TO/cert-manager-acmesolver:$TO_TAG
-  retag $FROM/cert-manager-cainjector:$FROM_TAG                 $TO/cert-manager-cainjector:$TO_TAG
-  retag $FROM/cert-manager-webhook:$FROM_TAG                    $TO/cert-manager-webhook:$TO_TAG
-  retag $FROM/cert-manager-google-cas-issuer:$FROM_TAG          $TO/cert-manager-google-cas-issuer:$TO_TAG
-  retag $FROM/preflight:$FROM_TAG                               $TO/preflight:$TO_TAG
-  retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $TO/ubbagent:$TO_TAG
+  local FROM=$1 TO=$2 FROM_TAG=$3 TO_TAG=$4
+  retag $FROM:$FROM_TAG $TO:$TO_TAG || exit 1
+  retag $FROM/cert-manager-acmesolver:$FROM_TAG $TO/cert-manager-acmesolver:$TO_TAG || exit 1
+  retag $FROM/cert-manager-cainjector:$FROM_TAG $TO/cert-manager-cainjector:$TO_TAG || exit 1
+  retag $FROM/cert-manager-webhook:$FROM_TAG $TO/cert-manager-webhook:$TO_TAG || exit 1
+  retag $FROM/cert-manager-google-cas-issuer:$FROM_TAG $TO/cert-manager-google-cas-issuer:$TO_TAG || exit 1
+  retag $FROM/preflight:$FROM_TAG $TO/preflight:$TO_TAG || exit 1
+  retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $TO/ubbagent:$TO_TAG || exit 1
 }
 
 PROJECT=$(gcloud config get-value project | tr ':' '/')
@@ -306,8 +303,8 @@ the steps taken in each release directly on the GitHub Release itself in a
 For example, when releasing `1.1.0-gcm.5`, the steps were:
 
 1. Copy the `<details>` block from the previous release [1.1.0-gcm.4](https://github.com/jetstack/jetstack-secure-gcm/releases/tag/1.1.0-gcm.4)
-2. In an editor, change the references to 1.1.0-gcm.4
-3. Follow the steps and tick the checkboxes
+2. In an editor, change the references to `1.1.0-gcm.4`.
+3. Follow the steps and tick the checkboxes.
 4. After the `1.1.0-gcm.5` is pushed to GitHub, create a GitHub Release for that
    tag and paste the content the `<details>` block to the GitHub Release.
 

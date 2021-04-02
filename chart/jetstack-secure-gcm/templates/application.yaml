@@ -1,5 +1,8 @@
-# See API doc:
-# https://github.com/kubernetes-sigs/application/blob/master/docs/api.md
+# See how application.yaml should be written at:
+# https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/master/docs/building-deployer-helm.md
+#
+# Example:
+# https://github.com/GoogleCloudPlatform/click-to-deploy/blob/5c7523a/k8s/cassandra/chart/cassandra/templates/application.yaml
 apiVersion: app.k8s.io/v1beta1
 kind: Application
 metadata:
@@ -14,7 +17,71 @@ metadata:
 spec:
   descriptor:
     type: Jetstack Secure Platform
-    version: "1.1.0-gcm.5" # Must be the same as in the schema.yaml file.
+    version: "{{ index .Values "cert-manager" "image" "tag" }}"
+    description: >-
+      Jetstack Secure Platform provides enterprise-grade machine identity
+      automation for Kubernetes and is built on top of cert-manager.
+
+      ### Support
+
+      Customers who have purchased this solution can file requests at
+      <https://marketplace-support.jetstack.io/>. Community support for
+      cert-manager is available to anyone through the **#cert-manager** channel
+      on the [Kubernetes Slack](https://slack.k8s.io/).
+
+      ### License agreement
+
+      The terms of services are available at <https://platform.jetstack.io/tos/>.
+    maintainers:
+        - name: Jetstack
+          url: https://jetstack.io
+    links:
+      - description: "User Guide: Click-to-deploy installation"
+        url: https://platform.jetstack.io/docs/google-cloud-marketplace#click-to-deploy-installation
+      - description: "User Guide: CLI installation"
+        url: https://platform.jetstack.io/docs/google-cloud-marketplace#cli-installation
+      - description: Getting Started with cert-manager
+        url: https://cert-manager.io/docs/usage/
+      - description: Getting Started with the Jetstack Secure Platform
+        url: https://platform.jetstack.io/docs
+    info: []
+    notes: |-
+      ### Create your first certificate
+
+      You can issue your first certificate with the following command:
+
+      ```sh
+      kubectl apply -f- <<EOF
+      apiVersion: cert-manager.io/v1
+      kind: Issuer
+      metadata:
+        name: example-selfsigned-issuer
+      spec:
+        selfSigned: {}
+      ---
+      apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: example-cert
+      spec:
+        duration: 721h # 30 days is the minimum duration possible for this issuer.
+        secretName: example-cert-tls
+        commonName: example-cert
+        dnsNames:
+        - example.com
+        issuerRef:
+          name: example-selfsigned-issuer
+          kind: Issuer
+      EOF
+      ```
+
+      ### Manage your certificates using the Jetstack Secure Platform dashboard
+
+      Sign in to the dashboard at <https://platform.jetstack.io>,
+      and add this cluster to the dashboard (see
+      [instructions](https://platform.jetstack.io/docs/google-cloud-marketplace#step-2-log-into-the-jetstack-secure-dashboard)).
+      Then you will see the details of the above `example-cert` in the UI.
+  addOwnerRef: true
   selector:
     matchLabels:
       # In order to display the components of the application (the
@@ -27,8 +94,6 @@ spec:
       # two instances of the application:
       app.kubernetes.io/name: "{{ .Chart.Name }}" # Will always be set to "jetstack-secure-gcm"
       app.kubernetes.io/instance: "{{ .Release.Name }}" # For example: "jetstack-secure-for-cert-mana-3"
-
-  addOwnerRef: true
   componentKinds:
     - group: ""
       kind: PersistentVolumeClaim

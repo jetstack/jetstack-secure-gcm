@@ -102,11 +102,12 @@ When you are done, click the "Deploy" button:
 This will install Jetstack Secure for cert-manager, and will redirect to
 the [Applications](https://console.cloud.google.com/kubernetes/application) page:
 
-<img src="https://user-images.githubusercontent.com/2195781/110791519-9acde700-8272-11eb-81f4-4f27fb8a174d.png" width="300" alt="The application page on GKE should show the test-1 application. The preflight deployment is failing because the user has not (yet) gone to http://platform.jetstack.io/ to register their cluster. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/2195781/110795922-a96acd00-8277-11eb-959e-bf7ea51ae992.png" width="500" alt="The application page for test-1 shows that all the deployments are green. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-**Note:** the preflight deployment is expected to be failing when the
-application is first deployed. After registering your cluster on
-<https://platform.jetstack.io>, the deployment will start working. To register your cluster, keep reading the [next section](#step-2-log-into-the-jetstack-secure-dashboard).
+**Note:** by default, the `preflight` deployment is scaled to 0. After
+completing the steps in the [next
+section](#step-2-log-into-the-jetstack-secure-dashboard), the deployment will
+start working.
 
 ### Step 2: log into the Jetstack Secure dashboard
 
@@ -188,6 +189,12 @@ gcloud auth login
 gcloud container clusters get-credentials --zone=$LOCATION $CLUSTER
 ```
 
+You will now be able to "activate" the Preflight deployment:
+
+```sh
+kubectl -n $NAMESPACE scale deploy --replicas=1 --selector=app.kubernetes.io/component=preflight
+```
+
 You can then apply the Jetstack Secure agent configuration to your cluster:
 
 ```sh
@@ -206,7 +213,7 @@ Here is the command shown in the below screenshot that you can copy-paste
 for your convenience:
 
 ```sh
-kubectl -n $NAMESPACE get pod -l app.kubernetes.io/name=preflight
+kubectl -n $NAMESPACE get pod -l app.kubernetes.io/component=preflight
 ```
 
 <img src="https://user-images.githubusercontent.com/2195781/109156984-ca102e80-7771-11eb-9087-56c2b2781108.png" width="600px" alt="Use kubectl to check that the pod is ready. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
@@ -214,7 +221,7 @@ kubectl -n $NAMESPACE get pod -l app.kubernetes.io/name=preflight
 You should eventually see that the pod is `READY 1/1`:
 
 ```sh
-% kubectl -n $NAMESPACE get pod -l app.kubernetes.io/name=preflight
+% kubectl -n $NAMESPACE get pod -l app.kubernetes.io/component=preflight
 NAME                                         READY   STATUS     AGE
 jetstack-secure-preflight-6b8d5ccb6f-6gnjm   1/1     Running    20h
 ```
