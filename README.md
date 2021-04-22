@@ -137,11 +137,11 @@ underscores.
 
 After picking a name, press the "Save cluster name" button:
 
-<img src=https://user-images.githubusercontent.com/6227720/115697669-a6c1c400-a35b-11eb-851f-ee1e962a8df2.png" width="600px" alt="Choose your cluster name and click the save cluster name button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/6227720/115697669-a6c1c400-a35b-11eb-851f-ee1e962a8df2.png" width="600px" alt="Choose your cluster name and click the save cluster name button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-Next, click the button "Copy command to clipboard":
+At this stage, you have two options depending on which Kubernetes namespace you installed Jetstack Secure in. If you chose the `jetstack-secure` namespace, you can click the "Copy Installation Command To Clipboard" button, which will be enabled once a cluster name is set, and use it verbatim.
 
-<img src="https://user-images.githubusercontent.com/2195781/109026248-d76ce080-76bf-11eb-94be-bc1c8f54b2cf.png" width="600px" alt="Click the button 'Copy command to clipboard'. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+If you deployed Jetstack Secure to a different namespace, you will need to modify the copied command accordingly:
 
 With the help of a text editor, paste the content and edit it:
 
