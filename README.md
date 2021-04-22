@@ -114,26 +114,30 @@ start working.
 Head to <https://platform.jetstack.io> and click on the "Getting started"
 button:
 
-<img src="https://user-images.githubusercontent.com/2195781/109153986-f3c75680-776d-11eb-964f-589cdf4bf2a1.png" width="600px" alt="The Jetstack Secure platform landing page. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/6227720/115693127-8b54ba00-a357-11eb-8aca-0604933f73ce.png" width="600px" alt="The Jetstack Secure platform landing page. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 You will be prompted to log in. If you do not already have an account, you
 will be able to create one:
 
 <img src="https://user-images.githubusercontent.com/2195781/109153999-f7f37400-776d-11eb-9042-fb34a2e8accc.png" width="600px" alt="The Jetstack Secure login page. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-Then, click on the "Machine Identity" icon _(1)_ and click the "Add
-cluster" button _(2)_:
+When you create a new account, you will have to accept the ToS. Once read, if you're happy to continue, check the "I accept the Terms of Service" box and submit. Optionally, you can enable general marketing information to be sent to you.
 
-<img src="https://user-images.githubusercontent.com/2195781/109025110-ba83dd80-76be-11eb-9815-c91408c0096a.png" width="600px" alt="Create cluster button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/6227720/115693498-e5557f80-a357-11eb-9635-69e2c64afc98.png" width="600px" alt="The Jetstack Secure ToS page. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+When you create a new account, you'll be presented with the "Cluster Summary" screen, where you can add a new cluster by pressing the "Add Cluster" button.
+
+<img src="https://user-images.githubusercontent.com/6227720/115696486-a4ab3580-a35a-11eb-9412-6282963a279d.png" width="600px" alt="Add cluster button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 Choose a name for your cluster. This name is not related to the Google
 Kubernetes Engine cluster you selected when you deployed the application.
 This name is only used to show your cluster in the Jetstack Secure
-dashboard.
+dashboard. Cluster names can only contain alphanumeric values, dots and
+underscores.
 
-After picking a name, click on the check mark:
+After picking a name, press the "Save cluster name" button:
 
-<img src="https://user-images.githubusercontent.com/2195781/109155511-ec08b180-776f-11eb-82e1-45b0c32720d6.png" width="600px" alt="Choose your cluster name and click the check mark button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src=https://user-images.githubusercontent.com/6227720/115697669-a6c1c400-a35b-11eb-851f-ee1e962a8df2.png" width="600px" alt="Choose your cluster name and click the save cluster name button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 Next, click the button "Copy command to clipboard":
 
