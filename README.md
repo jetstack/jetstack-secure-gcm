@@ -114,40 +114,186 @@ start working.
 Head to <https://platform.jetstack.io> and click on the "Getting started"
 button:
 
-<img src="https://user-images.githubusercontent.com/2195781/109153986-f3c75680-776d-11eb-964f-589cdf4bf2a1.png" width="600px" alt="The Jetstack Secure platform landing page. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/6227720/116088811-1e645b80-a69a-11eb-8ea7-8489cb8124f9.png" width="600px" alt="The Jetstack Secure platform landing page. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 You will be prompted to log in. If you do not already have an account, you
 will be able to create one:
 
 <img src="https://user-images.githubusercontent.com/2195781/109153999-f7f37400-776d-11eb-9042-fb34a2e8accc.png" width="600px" alt="The Jetstack Secure login page. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-Then, click on the "Machine Identity" icon _(1)_ and click the "Add
-cluster" button _(2)_:
+When you create a new account, you will have to accept the ToS. Once read, if you're happy to continue, check the "I accept the Terms of Service" box and submit. Optionally, you can enable general marketing information to be sent to you.
 
-<img src="https://user-images.githubusercontent.com/2195781/109025110-ba83dd80-76be-11eb-9815-c91408c0096a.png" width="600px" alt="Create cluster button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/6227720/116088589-eb21cc80-a699-11eb-8f1d-48804ecbffd9.png" width="600px" alt="The Jetstack Secure ToS page. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+
+When you create a new account, you'll be presented with the "Cluster Summary" screen, where you can add a new cluster by pressing the "Add Cluster" button.
+
+<img src="https://user-images.githubusercontent.com/6227720/116088269-9ed68c80-a699-11eb-9676-01a0fa5f0e5c.png" width="600px" alt="Add cluster button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 Choose a name for your cluster. This name is not related to the Google
 Kubernetes Engine cluster you selected when you deployed the application.
 This name is only used to show your cluster in the Jetstack Secure
-dashboard.
+dashboard. Cluster names can only contain alphanumeric values, dots and
+underscores.
 
-After picking a name, click on the check mark:
+After picking a name, press the "Save cluster name" button:
 
-<img src="https://user-images.githubusercontent.com/2195781/109155511-ec08b180-776f-11eb-82e1-45b0c32720d6.png" width="600px" alt="Choose your cluster name and click the check mark button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/6227720/116088112-777fbf80-a699-11eb-8f08-418a8777917a.png" width="600px" alt="Choose your cluster name and click the save cluster name button. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-Next, click the button "Copy command to clipboard":
+At this stage, you have two options depending on which Kubernetes namespace you installed Jetstack Secure in. If you chose the `jetstack-secure` namespace, you can click the "Copy Installation Command To Clipboard" button, which will be enabled once a cluster name is set. This command contains manifests to create a namespace, configuration & secrets to be used by the agent as well as the manifests to install the agent itself.
 
-<img src="https://user-images.githubusercontent.com/2195781/109026248-d76ce080-76bf-11eb-94be-bc1c8f54b2cf.png" width="600px" alt="Click the button 'Copy command to clipboard'. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+As the installation of the agent has been performed by the google cloud marketplace steps earlier, the only parts of this command you need are the `ConfigMap` and `Secret` resources. Using a text editor, isolate those parts of the command and apply them, excluding the namespace and agent manifests:
 
-With the help of a text editor, paste the content and edit it:
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-config
+  namespace: jetstack-secure
+data:
+  config.yaml: |-
+    server: "https://platform.jetstack.io"
+    organization_id: "jetstack"
+    cluster_id: "foobar"
+    data-gatherers:
+    # pods data is used in the pods and application_versions packages
+    - kind: "k8s-dynamic"
+      name: "k8s/pods"
+      config:
+        resource-type:
+          resource: pods
+          version: v1
+    # gather services for pod readiness probe rules
+    - kind: "k8s-dynamic"
+      name: "k8s/services"
+      config:
+        resource-type:
+          resource: services
+          version: v1
+    # gather higher level resources to ensure data to determine ownership is present
+    - kind: "k8s-dynamic"
+      name: "k8s/deployments"
+      config:
+        resource-type:
+          version: v1
+          resource: deployments
+          group: apps
+    - kind: "k8s-dynamic"
+      name: "k8s/replicasets"
+      config:
+        resource-type:
+          version: v1
+          resource: replicasets
+          group: apps
+    - kind: "k8s-dynamic"
+      name: "k8s/statefulsets"
+      config:
+        resource-type:
+          version: v1
+          resource: statefulsets
+          group: apps
+    - kind: "k8s-dynamic"
+      name: "k8s/daemonsets"
+      config:
+        resource-type:
+          version: v1
+          resource: daemonsets
+          group: apps
+    - kind: "k8s-dynamic"
+      name: "k8s/jobs"
+      config:
+        resource-type:
+          version: v1
+          resource: jobs
+          group: batch
+    - kind: "k8s-dynamic"
+      name: "k8s/cronjobs"
+      config:
+        resource-type:
+          version: v1beta1
+          resource: cronjobs
+          group: batch
+    # gather resources for cert-manager package
+    - kind: "k8s-dynamic"
+      name: "k8s/secrets"
+      config:
+        resource-type:
+          version: v1
+          resource: secrets
+    - kind: "k8s-dynamic"
+      name: "k8s/certificates"
+      config:
+        resource-type:
+          group: cert-manager.io
+          version: v1
+          resource: certificates
+    - kind: "k8s-dynamic"
+      name: "k8s/ingresses"
+      config:
+        resource-type:
+          group: networking.k8s.io
+          version: v1beta1
+          resource: ingresses
+    - kind: "k8s-dynamic"
+      name: "k8s/certificaterequests"
+      config:
+        resource-type:
+          group: cert-manager.io
+          version: v1
+          resource: certificaterequests
+    - kind: "k8s-dynamic"
+      name: "k8s/issuers"
+      config:
+        resource-type:
+          group: cert-manager.io
+          version: v1
+          resource: issuers
+    - kind: "k8s-dynamic"
+      name: "k8s/clusterissuers"
+      config:
+        resource-type:
+          group: cert-manager.io
+          version: v1
+          resource: clusterissuers
+    - kind: "k8s-dynamic"
+      name: "k8s/googlecasissuers"
+      config:
+        resource-type:
+          group: cas-issuer.jetstack.io
+          version: v1alpha1
+          resource: googlecasissuers
+    - kind: "k8s-dynamic"
+      name: "k8s/googlecasclusterissuers"
+      config:
+        resource-type:
+          group: cas-issuer.jetstack.io
+          version: v1alpha1
+          resource: googlecasclusterissuers
+    - kind: "k8s-dynamic"
+      name: "k8s/mutatingwebhookconfigurations"
+      config:
+        resource-type:
+          group: admissionregistration.k8s.io
+          version: v1
+          resource: mutatingwebhookconfigurations
+    - kind: "k8s-dynamic"
+      name: "k8s/validatingwebhookconfigurations"
+      config:
+        resource-type:
+          group: admissionregistration.k8s.io
+          version: v1
+          resource: validatingwebhookconfigurations
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: agent-credentials
+  namespace: jetstack-secure
+data:
+  credentials.json: <data>
+```
 
-1. remove the 6 first lines,
-2. remove the last line.
-
-<img src="https://user-images.githubusercontent.com/2195781/109153775-a21ecc00-776d-11eb-89d0-6beea71c7c07.png" width="600px" alt="Click the button 'Open a text editor and change a few lines from the configmap and secret. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
-
-After having removed the above lines, save the content as a file on your
-disk. You can call it `agent-config.yaml`.
+If you deployed Jetstack Secure to a different namespace, you will need to update the `namespace` fields for the resources in this file. After making
+the required modifications, save the file. It will be referred to as `agent-config.yaml` for the remainder of this tutorial.
 
 For the next step, make sure you have the following information available
 to you:
@@ -189,54 +335,30 @@ gcloud auth login
 gcloud container clusters get-credentials --zone=$LOCATION $CLUSTER
 ```
 
+Apply the `agent-config.yaml` manifests, so that the agent can communicate with the Jetstack Secure platform:
+
+```sh
+kubectl -n $NAMESPACE apply -f agent-config.yaml
+kubectl -n $NAMESPACE rollout restart $(kubectl -n $NAMESPACE get deploy -oname | grep agent)
+```
+
 You will now be able to "activate" the Preflight deployment:
 
 ```sh
-kubectl -n $NAMESPACE scale deploy --replicas=1 --selector=app.kubernetes.io/component=preflight
+kubectl -n $NAMESPACE scale deploy --replicas=1 --selector=app.kubernetes.io/name=agent
 ```
-
-You can then apply the Jetstack Secure agent configuration to your cluster:
-
-```sh
-sed '/namespace:/d' agent-config.yaml | kubectl -n $NAMESPACE apply -f-
-kubectl -n $NAMESPACE rollout restart $(kubectl -n $NAMESPACE get deploy -oname | grep preflight)
-```
-
-You may skip over the "Install agent" section:
-
-# <img src="https://user-images.githubusercontent.com/2195781/109156989-cb415b80-7771-11eb-910c-de247ad67ac2.png" width="600px" alt="Clicking on 'The agent is ready', you should see a green check mark. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
-
-After skipping the "Install agent" section, follow the instructions in the
-"Check the agent is running" section.
-
-Here is the command shown in the below screenshot that you can copy-paste
-for your convenience:
-
-```sh
-kubectl -n $NAMESPACE get pod -l app.kubernetes.io/component=preflight
-```
-
-<img src="https://user-images.githubusercontent.com/2195781/109156984-ca102e80-7771-11eb-9087-56c2b2781108.png" width="600px" alt="Use kubectl to check that the pod is ready. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 You should eventually see that the pod is `READY 1/1`:
 
 ```sh
 % kubectl -n $NAMESPACE get pod -l app.kubernetes.io/component=preflight
 NAME                                         READY   STATUS     AGE
-jetstack-secure-preflight-6b8d5ccb6f-6gnjm   1/1     Running    20h
+agent-6b8d5ccb6f-6gnjm                       1/1     Running    20h
 ```
 
-After seeing `READY 1/1`, you can click on "The agent is ready":
+After seeing `READY 1/1`, return to the dashboard. Once the agent has started communicating with the preflight platform, you will be taken to the cluster view. At this point, installation is complete and you can begin to monitor resources within the dashboard.
 
-<img src="https://user-images.githubusercontent.com/2195781/109156661-638b1080-7771-11eb-8ee1-da578d915156.png" width="600px" alt="Clicking on 'The agent is ready'. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
-
-A few seconds later, a green mark will appear:
-
-<img src="https://user-images.githubusercontent.com/2195781/109036926-6b43aa00-76ca-11eb-9649-d3c4e5ac71db.png" width="600px" alt="After clicking on 'The agent is ready', you should see a green check mark. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
-
-You can now click on "View clusters" to monitor your certificates. The
-documentation about the Jetstack Secure platform is available at
-<https://platform.jetstack.io/docs>.
+Below is an example of how to issue a certificate:
 
 Let us try with an example. We can create a self-signed issuer and sign a
 certificate that only lasts for 30 days:
