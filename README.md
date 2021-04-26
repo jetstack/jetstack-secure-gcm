@@ -148,7 +148,6 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: agent-config
-  namespace: jetstack-secure
 data:
   config.yaml: |-
     server: "https://platform.jetstack.io"
@@ -287,13 +286,11 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: agent-credentials
-  namespace: jetstack-secure
 data:
   credentials.json: <data>
 ```
 
-If you deployed Jetstack Secure to a different namespace, you will need to update the `namespace` fields for the resources in this file. After making
-the required modifications, save the file. It will be referred to as `agent-config.yaml` for the remainder of this tutorial.
+After making the required modifications, save the file. It will be referred to as `agent-config.yaml` for the remainder of this tutorial.
 
 For the next step, make sure you have the following information available
 to you:
