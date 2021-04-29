@@ -87,6 +87,15 @@ steps:
         licenses-for-google-cas-issuer,
       ]
 
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -exc
+      - |
+        docker pull gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
+        docker tag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/ubbagent:${_APP_VERSION}
+        docker push gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/ubbagent:${_APP_VERSION}
+
 images:
   - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-acmesolver:${_APP_VERSION}
@@ -95,3 +104,4 @@ images:
   - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-webhook:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/preflight:${_APP_VERSION}
   - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/ubbagent:${_APP_VERSION}
