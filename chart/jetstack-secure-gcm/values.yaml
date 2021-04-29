@@ -58,7 +58,7 @@ google-cas-issuer:
 preflight:
   # By default, the preflight deployment is "disabled" by setting replicas=0.
   # See https://github.com/jetstack/jetstack-secure-gcm/issues/41
-  replicas: 0
+  replicaCount: 0
   nameOverride: jetstack-secure-gcm
   fullnameOverride: preflight
   serviceAccount:
