@@ -212,18 +212,35 @@ properties:
               - apiGroups: ["cert-manager.io"]
                 resources: ["certificates", "certificaterequests", "issuers", "clusterissuers"]
                 verbs: ["get", "list", "watch"]
+              # To be removed when this gets merged: https://github.com/jetstack/cert-manager/issues/3726
               - apiGroups: ["extensions"]
                 resources: ["ingresses"]
                 verbs: ["get", "list", "watch"]
+              # To be removed when this gets merged: https://github.com/jetstack/cert-manager/issues/3726
               - apiGroups: ["extensions"]
                 resources: ["ingresses/finalizers"]
                 verbs: ["update"]
+              - apiGroups: ["networking.k8s.io"]
+                resources: ["ingresses/finalizers"]
+                verbs: ["update"]
+              - apiGroups: ["networking.k8s.io"]
+                resources: ["ingresses"]
+                verbs: ["get", "list", "watch"]
               - apiGroups: [""]
                 resources: ["events"]
                 verbs: ["create", "patch"]
               - apiGroups: [""]
                 resources: ["configmaps"]
                 verbs: ["get", "create", "update", "patch"]
+              - apiGroups: ["cert-manager.io"]
+                resources: ["signers"]
+                verbs: ["approve"]
+                resourceNames:
+                  - "issuers.cert-manager.io/*"
+                  - "clusterissuers.cert-manager.io/*"
+                  # Approval API, see https://github.com/jetstack/google-cas-issuer/pull/34/files#diff-80390a
+                  - googlecasclusterissuers.cas-issuer.jetstack.io/*
+                  - googlecasissuers.cas-issuer.jetstack.io/*
 
   cert-manager.webhook.serviceAccount.name:
     type: string
@@ -239,6 +256,12 @@ properties:
               - apiGroups: [""]
                 resources: [secrets]
                 verbs: [get, list, watch, update, patch, create]
+          - type: ClusterRole
+            rulesType: CUSTOM
+            rules:
+              - apiGroups: ["authorization.k8s.io"]
+                resources: ["subjectaccessreviews"]
+                verbs: ["create"]
 
   cert-manager.cainjector.serviceAccount.name:
     type: string
