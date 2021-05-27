@@ -72,9 +72,7 @@ installation instructions](#cli-installation).
 
 Head over to the [Jetstack Secure for
 cert-manager](https://console.cloud.google.com/marketplace/details/jetstack-public/jetstack-secure-for-cert-manager)
-solution page on the Google Cloud Marketplace. Click "Configure":
-
-<img src="https://user-images.githubusercontent.com/2195781/109154707-f5dde500-776e-11eb-8bc6-caf97fcecba2.png" width="600px" alt="The Jetstack Secure for cert-manager solution landing page on the Google Cloud Marketplace. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+solution page on the Google Cloud Marketplace and click on the "Configure" button.
 
 On the next screen, you will be asked to either select an existing cluster
 or create a new one, as well as choosing the Kubernetes namespace in which
