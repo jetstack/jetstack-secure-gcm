@@ -526,6 +526,12 @@ Configure `gcloud` as a Docker credential helper:
 gcloud auth configure-docker
 ```
 
+Set `gcloud` to use your project:
+
+```sh
+gcloud config set project <project-name>
+```
+
 #### Create a Google Kubernetes Engine cluster
 
 The [workload
