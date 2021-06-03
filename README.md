@@ -520,10 +520,12 @@ You'll need the following tools in your environment. If you are using Cloud Shel
 - [helm](https://helm.sh/docs/using_helm/#installing-helm)
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 
-Configure `gcloud` as a Docker credential helper:
+Configure `gcloud` as a Docker credential helper, and set the GCP
+project you want to be using as the default project:
 
 ```sh
 gcloud auth configure-docker
+gcloud config set project YOUR_PROJECT
 ```
 
 #### Create a Google Kubernetes Engine cluster
