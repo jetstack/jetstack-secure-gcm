@@ -51,6 +51,7 @@ more effective overall management of clusters.
 - [CLI installation](#cli-installation)
   - [Prerequisites](#prerequisites)
     - [Set up command line tools](#set-up-command-line-tools)
+    - [Select a GCP project](#select-a-gcp-project)
     - [Create a Google Kubernetes Engine cluster](#create-a-google-kubernetes-engine-cluster)
     - [Configure kubectl to connect to the cluster](#configure-kubectl-to-connect-to-the-cluster)
     - [Clone this repo](#clone-this-repo)
@@ -525,6 +526,12 @@ Configure `gcloud` as a Docker credential helper:
 ```sh
 gcloud auth configure-docker
 ```
+
+#### Select a GCP project
+
+You can get the list of projects available with `gcloud projects list`.
+
+Then select one with `gcloud config set project <PROJECT_ID>`
 
 #### Create a Google Kubernetes Engine cluster
 
