@@ -508,6 +508,12 @@ local workstation to complete these steps.
 
 [![Open in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/jetstack/jetstack-secure-gcm&cloudshell_working_dir=/)
 
+The pricing using the CLI to install is identical to using the click-to-deploy
+method: each cluster is priced at $50 a month, billed hourly ($0.07/hour). Note
+that the cert-manager controller deployment should always have a number of
+replicas equal to 1. High-availability for the cert-manager controller is not
+supported yet.
+
 ### Prerequisites
 
 #### Set up command line tools

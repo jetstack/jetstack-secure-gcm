@@ -23,20 +23,28 @@
 
 ## Pricing mechanism
 
-The [pricing panel](https://console.cloud.google.com/partner/editor/jetstack-public/jetstack-secure-for-cert-manager?project=jetstack-public&authuser=4&form=saasK8sPricingPanel) is set as:
+Each cluster is priced at $50 a month, billed hourly ($0.07/hour). The way the
+hourly billing works is by running `ubbagent` which is set as a side-car
+container to the cert-manager controller
+[deployment](https://github.com/jetstack/jetstack-secure-gcm/blob/c43be00b36f7fd1d01f15771025308b8f5ab69f7/chart/jetstack-secure-gcm/charts/cert-manager/templates/deployment.yaml#L1).
+The ubbagent pings the Google Billing API every hour; each ping will add a value
+of `1` to the `time` value. The unit for `time` is something we have configured
+in the [pricing
+panel](https://console.cloud.google.com/partner/editor/jetstack-public/jetstack-secure-for-cert-manager?project=jetstack-public&authuser=4&form=saasK8sPricingPanel).
 
 | Field          | Value  |
 | -------------- | ------ |
-| Name           | `Time` |
 | ID             | `time` |
 | Unit           | `h`    |
-| Reporting Unit | `h`    |
 
-The application contains a ConfigMap that we configured with a heartbeat
-period of 1 hour. And since the heartbeat period must be given in seconds,
-we give the field `intervalSeconds` a value of 3600. The heartbeat is
-configured in
-[billing-agent-config.yml](https://github.com/jetstack/jetstack-secure-gcm/blob/c43be00b36f7fd1d01f15771025308b8f5ab69f7/chart/jetstack-secure-gcm/templates/billing-agent-config.yml#L15-L74):
+Note that the cert-manager deployment should always be run with replicas=1.
+High-availability (replicas > 1) is not supported yet, and the application will
+be billed for each replica on the cluster.
+
+The ubbagent's ping period is configured using the `intervalSeconds` field (in
+seconds!) in the
+[billing-agent-config.yml](https://github.com/jetstack/jetstack-secure-gcm/blob/c43be00b36f7fd1d01f15771025308b8f5ab69f7/chart/jetstack-secure-gcm/templates/billing-agent-config.yml#L15-L74)
+that looks like:
 
 ```yaml
 # File: billing-agent-config.yml
@@ -76,8 +84,6 @@ sources:
       value:
         int64Value: 1
 ```
-
-Note that the only supported number of replicas for the cert-manager controller [deployment](https://github.com/jetstack/jetstack-secure-gcm/blob/c43be00b36f7fd1d01f15771025308b8f5ab69f7/chart/jetstack-secure-gcm/charts/cert-manager/templates/deployment.yaml#L1) is 1.
 
 For information, here is the `jetstack-secure-for-cert-manager.yaml` that was
 [provided to us](https://github.com/jetstack/platform-board/issues/347); this
@@ -290,7 +296,7 @@ If you go to GKE's [applications
 page](https://console.cloud.google.com/kubernetes/application), you should
 see everything green:
 
-<img src="https://user-images.githubusercontent.com/2195781/110791519-9acde700-8272-11eb-81f4-4f27fb8a174d.png" width="300" alt="The application page on GKE should show the test-1 application. The preflight deployment is failing because the user has not (yet) gone to http://platform.jetstack.io/ to register their cluster. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
+<img src="https://user-images.githubusercontent.com/2195781/110795922-a96acd00-8277-11eb-959e-bf7ea51ae992.png" width="500" alt="The application page for test-1 shows that all the deployments are green. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
 ## Cutting a new release
 
