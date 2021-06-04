@@ -670,7 +670,7 @@ helm template "$APP_INSTANCE_NAME" chart/jetstack-secure-gcm \
   --set preflight.serviceAccount.create=true \
   --set preflight.rbac.create=true \
   --set cert-manager.ubbagent.image.tag="$TAG" \
-  --set cert-manager.ubbagent.reportingSecretName=$APP_INSTANCE_NAME-license \
+  --set cert-manager.ubbagent.reportingSecretName=jetstack-secure-for-cert-mana-1-license \
   > "${APP_INSTANCE_NAME}_manifest.yaml"
 ```
 
