@@ -506,7 +506,7 @@ Events:
 You can use [Google Cloud Shell](https://cloud.google.com/shell/) or a
 local workstation to complete these steps.
 
-[![Open in Cloud Shell](http://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/jetstack/jetstack-secure-gcm&cloudshell_working_dir=/)
+[![Open in Cloud Shell](https://gstatic.com/cloudssh/images/open-btn.svg)](https://console.cloud.google.com/cloudshell/editor?cloudshell_git_repo=https://github.com/jetstack/jetstack-secure-gcm&cloudshell_working_dir=/)
 
 The pricing using the CLI to install is identical to using the click-to-deploy
 method: each cluster is priced at $50 a month, billed hourly ($0.07/hour). Note
