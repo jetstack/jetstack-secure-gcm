@@ -10,16 +10,50 @@
 
 **Contents:**
 
+- [Cutting a new release](#cutting-a-new-release)
 - [Pricing mechanism](#pricing-mechanism)
 - [Creating and testing the deployer image](#creating-and-testing-the-deployer-image)
 - [mpdev install on your own cluster](#mpdev-install-on-your-own-cluster)
-- [Cutting a new release](#cutting-a-new-release)
 - [Testing the application without having access to the Billing API](#testing-the-application-without-having-access-to-the-billing-api)
 - [How the Application object "wrangles" its components](#how-the-application-object-wrangles-its-components)
 - [Installing and manually testing the deployer image](#installing-and-manually-testing-the-deployer-image)
 - [Testing and releasing the deployer using Google Cloud Build](#testing-and-releasing-the-deployer-using-google-cloud-build)
   - [Debugging deployer and smoke-tests when run in Cloud Build](#debugging-deployer-and-smoke-tests-when-run-in-cloud-build)
 - [Updating the upstream cert-manager chart version](#updating-the-upstream-cert-manager-chart-version)
+
+## Cutting a new release
+
+Since the process is manual and evolves from release to release, we document all
+the steps that were taken in each release directly on the GitHub Release itself
+in a `<details>` block that looks like this:
+
+> ▶ 📦 Recording of the manual steps of the release process
+
+Imagining that you want to release `1.1.0-gcm.5`, the steps are:
+
+1. Copy the `<details>` block from the previous release [1.1.0-gcm.4](https://github.com/jetstack/jetstack-secure-gcm/releases/tag/1.1.0-gcm.4)
+2. In an editor, change the references to `1.1.0-gcm.4`.
+3. Follow the steps and tick the checkboxes.
+4. After the `1.1.0-gcm.5` is pushed to GitHub, create a GitHub Release for that
+   tag and paste the content into the `<details>` block into the GitHub Release
+   you just created (see `PASTE HERE` below). The GitHub Release description
+   should look like this:
+
+   ```md
+   ## Changelog
+
+   <!-- TODO -->
+
+   ## Notes
+
+   <details>
+
+   <summary>📦 Recording of the manual steps of the release process</summary>
+
+   <!-- PASTE HERE -->
+
+   </details>
+   ```
 
 ## Pricing mechanism
 
@@ -32,10 +66,10 @@ of `1` to the `time` value. The unit for `time` is something we have configured
 in the [pricing
 panel](https://console.cloud.google.com/partner/editor/jetstack-public/jetstack-secure-for-cert-manager?project=jetstack-public&authuser=4&form=saasK8sPricingPanel).
 
-| Field          | Value  |
-| -------------- | ------ |
-| ID             | `time` |
-| Unit           | `h`    |
+| Field | Value  |
+| ----- | ------ |
+| ID    | `time` |
+| Unit  | `h`    |
 
 Note that the cert-manager deployment should always be run with replicas=1.
 High-availability (replicas > 1) is not supported yet, and the application will
@@ -297,22 +331,6 @@ page](https://console.cloud.google.com/kubernetes/application), you should
 see everything green:
 
 <img src="https://user-images.githubusercontent.com/2195781/110795922-a96acd00-8277-11eb-959e-bf7ea51ae992.png" width="500" alt="The application page for test-1 shows that all the deployments are green. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
-
-## Cutting a new release
-
-Since the process is manual and evolves from release to release, we document all
-the steps taken in each release directly on the GitHub Release itself in a
-`<details>` block that looks like this:
-
-> ▶ 📦 Recording of the manual steps of the release process
-
-For example, when releasing `1.1.0-gcm.5`, the steps were:
-
-1. Copy the `<details>` block from the previous release [1.1.0-gcm.4](https://github.com/jetstack/jetstack-secure-gcm/releases/tag/1.1.0-gcm.4)
-2. In an editor, change the references to `1.1.0-gcm.4`.
-3. Follow the steps and tick the checkboxes.
-4. After the `1.1.0-gcm.5` is pushed to GitHub, create a GitHub Release for that
-   tag and paste the content the `<details>` block to the GitHub Release.
 
 ## Testing the application without having access to the Billing API
 
