@@ -570,7 +570,7 @@ the example [suite.yaml](https://github.com/GoogleCloudPlatform/marketplace-test
 
 ```yaml
 actions:
-  - name: { { .Env.TEST_NAME } }
+  - name: "{{ .Env.TEST_NAME }}"
     httpTest:
       url: http://{{ .Var.MainVmIp }}:9012
       expect:

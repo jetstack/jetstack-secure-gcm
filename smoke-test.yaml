@@ -4,9 +4,9 @@
 # To see how this testrunner works, the only way is to read the bash.go:
 # https://github.com/GoogleCloudPlatform/marketplace-testrunner/blob/4245fa9/tests/bash.go
 actions:
-  # - name: hang for debugging purposes
-  #   bashTest:
-  #     script: sleep 1200 # 20 minutes
+  - name: hang for debugging purposes
+    bashTest:
+      script: sleep 1200 # 20 minutes
   - name: kubectl smoke test
     bashTest:
       script: kubectl version
@@ -64,14 +64,14 @@ actions:
     bashTest:
       script: |
         kubectl apply -n ${NAMESPACE} -f - <<EOF
-        apiVersion: cas-issuer.jetstack.io/v1alpha1
+        apiVersion: cas-issuer.jetstack.io/v1beta1
         kind: GoogleCASIssuer
         metadata:
           name: googlecas-issuer
         spec:
           project: "todo"
           location: "todo"
-          certificateAuthorityID: "todo"
+          caPoolId: "todo"
         ---
         apiVersion: cert-manager.io/v1
         kind: Certificate
