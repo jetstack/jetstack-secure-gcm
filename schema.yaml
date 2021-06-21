@@ -107,6 +107,12 @@ properties:
       serviceAccount:
         description: Service account used by cert-manager Controller Deployment
         roles:
+          - type: Role
+            rulesType: CUSTOM
+            rules:
+              - apiGroups: [""]
+                resources: ["events"]
+                verbs: ["create", "patch"]
           - type: ClusterRole
             rulesType: CUSTOM
             rules:
@@ -120,9 +126,6 @@ properties:
               - apiGroups: [""]
                 resources: ["secrets"]
                 verbs: ["get", "list", "watch", "create", "update", "delete"]
-              - apiGroups: [""]
-                resources: ["events"]
-                verbs: ["create", "patch"]
               # ClusterIssuer controller role
               - apiGroups: ["cert-manager.io"]
                 resources: ["clusterissuers", "clusterissuers/status"]
@@ -133,9 +136,6 @@ properties:
               - apiGroups: [""]
                 resources: ["secrets"]
                 verbs: ["get", "list", "watch", "create", "update", "delete"]
-              - apiGroups: [""]
-                resources: ["events"]
-                verbs: ["create", "patch"]
               # Certificates controller role
               - apiGroups: ["cert-manager.io"]
                 resources: ["certificates", "certificates/status", "certificaterequests", "certificaterequests/status"]
@@ -152,9 +152,6 @@ properties:
               - apiGroups: [""]
                 resources: ["secrets"]
                 verbs: ["get", "list", "watch", "create", "update", "delete"]
-              - apiGroups: [""]
-                resources: ["events"]
-                verbs: ["create", "patch"]
               # Orders controller role
               - apiGroups: ["acme.cert-manager.io"]
                 resources: ["orders", "orders/status"]
@@ -174,9 +171,6 @@ properties:
               - apiGroups: [""]
                 resources: ["secrets"]
                 verbs: ["get", "list", "watch"]
-              - apiGroups: [""]
-                resources: ["events"]
-                verbs: ["create", "patch"]
               # Challenges controller role
               - apiGroups: ["acme.cert-manager.io"]
                 resources: ["challenges", "challenges/status"]
@@ -190,9 +184,6 @@ properties:
               - apiGroups: [""]
                 resources: ["secrets"]
                 verbs: ["get", "list", "watch"]
-              - apiGroups: [""]
-                resources: ["events"]
-                verbs: ["create", "patch"]
               - apiGroups: [""]
                 resources: ["pods", "services"]
                 verbs: ["get", "list", "watch", "create", "delete"]
@@ -226,19 +217,7 @@ properties:
               - apiGroups: ["networking.k8s.io"]
                 resources: ["ingresses"]
                 verbs: ["get", "list", "watch"]
-              - apiGroups: [""]
-                resources: ["events"]
-                verbs: ["create", "patch"]
-              - apiGroups: [""]
-                resources: ["configmaps"]
-                verbs: ["get", "create", "update", "patch"]
-              - apiGroups: [coordination.k8s.io]
-                resources: [leases]
-                verbs: [create, get, update, patch]
-                # Although the leader election namespace is usually
-                # configurable, we can't make it configurable due to
-                # schema.yaml. So we default to kube-system.
-                namespaces: [kube-system]
+
               - apiGroups: ["cert-manager.io"]
                 resources: ["signers"]
                 verbs: ["approve"]
@@ -263,6 +242,28 @@ properties:
               - apiGroups: ["authorization.k8s.io"]
                 resources: ["subjectaccessreviews"]
                 verbs: ["create"]
+
+              # Leader election roles. Although leader election only operates on
+              # one single namespace (often kube-system), we have to use a
+              # ClusterRole due to schema.yaml limitations:
+              # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/issues/564
+              - apiGroups: [""]
+                verbs: [create]
+                resources: [configmaps]
+              - apiGroups: [""]
+                resources: [configmaps]
+                verbs: [get, list, watch, update, patch, delete]
+                resourceNames: ["cert-manager-controller"]
+              - apiGroups: [""]
+                resources: [configmaps/status]
+                verbs: [get, update, patch]
+              - apiGroups: [coordination.k8s.io]
+                resources: [leases]
+                verbs: [create]
+              - apiGroups: [coordination.k8s.io]
+                resources: [leases]
+                verbs: [get, update, patch]
+                resourceNames: ["cert-manager-controller"]
 
   cert-manager.webhook.serviceAccount.name:
     type: string
@@ -296,23 +297,9 @@ properties:
           - type: Role
             rulesType: CUSTOM
             rules:
-              # Leader election roles.
-              - apiGroups: [""]
-                resources: [configmaps]
-                verbs: [get, list, watch, create, update, patch, delete]
-              - apiGroups: [""]
-                resources: [configmaps/status]
-                verbs: [get, update, patch]
               - apiGroups: [""]
                 resources: [events]
                 verbs: [create]
-              - apiGroups: [coordination.k8s.io]
-                resources: [leases]
-                verbs: [create, get, update, patch]
-                # Although the leader election namespace is usually
-                # configurable, we can't make it configurable due to
-                # schema.yaml. So we default to kube-system.
-                namespaces: [kube-system]
 
           - type: ClusterRole
             rulesType: CUSTOM
@@ -339,6 +326,28 @@ properties:
                 resources: ["configmaps"]
                 verbs: ["get", "create", "update", "patch"]
 
+              # Leader election roles. Although leader election only operates on
+              # one single namespace (often kube-system), we have to use a
+              # ClusterRole due to schema.yaml limitations:
+              # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/issues/564
+              - apiGroups: [""]
+                verbs: [create]
+                resources: [configmaps]
+              - apiGroups: [""]
+                resources: [configmaps]
+                verbs: [get, list, watch, update, patch, delete]
+                resourceNames: ["cert-manager-cainjector-leader-election", "cert-manager-cainjector-leader-election-core"]
+              - apiGroups: [""]
+                resources: [configmaps/status]
+                verbs: [get, update, patch]
+              - apiGroups: [coordination.k8s.io]
+                resources: [leases]
+                verbs: [create]
+              - apiGroups: [coordination.k8s.io]
+                resources: [leases]
+                verbs: [get, update, patch]
+                resourceNames: ["cert-manager-cainjector-leader-election", "cert-manager-cainjector-leader-election-core"]
+
   google-cas-issuer.serviceAccount.name:
     type: string
     title: Name of the Kubernetes service account for the google-cas-issuer
@@ -347,26 +356,6 @@ properties:
       serviceAccount:
         description: Service account used by google-cas-issuer
         roles:
-          - type: Role
-            rulesType: CUSTOM
-            rules:
-              # Leader election roles.
-              - apiGroups: [""]
-                resources: [configmaps]
-                verbs: [get, list, watch, create, update, patch, delete]
-              - apiGroups: [""]
-                resources: [configmaps/status]
-                verbs: [get, update, patch]
-              - apiGroups: [""]
-                resources: [events]
-                verbs: [create]
-              - apiGroups: [coordination.k8s.io]
-                resources: [leases]
-                verbs: [create, get, update, patch]
-                # Although the leader election namespace is usually
-                # configurable, we can't make it configurable due to
-                # schema.yaml. So we default to kube-system.
-                namespaces: [kube-system]
           - type: ClusterRole
             rulesType: CUSTOM
             rules:
@@ -394,6 +383,28 @@ properties:
               - apiGroups: [cert-manager.io]
                 resources: [certificaterequests/status]
                 verbs: [get, patch, update]
+
+              # Leader election roles. Although leader election only operates on
+              # one single namespace (often kube-system), we have to use a
+              # ClusterRole due to schema.yaml limitations:
+              # https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/issues/564
+              - apiGroups: [""]
+                verbs: [create]
+                resources: [configmaps]
+              - apiGroups: [""]
+                resources: [configmaps]
+                verbs: [get, list, watch, update, patch, delete]
+                resourceNames: ["cm-google-cas-issuer"]
+              - apiGroups: [""]
+                resources: [configmaps/status]
+                verbs: [get, update, patch]
+              - apiGroups: [coordination.k8s.io]
+                resources: [leases]
+                verbs: [create]
+              - apiGroups: [coordination.k8s.io]
+                resources: [leases]
+                verbs: [get, update, patch]
+                resourceNames: ["cm-google-cas-issuer"]
 
   preflight.serviceAccount.name:
     type: string
