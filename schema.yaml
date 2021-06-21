@@ -232,6 +232,9 @@ properties:
               - apiGroups: [""]
                 resources: ["configmaps"]
                 verbs: ["get", "create", "update", "patch"]
+              - apiGroups: [coordination.k8s.io]
+                resources: [leases]
+                verbs: [create, get, update, patch]
               - apiGroups: ["cert-manager.io"]
                 resources: ["signers"]
                 verbs: ["approve"]
@@ -301,7 +304,7 @@ properties:
                 verbs: [create]
               - apiGroups: [coordination.k8s.io]
                 resources: [leases]
-                verbs: [create, get, list, update]
+                verbs: [create, get, update, patch]
           - type: ClusterRole
             rulesType: CUSTOM
             rules:
