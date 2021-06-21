@@ -235,6 +235,10 @@ properties:
               - apiGroups: [coordination.k8s.io]
                 resources: [leases]
                 verbs: [create, get, update, patch]
+                # Although the leader election namespace is usually
+                # configurable, we can't make it configurable due to
+                # schema.yaml. So we default to kube-system.
+                namespaces: [kube-system]
               - apiGroups: ["cert-manager.io"]
                 resources: ["signers"]
                 verbs: ["approve"]
@@ -305,6 +309,11 @@ properties:
               - apiGroups: [coordination.k8s.io]
                 resources: [leases]
                 verbs: [create, get, update, patch]
+                # Although the leader election namespace is usually
+                # configurable, we can't make it configurable due to
+                # schema.yaml. So we default to kube-system.
+                namespaces: [kube-system]
+
           - type: ClusterRole
             rulesType: CUSTOM
             rules:
@@ -353,7 +362,11 @@ properties:
                 verbs: [create]
               - apiGroups: [coordination.k8s.io]
                 resources: [leases]
-                verbs: [create, get, list, update]
+                verbs: [create, get, update, patch]
+                # Although the leader election namespace is usually
+                # configurable, we can't make it configurable due to
+                # schema.yaml. So we default to kube-system.
+                namespaces: [kube-system]
           - type: ClusterRole
             rulesType: CUSTOM
             rules:
