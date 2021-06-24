@@ -63,6 +63,23 @@ more effective overall management of clusters.
     - [Apply the manifest to your Kubernetes cluster](#apply-the-manifest-to-your-kubernetes-cluster)
     - [View the app in the Google Cloud Console](#view-the-app-in-the-google-cloud-console)
 
+:warning: Due to a [breaking change][breaking] in the Application CRD, the
+versions **1.1** and **1.3** available on the Google Cloud Marketplace cannot be
+installed anymore. Installing version 1.1 or 1.3 leads to the following error:
+
+```
+error: error validating "/data/resources.yaml": error validating data:
+ValidationError(Application.spec.descriptor): unknown field "info" in
+io.k8s.app.v1beta1.Application.spec.descriptor; if you choose to ignore
+these errors, turn validation off with --validate=false
+```
+
+The versions **1.1** and **1.3** are deprecated since 24 June 2021 and will be
+removed on 14 January 2022. We invite users to upgrade to the latest version of
+the application.
+
+[breaking]: https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/issues/566
+
 ## Click-to-deploy installation
 
 This guide describes how to install Jetstack Secure for cert-manager via
@@ -619,15 +636,15 @@ kubectl create namespace $NAMESPACE
 Set up the image tag, for example:
 
 ```shell
-TAG="1.1.0-gcm.1"
+TAG="1.4.0-gcm.0"
 ```
 
-where `1.1.0` stands for the cert-manager version, and `gcm.1` is the
+where `1.4.0` stands for the cert-manager version, and `gcm.1` is the
 Google Marketplace "build" version.
 
 > Note: the upstream cert-mananger images are re-built with a
 > `/LICENSES.txt` file as well as re-tagged with the Marketplace versioning
-> described above, e.g. `1.1.0-gcm.1`. This was done in order to order to
+> described above, e.g. `1.4.0-gcm.0`. This was done in order to order to
 > abide by the
 > [schema.md](https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/blob/d9d3a6f/docs/schema.md)
 > rules, which states that "when users deploy the app from the Google Cloud
