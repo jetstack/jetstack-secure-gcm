@@ -21,4 +21,4 @@ COPY smoke-test.t .
 
 ENV NAMESPACE=test
 
-CMD ["sh", "-c", "stern -A -l app.kubernetes.io/name=jetstack-secure-gcm & cram smoke-test.t"]
+CMD ["sh", "-c", "cram smoke-test.t || (stern -A -l app.kubernetes.io/name=jetstack-secure-gcm; exit 1)"]
