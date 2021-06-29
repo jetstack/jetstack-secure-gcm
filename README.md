@@ -63,7 +63,7 @@ more effective overall management of clusters.
     - [Apply the manifest to your Kubernetes cluster](#apply-the-manifest-to-your-kubernetes-cluster)
     - [View the app in the Google Cloud Console](#view-the-app-in-the-google-cloud-console)
 
-:warning: Due to a [breaking change][breaking] in the Application CRD, the
+⚠ Due to a [breaking change][breaking] in the Application CRD, the
 versions **1.1** and **1.3** available on the Google Cloud Marketplace cannot be
 installed anymore. Installing version 1.1 or 1.3 leads to the following error:
 
