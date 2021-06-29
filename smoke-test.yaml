@@ -13,7 +13,7 @@ actions:
       expect:
         exitCode:
           equals: 0
-  - name: Create test issuer and self signed cert
+  - name: Create a self-signed Issuer and a Certificate
     bashTest:
       script: |
         kubectl apply -n ${NAMESPACE} -f - <<EOF
@@ -37,21 +37,21 @@ actions:
         EOF
       expect:
         equals: 0
-  - name: Try to get new cert
+  - name: Wait until the Certificate becomes Ready
     bashTest:
       script: |
         kubectl wait -n ${NAMESPACE} --for=condition=Ready --timeout=2m certificate selfsigned-cert
       expect:
         exitCode:
           equals: 0
-  - name: Try to get cert secret
+  - name: Get the Secret associated to the Certificate
     bashTest:
       script: |
         kubectl get secret selfsigned-cert-tls
       expect:
         exitCode:
           equals: 0
-  - name: Delete issuer and self signed cert
+  - name: Delete the self-signed Issuer and the Certificate
     bashTest:
       script: |
         set -ex
@@ -60,7 +60,7 @@ actions:
       expect:
         exitCode:
           equals: 0
-  - name: Create a GoogleCASIssuer and a certificate
+  - name: Create a GoogleCASIssuer and a Certificate
     bashTest:
       script: |
         kubectl apply -n ${NAMESPACE} -f - <<EOF
