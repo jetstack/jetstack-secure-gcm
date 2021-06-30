@@ -1,0 +1,6 @@
+# The .t files are cram tests. The GitHub syntax highlighter [1] does not know
+# about the cram format and thinks they are Perl files. So we disabled the
+# GitHub highlighter altogether for these files.
+
+*.t text linguist-language=Text
+
