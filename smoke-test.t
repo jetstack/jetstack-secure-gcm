@@ -59,14 +59,14 @@ Delete the self-signed Issuer and the Certificate:
 Create a GoogleCASIssuer and a Certificate:
 
   $ kubectl apply -n ${NAMESPACE} -f - <<EOF
-  > apiVersion: cas-issuer.jetstack.io/v1beta1
+  > apiVersion: cas-issuer.jetstack.io/v1alpha1
   > kind: GoogleCASIssuer
   > metadata:
   >   name: googlecas-issuer
   > spec:
   >   project: "todo"
   >   location: "todo"
-  >   caPoolId: "todo"
+  >   certificateAuthorityID: "todo"
   > ---
   > apiVersion: cert-manager.io/v1
   > kind: Certificate
