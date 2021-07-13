@@ -1,0 +1,107 @@
+timeout: 1800s # 30m
+substitutions:
+  _APP_VERSION: "0.1.0-build"
+
+  # Git tags.
+  _CERT_MANAGER_TAG: "v1.3.1"
+  _JETSTACK_AGENT_TAG: "v0.1.29"
+  _GOOGLE_CAS_ISSUER_TAG: "v0.3.0"
+  _GOOGLE_CAS_ISSUER_TAG_DOCKER: "0.3.0"
+steps:
+  - id: get-go-providence-checker
+    name: gcr.io/cloud-builders/go
+    entrypoint: sh
+    args:
+      - -exc
+      - |
+        GO111MODULE=on go get github.com/jakexks/go-providence-checker@32cc49d3aa0bba6bf268b047857d63156056e74b
+        mv $(go env GOPATH)/bin/go-providence-checker /workspace
+
+  - id: licenses-for-cert-manager
+    name: gcr.io/cloud-builders/go
+    entrypoint: sh
+    args:
+      - -exc
+      # We use --force in the below command because we are doing our best to
+      # fetch all possible licenses, but since the tree is enormous, we skip the
+      # modules that have a missing or unrecognized license.
+      - |
+        mkdir licenses-for-cert-manager
+        cd licenses-for-cert-manager/ && GO111MODULE=on /workspace/go-providence-checker dependencies --force --debug github.com/jetstack/cert-manager@${_CERT_MANAGER_TAG}
+    waitFor: [get-go-providence-checker]
+
+  - id: licenses-for-jetstack-agent
+    name: gcr.io/cloud-builders/go
+    entrypoint: sh
+    args:
+      - -exc
+      - |
+        mkdir licenses-for-jetstack-agent
+        cd licenses-for-jetstack-agent/ && GO111MODULE=on /workspace/go-providence-checker dependencies --force --debug github.com/jetstack/preflight@${_JETSTACK_AGENT_TAG}
+    waitFor: [get-go-providence-checker]
+
+  - id: licenses-for-google-cas-issuer
+    name: gcr.io/cloud-builders/go
+    entrypoint: sh
+    args:
+      - -exc
+      - |
+        mkdir licenses-for-google-cas-issuer
+        cd licenses-for-google-cas-issuer/ && GO111MODULE=on /workspace/go-providence-checker dependencies --force --debug github.com/jetstack/google-cas-issuer@${_GOOGLE_CAS_ISSUER_TAG}
+    waitFor: [get-go-providence-checker]
+
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -exc
+      # The retag script retags as well as adds the licenses to the image. The
+      # LICENsES_DIR is the directory where LICENSES.txt and thirdparty/ folder
+      # are.
+      #
+      # Usage: retag <LICENSES_DIR> <FROM_IMAGE> <TO_IMAGE>
+      - |
+        cat <<'EOF' > ./retag && chmod +x ./retag
+        #! /bin/bash
+        set -ueo pipefail
+        dir_to_copy=$1
+        from=$2
+        to=$3
+        docker pull $from
+        temp=$(docker create $from)
+        docker cp $dir_to_copy $temp:/
+        docker commit $temp $to
+        docker push $to
+        EOF
+
+        ./retag ./licenses-for-cert-manager quay.io/jetstack/cert-manager-controller:${_CERT_MANAGER_TAG} gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager:${_APP_VERSION}
+        ./retag ./licenses-for-cert-manager quay.io/jetstack/cert-manager-acmesolver:${_CERT_MANAGER_TAG} gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-acmesolver:${_APP_VERSION}
+        ./retag ./licenses-for-cert-manager quay.io/jetstack/cert-manager-cainjector:${_CERT_MANAGER_TAG} gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-cainjector:${_APP_VERSION}
+        ./retag ./licenses-for-cert-manager quay.io/jetstack/cert-manager-webhook:${_CERT_MANAGER_TAG} gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-webhook:${_APP_VERSION}
+        ./retag ./licenses-for-cert-manager quay.io/jetstack/cert-manager-webhook:${_CERT_MANAGER_TAG} gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-webhook:${_APP_VERSION}
+        ./retag ./licenses-for-jetstack-agent quay.io/jetstack/preflight:${_JETSTACK_AGENT_TAG} gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/preflight:${_APP_VERSION}
+        ./retag ./licenses-for-google-cas-issuer quay.io/jetstack/cert-manager-google-cas-issuer:${_GOOGLE_CAS_ISSUER_TAG_DOCKER} gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:${_APP_VERSION}
+    waitFor:
+      [
+        licenses-for-cert-manager,
+        licenses-for-jetstack-agent,
+        licenses-for-google-cas-issuer,
+      ]
+
+  - name: gcr.io/cloud-builders/docker
+    entrypoint: bash
+    args:
+      - -exc
+      - |
+        docker pull gcr.io/cloud-marketplace-tools/metering/ubbagent:latest
+        docker tag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/ubbagent:${_APP_VERSION}
+        docker push gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/ubbagent:${_APP_VERSION}
+
+images:
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-acmesolver:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-cainjector:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-webhook:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-webhook:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/preflight:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:${_APP_VERSION}
+  - gcr.io/$PROJECT_ID/jetstack-secure-for-cert-manager/ubbagent:${_APP_VERSION}
