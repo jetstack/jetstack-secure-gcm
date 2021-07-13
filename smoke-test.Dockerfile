@@ -21,4 +21,7 @@ COPY smoke-test.t .
 
 ENV NAMESPACE=test
 
-CMD ["sh", "-c", "cram smoke-test.t || (stern -A -l app.kubernetes.io/name=jetstack-secure-gcm; exit 1)"]
+# We don't use "kubectl logs" because we need to know to which container each
+# logs comes from. Also, stern follows logs and never returns, so we do the
+# pause trick.
+CMD ["sh", "-c", "cram smoke-test.t || (stern -A -l app.kubernetes.io/name=jetstack-secure-gcm & (sleep 5; exit 1))"]
