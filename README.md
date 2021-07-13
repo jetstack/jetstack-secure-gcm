@@ -120,7 +120,7 @@ the [Applications](https://console.cloud.google.com/kubernetes/application) page
 
 <img src="https://user-images.githubusercontent.com/2195781/110795922-a96acd00-8277-11eb-959e-bf7ea51ae992.png" width="500" alt="The application page for test-1 shows that all the deployments are green. This screenshot is stored in this issue: https://github.com/jetstack/jetstack-secure-gcm/issues/21">
 
-**Note:** by default, the `preflight` deployment is scaled to 0. After
+**Note:** by default, the `jetstack-secure` deployment is scaled to 0. After
 completing the steps in the [next
 section](#step-2-log-into-the-jetstack-secure-dashboard), the deployment will
 start working.
@@ -355,21 +355,21 @@ kubectl -n $NAMESPACE apply -f agent-config.yaml
 kubectl -n $NAMESPACE rollout restart $(kubectl -n $NAMESPACE get deploy -oname | grep agent)
 ```
 
-You will now be able to "activate" the Preflight deployment:
+You will now be able to "activate" the `jetstack-secure` deployment:
 
 ```sh
-kubectl -n $NAMESPACE scale deploy --replicas=1 --selector=app.kubernetes.io/name=agent
+kubectl -n $NAMESPACE scale deploy --replicas=1 --selector=app.kubernetes.io/name=jetstack-secure
 ```
 
 You should eventually see that the pod is `READY 1/1`:
 
 ```sh
-% kubectl -n $NAMESPACE get pod -l app.kubernetes.io/component=preflight
+% kubectl -n $NAMESPACE get pod -l app.kubernetes.io/name=jetstack-secure
 NAME                                         READY   STATUS     AGE
 agent-6b8d5ccb6f-6gnjm                       1/1     Running    20h
 ```
 
-After seeing `READY 1/1`, return to the dashboard. Once the agent has started communicating with the preflight platform, you will be taken to the cluster view. At this point, installation is complete and you can begin to monitor resources within the dashboard.
+After seeing `READY 1/1`, return to the dashboard. Once the agent has started communicating with the Jetstack Secure platform, you will be taken to the cluster view. At this point, installation is complete and you can begin to monitor resources within the dashboard.
 
 Below is an example of how to issue a certificate:
 
@@ -683,9 +683,9 @@ helm template "$APP_INSTANCE_NAME" chart/jetstack-secure-gcm \
   --set google-cas-issuer.image.tag="$TAG" \
   --set google-cas-issuer.serviceAccount.create=true \
   --set google-cas-issuer.serviceAccount.name=google-cas-issuer \
-  --set preflight.image.tag="$TAG" \
-  --set preflight.serviceAccount.create=true \
-  --set preflight.rbac.create=true \
+  --set jetstack-secure.image.tag="$TAG" \
+  --set jetstack-secure.serviceAccount.create=true \
+  --set jetstack-secure.rbac.create=true \
   --set cert-manager.ubbagent.image.tag="$TAG" \
   --set cert-manager.ubbagent.reportingSecretName=jetstack-secure-for-cert-mana-1-license \
   > "${APP_INSTANCE_NAME}_manifest.yaml"
@@ -699,7 +699,7 @@ helm template "$APP_INSTANCE_NAME" chart/jetstack-secure-gcm \
 > --set cert-manager.cainjector.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector
 > --set cert-manager.webhook.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook
 > --set google-cas-issuer.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer
-> --set preflight.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
+> --set jetstack-secure.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/jetstack-secure
 > --set cert-manager.ubbagent.image.repository=marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent
 > ```
 

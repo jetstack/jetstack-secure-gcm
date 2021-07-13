@@ -32,10 +32,10 @@ of `1` to the `time` value. The unit for `time` is something we have configured
 in the [pricing
 panel](https://console.cloud.google.com/partner/editor/jetstack-public/jetstack-secure-for-cert-manager?project=jetstack-public&authuser=4&form=saasK8sPricingPanel).
 
-| Field          | Value  |
-| -------------- | ------ |
-| ID             | `time` |
-| Unit           | `h`    |
+| Field | Value  |
+| ----- | ------ |
+| ID    | `time` |
+| Unit  | `h`    |
 
 Note that the cert-manager deployment should always be run with replicas=1.
 High-availability (replicas > 1) is not supported yet, and the application will
@@ -131,7 +131,7 @@ to deploy the Jetstack Secure for cert-manager application. In our case,
 the image embeds:
 
 - The `helm` tool,
-- The Helm charts for cert-manager, google-cas-issuer and preflight.
+- The Helm charts for cert-manager, google-cas-issuer and jetstack-secure.
 
 There are two deployer tags:
 
@@ -176,10 +176,10 @@ marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager:1.1.0-gcm.1
 marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver:1.1.0-gcm.1
 marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector:1.1.0-gcm.1
 marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:1.1.0-gcm.1
-marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-preflight:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-jetstack-secure:1.1.0-gcm.1
 marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:1.1.0-gcm.1
 marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/deployer:1.1.0-gcm.1
-marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight:1.1.0-gcm.1
+marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/jetstack-secure:1.1.0-gcm.1
 marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/smoke-test:1.1.0-gcm.1
 marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.1
 ```
@@ -207,7 +207,7 @@ gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver:
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector:1.1.0-gcm.1
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer:1.1.0-gcm.1
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook:1.1.0-gcm.1
-gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight:1.1.0-gcm.1
+gcr.io/jetstack-public/jetstack-secure-for-cert-manager/jetstack-secure:1.1.0-gcm.1
 gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent:1.1.0-gcm.1
 ```
 
@@ -228,7 +228,7 @@ retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
   retag $FROM/cert-manager-cainjector:$FROM_TAG $TO/cert-manager-cainjector:$TO_TAG || exit 1
   retag $FROM/cert-manager-webhook:$FROM_TAG $TO/cert-manager-webhook:$TO_TAG || exit 1
   retag $FROM/cert-manager-google-cas-issuer:$FROM_TAG $TO/cert-manager-google-cas-issuer:$TO_TAG || exit 1
-  retag $FROM/preflight:$FROM_TAG $TO/preflight:$TO_TAG || exit 1
+  retag $FROM/jetstack-secure:$FROM_TAG $TO/jetstack-secure:$TO_TAG || exit 1
   retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $TO/ubbagent:$TO_TAG || exit 1
 }
 APP_VERSION=1.1.0-gcm.2
@@ -260,7 +260,7 @@ retagall() { # Usage: retagall FROM_REGISTRY FROM_TAG TO_REGISTRY TO_TAG
   retag $FROM/cert-manager-cainjector:$FROM_TAG $TO/cert-manager-cainjector:$TO_TAG || exit 1
   retag $FROM/cert-manager-webhook:$FROM_TAG $TO/cert-manager-webhook:$TO_TAG || exit 1
   retag $FROM/cert-manager-google-cas-issuer:$FROM_TAG $TO/cert-manager-google-cas-issuer:$TO_TAG || exit 1
-  retag $FROM/preflight:$FROM_TAG $TO/preflight:$TO_TAG || exit 1
+  retag $FROM/jetstack-secure:$FROM_TAG $TO/jetstack-secure:$TO_TAG || exit 1
   retag gcr.io/cloud-marketplace-tools/metering/ubbagent:latest $TO/ubbagent:$TO_TAG || exit 1
 }
 
@@ -364,9 +364,9 @@ cert-manager:
 google-cas-issuer:
   nameOverride: jetstack-secure-gcm
   fullnameOverride: google-cas-issuer
-preflight:
+jetstack-secure:
   nameOverride: jetstack-secure-gcm
-  fullnameOverride: preflight
+  fullnameOverride: jetstack-secure
 ```
 
 Then we make sure all the objects are set with the labels:
