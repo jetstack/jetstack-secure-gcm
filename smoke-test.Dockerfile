@@ -7,19 +7,21 @@
 # certificate using the Google CAS issuer?"
 
 # Dockerfile: https://github.com/GoogleCloudPlatform/marketplace-testrunner/blob/master/Dockerfile
-FROM gcr.io/cloud-marketplace-tools/testrunner:0.1.2
+FROM python:alpine
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl wget dnsutils netcat jq \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add curl patch
+RUN pip3 install cram
+RUN curl -L https://github.com/stern/stern/releases/download/v1.19.0/stern_1.19.0_linux_amd64.tar.gz | tar xz -C /tmp \
+    && mv /tmp/stern_1.19.0_linux_amd64/stern /usr/local/bin \
+    && curl -L https://storage.googleapis.com/kubernetes-release/release/v1.19.6/bin/linux/amd64/kubectl --output-dir /usr/local/bin -O \
+    && chmod 755 /usr/local/bin/kubectl
 
-RUN mkdir -p /opt/kubectl/1.19 \
-    && wget -q -O /opt/kubectl/1.19/kubectl \
-        https://storage.googleapis.com/kubernetes-release/release/v1.19.6/bin/linux/amd64/kubectl \
-    && chmod 755 /opt/kubectl/1.19/kubectl \
-    && ln -s /opt/kubectl/1.19/kubectl /usr/bin/kubectl
+WORKDIR /opt
+COPY smoke-test.t .
 
-COPY smoke-test.yaml /smoke-test.yaml
+ENV NAMESPACE=test
 
-WORKDIR /
-ENTRYPOINT ["testrunner", "-logtostderr", "--test_spec=/smoke-test.yaml"]
+# We don't use "kubectl logs" because we need to know to which container each
+# logs comes from. Also, stern follows logs and never returns, so we do the
+# pause trick.
+CMD ["sh", "-c", "cram smoke-test.t || (stern -A -l app.kubernetes.io/name=jetstack-secure-gcm & (sleep 5; exit 1))"]
