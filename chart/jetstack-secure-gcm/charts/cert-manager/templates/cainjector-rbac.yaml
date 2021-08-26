@@ -5,11 +5,11 @@ kind: ClusterRole
 metadata:
   name: {{ template "cainjector.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
+    app: {{ include "cainjector.name" . }}
+    app.kubernetes.io/name: {{ include "cainjector.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: "cainjector"
-    helm.sh/chart: {{ include "cainjector.chart" . }}
+    {{- include "labels" . | nindent 4 }}
 rules:
   - apiGroups: ["cert-manager.io"]
     resources: ["certificates"]
@@ -38,11 +38,11 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ template "cainjector.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
+    app: {{ include "cainjector.name" . }}
+    app.kubernetes.io/name: {{ include "cainjector.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: "cainjector"
-    helm.sh/chart: {{ include "cainjector.chart" . }}
+    {{- include "labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -60,17 +60,18 @@ metadata:
   name: {{ template "cainjector.fullname" . }}:leaderelection
   namespace: {{ .Values.global.leaderElection.namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
+    app: {{ include "cainjector.name" . }}
+    app.kubernetes.io/name: {{ include "cainjector.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: "cainjector"
-    helm.sh/chart: {{ include "cainjector.chart" . }}
+    {{- include "labels" . | nindent 4 }}
 rules:
   # Used for leader election by the controller
   # cert-manager-cainjector-leader-election is used by the CertificateBased injector controller
   #   see cmd/cainjector/start.go#L113
   # cert-manager-cainjector-leader-election-core is used by the SecretBased injector controller
   #   see cmd/cainjector/start.go#L137
+  # See also: https://github.com/kubernetes-sigs/controller-runtime/pull/1144#discussion_r480173688
   - apiGroups: [""]
     resources: ["configmaps"]
     resourceNames: ["cert-manager-cainjector-leader-election", "cert-manager-cainjector-leader-election-core"]
@@ -78,6 +79,14 @@ rules:
   - apiGroups: [""]
     resources: ["configmaps"]
     verbs: ["create"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    resourceNames: ["cert-manager-cainjector-leader-election", "cert-manager-cainjector-leader-election-core"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["create"]
+
 ---
 
 # grant cert-manager permission to manage the leaderelection configmap in the
@@ -88,11 +97,11 @@ metadata:
   name: {{ include "cainjector.fullname" . }}:leaderelection
   namespace: {{ .Values.global.leaderElection.namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
+    app: {{ include "cainjector.name" . }}
+    app.kubernetes.io/name: {{ include "cainjector.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: "cainjector"
-    helm.sh/chart: {{ include "cainjector.chart" . }}
+    {{- include "labels" . | nindent 4 }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -101,7 +110,5 @@ subjects:
   - kind: ServiceAccount
     name: {{ template "cainjector.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
-
-
 {{- end -}}
 {{- end -}}
