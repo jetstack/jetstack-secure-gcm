@@ -5,8 +5,7 @@ metadata:
   name: {{ include "cainjector.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    app: {{ include "cainjector.name" . }}
-    app.kubernetes.io/name: {{ include "cainjector.name" . }}
+    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "cainjector"
     {{- include "labels" . | nindent 4 }}
@@ -18,7 +17,7 @@ spec:
   replicas: {{ .Values.cainjector.replicaCount }}
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "cainjector.name" . }}
+      app.kubernetes.io/name: {{ include "cert-manager.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/component: "cainjector"
   {{- with .Values.cainjector.strategy }}
@@ -28,8 +27,7 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ include "cainjector.name" . }}
-        app.kubernetes.io/name: {{ include "cainjector.name" . }}
+        app.kubernetes.io/name: {{ include "cert-manager.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: "cainjector"
         {{- include "labels" . | nindent 8 }}

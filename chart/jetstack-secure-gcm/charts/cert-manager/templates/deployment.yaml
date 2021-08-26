@@ -4,7 +4,6 @@ metadata:
   name: {{ template "cert-manager.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    app: {{ template "cert-manager.name" . }}
     app.kubernetes.io/name: {{ template "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "controller"
@@ -27,7 +26,6 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ template "cert-manager.name" . }}
         app.kubernetes.io/name: {{ template "cert-manager.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: "controller"
@@ -65,10 +63,13 @@ spec:
 {{ toYaml .Values.securityContext | indent 8 }}
         {{- end }}
       {{- end }}
-      {{- if .Values.volumes }}
       volumes:
+        - name: ubbagent-config
+          configMap:
+            name: ubbagent-config
+        {{- if .Values.volumes }}
 {{ toYaml .Values.volumes | indent 8 }}
-      {{- end }}
+        {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.image }}
@@ -146,6 +147,33 @@ spec:
           {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+        - name: ubbagent
+          image: "{{ .Values.ubbagent.image.repository }}:{{ .Values.ubbagent.image.tag }}"
+          env:
+            - name: AGENT_CONFIG_FILE
+              value: "/etc/ubbagent/config.yaml"
+            - name: AGENT_LOCAL_PORT
+              value: "4567"
+            - name: AGENT_ENCODED_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (print (.Release.Name | trunc 63 | trimSuffix "-") "-license") .Values.ubbagent.reportingSecretName }}
+                  key: reporting-key
+            - name: AGENT_CONSUMER_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (print (.Release.Name | trunc 63 | trimSuffix "-") "-license") .Values.ubbagent.reportingSecretName }}
+                  key: consumer-id
+          volumeMounts:
+            - name: ubbagent-config
+              mountPath: /etc/ubbagent
+          resources:
+            limits:
+              cpu: 200m
+              memory: 100Mi
+            requests:
+              cpu: 10m
+              memory: 20Mi
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
