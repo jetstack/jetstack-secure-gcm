@@ -203,11 +203,13 @@ properties:
               - apiGroups: ["cert-manager.io"]
                 resources: ["certificates", "certificaterequests", "issuers", "clusterissuers"]
                 verbs: ["get", "list", "watch"]
-              # To be removed when this gets merged: https://github.com/jetstack/cert-manager/issues/3726
+              # To be removed when the minimum support Kubernetes version is 1.22
+              # https://kubernetes.io/docs/reference/using-api/deprecation-guide/#v1-22
               - apiGroups: ["extensions"]
                 resources: ["ingresses"]
                 verbs: ["get", "list", "watch"]
-              # To be removed when this gets merged: https://github.com/jetstack/cert-manager/issues/3726
+              # To be removed when the minimum support Kubernetes version is 1.22
+              # https://kubernetes.io/docs/reference/using-api/deprecation-guide/#v1-22
               - apiGroups: ["extensions"]
                 resources: ["ingresses/finalizers"]
                 verbs: ["update"]
