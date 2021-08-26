@@ -229,6 +229,7 @@ properties:
                 resources: ["gateways/finalizers", "httproutes/finalizers"]
                 verbs: ["update"]
 
+              # Permission to approve CertificateRequests referencing cert-manager.io Issuers and ClusterIssuers
               - apiGroups: ["cert-manager.io"]
                 resources: ["signers"]
                 verbs: ["approve"]
