@@ -36,6 +36,14 @@ cert-manager:
       repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector
       tag: 1.1.0-gcm.1
 
+  # In the context of click-to-deploy, the RBAC rules and service accounts
+  # must be defined statically in the schema.yaml.
+  # This is incompatible with the install-hook mechanism of startup API check
+  # expects to be able to temporarily create and then delete RBAC and SA Disable
+  # startup API check.
+  startupapicheck:
+    enabled: false
+
   ubbagent:
     # By default, the reportingSecretName will be set to
     #  ${helm-release}-license.

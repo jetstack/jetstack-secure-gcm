@@ -7,11 +7,14 @@ apiVersion: v2
 engine: gotpl
 name: jetstack-secure-gcm
 version: 1.0.0
+# These dependencies are not actually used by Helm because we have manually
+# vendored the sub-charts.
+# `helm dependency` commands will give incorrect results.
 dependencies:
   - name: cert-manager
-    version: 1.1.0
-    appVersion: v1.1.0
-    repository: https://charts.jetstack.io
+    version: v1.5.3
+    appVersion: v1.5.3
+    repository: ./charts/cert-manager
   - name: google-cas-issuer
     appVersion: 0.1.0
     repository: ./charts/google-cas-issuer
