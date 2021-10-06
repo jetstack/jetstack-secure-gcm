@@ -11,7 +11,7 @@ x-google-marketplace:
   # We are not "truely" following semver.org since we use a "-" for a final
   # release ("-" is meant for pre-releases). This is due to a Docker
   # limitation: https://github.com/distribution/distribution/issues/1201
-  publishedVersion: 1.5.3-gcm.0
+  publishedVersion: 1.5.4-gcm.0
   publishedVersionMetadata:
     releaseNote: >-
       Initial release.
