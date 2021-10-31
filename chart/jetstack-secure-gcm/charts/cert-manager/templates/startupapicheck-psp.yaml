@@ -1,12 +1,13 @@
+{{- if .Values.startupapicheck.enabled -}}
 {{- if .Values.global.podSecurityPolicy.enabled }}
 apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
-  name: {{ template "cert-manager.fullname" . }}
+  name: {{ template "startupapicheck.fullname" . }}
   labels:
     app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/component: "controller"
+    app.kubernetes.io/component: "startupapicheck"
     {{- include "labels" . | nindent 4 }}
   annotations:
     seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default'
@@ -15,16 +16,16 @@ metadata:
     apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
     apparmor.security.beta.kubernetes.io/defaultProfileName:  'runtime/default'
     {{- end }}
+    {{- if .Values.startupapicheck.rbac.annotations }}
+    {{ toYaml .Values.startupapicheck.rbac.annotations | nindent 4 }}
+    {{- end }}
 spec:
   privileged: false
   allowPrivilegeEscalation: false
   allowedCapabilities: []  # default set of capabilities are implicitly allowed
   volumes:
-  - 'configMap'
-  - 'emptyDir'
   - 'projected'
   - 'secret'
-  - 'downwardAPI'
   hostNetwork: false
   hostIPC: false
   hostPID: false
@@ -45,4 +46,5 @@ spec:
     ranges:
     - min: 1000
       max: 1000
-{{- end }}
+{{- end -}}
+{{- end -}}

@@ -4,7 +4,6 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ template "cert-manager.fullname" . }}-psp
   labels:
-    app: {{ include "cert-manager.name" . }}
     app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "controller"
