@@ -7,7 +7,22 @@ test suite. This image is used in a Job in data-test. mpdev verify detects the
 presence of this Job thanks to the annotation
  "marketplace.cloud.google.com/verification: test"
 
-First, let us create a self-signed Issuer and a Certificate. This is a good way
+Let's make sure the cert-manager API is actually ready. We do 2>/dev/null due to
+the fact that this command outputs an unknown number of lines, which is
+something I don't know how to express in cram syntax.
+
+  $ timeout 5m bash -c "until kubectl apply --dry-run=server -f- <<<$'kind: Issuer\napiVersion: cert-manager.io/v1\nmetadata:\n  name: a\nspec:\n  selfSigned: {}' 2>/dev/null >&2; do sleep 10s; done"
+  $ kubectl apply --dry-run=server -f- <<EOF
+  > kind: Issuer
+  > apiVersion: cert-manager.io/v1
+  > metadata:
+  >   name: a
+  > spec:
+  >   selfSigned: {}
+  > EOF
+  issuer.cert-manager.io/a created (server dry run)
+
+Let us create a self-signed Issuer and a Certificate. This is a good way
 to spot webhook misconfigurations.
 
   $ kubectl apply -n ${NAMESPACE} -f - <<EOF
