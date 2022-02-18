@@ -4,7 +4,6 @@ kind: PodSecurityPolicy
 metadata:
   name: {{ template "webhook.fullname" . }}
   labels:
-    app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "webhook"

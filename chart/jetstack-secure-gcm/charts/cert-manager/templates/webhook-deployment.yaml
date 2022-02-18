@@ -4,7 +4,6 @@ metadata:
   name: {{ include "webhook.fullname" . }}
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "webhook"
@@ -27,7 +26,6 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ include "webhook.name" . }}
         app.kubernetes.io/name: {{ include "cert-manager.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: "webhook"

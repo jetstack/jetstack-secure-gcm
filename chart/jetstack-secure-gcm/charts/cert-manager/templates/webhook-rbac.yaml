@@ -5,7 +5,6 @@ metadata:
   name: {{ template "webhook.fullname" . }}:dynamic-serving
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "webhook"
@@ -28,7 +27,6 @@ metadata:
   name: {{ template "webhook.fullname" . }}:dynamic-serving
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "webhook"
@@ -50,7 +48,6 @@ kind: ClusterRole
 metadata:
   name: {{ template "webhook.fullname" . }}:subjectaccessreviews
   labels:
-    app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "webhook"
@@ -66,7 +63,6 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ template "webhook.fullname" . }}:subjectaccessreviews
   labels:
-    app: {{ include "webhook.name" . }}
     app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "webhook"
