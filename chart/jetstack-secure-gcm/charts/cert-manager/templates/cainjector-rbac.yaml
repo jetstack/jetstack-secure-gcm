@@ -1,11 +1,12 @@
-{{- if .Values.cainjector.enabled -}}
-{{- if .Values.global.rbac.create -}}
+{{- if .Values.cainjector.enabled }}
+{{- if .Values.global.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ template "cainjector.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
+    app: {{ include "cainjector.name" . }}
+    app.kubernetes.io/name: {{ include "cainjector.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "cainjector"
     {{- include "labels" . | nindent 4 }}
@@ -37,7 +38,8 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ template "cainjector.fullname" . }}
   labels:
-    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
+    app: {{ include "cainjector.name" . }}
+    app.kubernetes.io/name: {{ include "cainjector.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "cainjector"
     {{- include "labels" . | nindent 4 }}
@@ -58,7 +60,8 @@ metadata:
   name: {{ template "cainjector.fullname" . }}:leaderelection
   namespace: {{ .Values.global.leaderElection.namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
+    app: {{ include "cainjector.name" . }}
+    app.kubernetes.io/name: {{ include "cainjector.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "cainjector"
     {{- include "labels" . | nindent 4 }}
@@ -94,7 +97,8 @@ metadata:
   name: {{ include "cainjector.fullname" . }}:leaderelection
   namespace: {{ .Values.global.leaderElection.namespace }}
   labels:
-    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
+    app: {{ include "cainjector.name" . }}
+    app.kubernetes.io/name: {{ include "cainjector.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "cainjector"
     {{- include "labels" . | nindent 4 }}
@@ -106,5 +110,5 @@ subjects:
   - kind: ServiceAccount
     name: {{ template "cainjector.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
-{{- end -}}
-{{- end -}}
+{{- end }}
+{{- end }}

@@ -4,7 +4,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: {{ template "webhook.fullname" . }}-psp
   labels:
-    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
+    app: {{ include "webhook.name" . }}
+    app.kubernetes.io/name: {{ include "webhook.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "webhook"
     {{- include "labels" . | nindent 4 }}
