@@ -6,7 +6,7 @@ metadata:
   namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ include "startupapicheck.name" . }}
-    app.kubernetes.io/name: {{ include "startupapicheck.name" . }}
+    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "startupapicheck"
     {{- include "labels" . | nindent 4 }}
@@ -20,7 +20,7 @@ spec:
     metadata:
       labels:
         app: {{ include "startupapicheck.name" . }}
-        app.kubernetes.io/name: {{ include "startupapicheck.name" . }}
+        app.kubernetes.io/name: {{ include "cert-manager.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: "startupapicheck"
         {{- include "labels" . | nindent 8 }}

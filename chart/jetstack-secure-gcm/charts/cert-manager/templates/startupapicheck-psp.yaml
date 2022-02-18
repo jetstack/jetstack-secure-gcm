@@ -6,7 +6,7 @@ metadata:
   name: {{ template "startupapicheck.fullname" . }}
   labels:
     app: {{ include "startupapicheck.name" . }}
-    app.kubernetes.io/name: {{ include "startupapicheck.name" . }}
+    app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: "startupapicheck"
     {{- include "labels" . | nindent 4 }}
