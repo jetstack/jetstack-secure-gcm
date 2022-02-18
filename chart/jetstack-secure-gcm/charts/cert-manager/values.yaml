@@ -1,3 +1,14 @@
+# GCM-specific Helm values added by Mael. DO NOT REMOVE when updating the
+# Helm chart.
+ubbagent:
+  # By default, the reportingSecretName will be set to
+  #  ${helm-release}-license.
+  #
+  # reportingSecretName: chartname-license
+  image:
+    repository: gcr.io/cloud-marketplace-tools/metering/ubbagent
+    tag: latest
+
 # Default values for cert-manager.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
