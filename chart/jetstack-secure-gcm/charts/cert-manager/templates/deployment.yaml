@@ -64,6 +64,8 @@ spec:
         {{- end }}
       {{- end }}
       volumes:
+        # GCM-specific volume added by Mael. DO NOT REMOVE when updating the
+        # Helm chart.
         - name: ubbagent-config
           configMap:
             name: ubbagent-config
@@ -147,6 +149,8 @@ spec:
           {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+        # GCM-specific volume added by Mael. DO NOT REMOVE when updating the
+        # Helm chart.
         - name: ubbagent
           image: "{{ .Values.ubbagent.image.repository }}:{{ .Values.ubbagent.image.tag }}"
           env:

@@ -1,4 +1,5 @@
-# GCM-specific Helm values added by Mael.
+# GCM-specific Helm values added by Mael. DO NOT REMOVE when updating the
+# Helm chart.
 ubbagent:
   # By default, the reportingSecretName will be set to
   #  ${helm-release}-license.
