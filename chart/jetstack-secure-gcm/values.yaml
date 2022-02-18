@@ -15,26 +15,26 @@ cert-manager:
     create: false # see note (1)
   image:
     repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager
-    tag: 1.6.1-gcm.0
+    tag: 1.7.1-gcm.0
 
   acmesolver:
     image:
       repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-acmesolver
-      tag: 1.6.1-gcm.0
+      tag: 1.7.1-gcm.0
 
   webhook:
     serviceAccount:
       create: false # see note (1)
     image:
       repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-webhook
-      tag: 1.6.1-gcm.0
+      tag: 1.7.1-gcm.0
 
   cainjector:
     serviceAccount:
       create: false # see note (1)
     image:
       repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-cainjector
-      tag: 1.6.1-gcm.0
+      tag: 1.7.1-gcm.0
 
   # In the context of click-to-deploy, the RBAC rules and service accounts
   # must be defined statically in the schema.yaml.
@@ -51,7 +51,7 @@ cert-manager:
     # reportingSecretName: chartname-license
     image:
       repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/ubbagent
-      tag: 1.6.1-gcm.0
+      tag: 1.7.1-gcm.0
 
 google-cas-issuer:
   nameOverride: jetstack-secure-gcm
@@ -61,7 +61,7 @@ google-cas-issuer:
     create: false # see note (1)
   image:
     repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/cert-manager-google-cas-issuer
-    tag: 1.6.1-gcm.0
+    tag: 1.7.1-gcm.0
 
 preflight:
   # By default, the preflight deployment is "disabled" by setting replicas=0.
@@ -76,4 +76,4 @@ preflight:
     create: false # see note (1)
   image:
     repository: marketplace.gcr.io/jetstack-public/jetstack-secure-for-cert-manager/preflight
-    tag: 1.6.1-gcm.0
+    tag: 1.7.1-gcm.0
