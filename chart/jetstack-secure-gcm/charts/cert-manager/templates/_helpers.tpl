@@ -39,6 +39,15 @@ Webhook templates
 */}}
 
 {{/*
+Expand the name of the chart.
+Manually fix the 'app' and 'name' labels to 'webhook' to maintain
+compatibility with the v0.9 deployment selector.
+*/}}
+{{- define "webhook.name" -}}
+{{- printf "webhook" -}}
+{{- end -}}
+
+{{/*
 Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
@@ -66,6 +75,15 @@ Create the name of the service account to use
 {{/*
 cainjector templates
 */}}
+
+{{/*
+Expand the name of the chart.
+Manually fix the 'app' and 'name' labels to 'cainjector' to maintain
+compatibility with the v0.9 deployment selector.
+*/}}
+{{- define "cainjector.name" -}}
+{{- printf "cainjector" -}}
+{{- end -}}
 
 {{/*
 Create a default fully qualified app name.

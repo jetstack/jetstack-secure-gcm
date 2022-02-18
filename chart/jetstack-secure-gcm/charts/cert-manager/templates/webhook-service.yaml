@@ -11,16 +11,20 @@ metadata:
 {{- if .Values.webhook.serviceLabels }}
 {{ toYaml .Values.webhook.serviceLabels | indent 4 }}
 {{- end }}
+{{- if .Values.webhook.serviceAnnotations }}
+  annotations:
+    {{ toYaml .Values.webhook.serviceAnnotations | indent 4 }}
+{{- end }}
 spec:
   type: {{ .Values.webhook.serviceType }}
   {{- if .Values.webhook.loadBalancerIP }}
   loadBalancerIP: {{ .Values.webhook.loadBalancerIP }}
   {{- end }}
   ports:
-    - name: https
-      port: 443
-      protocol: TCP
-      targetPort: {{ .Values.webhook.securePort }}
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: {{ .Values.webhook.securePort }}
   selector:
     app.kubernetes.io/name: {{ include "cert-manager.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
