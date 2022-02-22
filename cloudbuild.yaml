@@ -189,6 +189,31 @@ steps:
       - check-cloud-marketplace-tools
       - push-smoke-test
 
+  - id: logs-jetstack-secure-gcm
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: bash
+    args:
+      - -euc
+      - |
+        until kubectl get ns -oname 2>/dev/null | grep apptest-; do
+          sleep 10
+        done
+        ns=$(kubectl get ns -oname  | grep apptest- | cut -d/ -f2)
+
+        set -x
+        while kubectl get ns "$ns"; do
+          kubectl logs \
+            --namespace "$ns" \
+            --follow \
+            --all-containers \
+            --prefix \
+            --selector app.kubernetes.io/name=jetstack-secure-gcm || true
+          sleep 10
+        done
+    waitFor:
+      - check-cloud-marketplace-tools
+      - push-deployer
+
   - id: verify
     name: gcr.io/cloud-marketplace-tools/k8s/dev
     env:
