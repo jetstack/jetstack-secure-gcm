@@ -316,9 +316,13 @@ retagall gcr.io/jetstack-public/jetstack-secure-for-cert-manager{,} google-revie
 
 ### Pricing mechanism
 
-Each cluster is priced at $50 a month, billed hourly ($0.07/hour). The way the
-hourly billing works is by running `ubbagent` which is set as a side-car
-container to the cert-manager controller
+Each cluster is priced at $50 a month, billed hourly ($0.07/hour). This is configured
+in the admin panel:
+
+![Screenshot from 2022-05-30 13-45-34](https://user-images.githubusercontent.com/2195781/170986210-29df68c4-ad28-4a15-baaa-6b6c58a7b7c1.png)
+
+The way the hourly billing works is by running `ubbagent` which is set
+as a side-car container to the cert-manager controller
 [deployment](https://github.com/jetstack/jetstack-secure-gcm/blob/c43be00b36f7fd1d01f15771025308b8f5ab69f7/chart/jetstack-secure-gcm/charts/cert-manager/templates/deployment.yaml#L1).
 The ubbagent pings the Google Billing API every hour; each ping will add a value
 of `1` to the `time` value. The unit for `time` is something we have configured
