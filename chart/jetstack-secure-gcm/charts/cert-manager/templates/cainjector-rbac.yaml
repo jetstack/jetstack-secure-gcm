@@ -1,5 +1,5 @@
-{{- if .Values.cainjector.enabled -}}
-{{- if .Values.global.rbac.create -}}
+{{- if .Values.cainjector.enabled }}
+{{- if .Values.global.rbac.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -106,5 +106,5 @@ subjects:
   - kind: ServiceAccount
     name: {{ template "cainjector.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
-{{- end -}}
-{{- end -}}
+{{- end }}
+{{- end }}
