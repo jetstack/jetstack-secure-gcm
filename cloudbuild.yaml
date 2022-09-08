@@ -131,7 +131,9 @@ steps:
       - "GCLOUD_CONFIG=/workspace/.config/gcloud"
       # Use local Docker network named cloudbuild as described here:
       # https://cloud.google.com/cloud-build/docs/overview#build_configuration_and_build_steps
-      - "EXTRA_DOCKER_PARAMS=--net cloudbuild"
+      # Note: in recent versions of this image, they changed how to configure the network: https://github.com/GoogleCloudPlatform/marketplace-k8s-app-tools/compare/0.10.19...master#diff-af93a64d62d03fa17dc4435266f3f06fd067378ff46c798da6e54c978bf29b6aR51
+      - "DOCKER_NETWORK=cloudbuild"
+      - "VERIFICATION_LOGS_PATH=/workspace/.mpdev_logs"
     args:
       - ./mpdev
       - doctor
@@ -221,7 +223,8 @@ steps:
       - "GCLOUD_CONFIG=/workspace/.config/gcloud"
       # Use local Docker network named cloudbuild as described here:
       # https://cloud.google.com/cloud-build/docs/overview#build_configuration_and_build_steps
-      - "EXTRA_DOCKER_PARAMS=--net cloudbuild"
+      - "DOCKER_NETWORK=cloudbuild"
+      - "VERIFICATION_LOGS_PATH=/workspace/.mpdev_logs"
     args:
       - ./mpdev
       - verify
@@ -237,7 +240,8 @@ steps:
     env:
       - "KUBE_CONFIG=/workspace/.kube"
       - "GCLOUD_CONFIG=/workspace/.config/gcloud"
-      - "EXTRA_DOCKER_PARAMS=--net cloudbuild"
+      - "DOCKER_NETWORK=cloudbuild"
+      - "VERIFICATION_LOGS_PATH=/workspace/.mpdev_logs"
     args:
       - ./mpdev
       - publish
